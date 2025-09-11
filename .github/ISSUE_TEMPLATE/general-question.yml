@@ -1,0 +1,27 @@
+name: General Question or Request
+description: Ask a question or make a general request
+title: "[QUESTION] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## General Question or Request
+        
+        Use this template for general questions about the project, collaboration, or other requests.
+        
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question or Request
+      description: Please describe your question or request in detail
+      placeholder: What would you like to know or request?
+    validations:
+      required: true
+      
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Add any additional context, screenshots, or information that might be helpful
+      placeholder: Any additional information that might help us understand your question better

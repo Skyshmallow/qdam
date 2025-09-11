@@ -1,0 +1,60 @@
+name: Request Repository Access
+description: Request invitation to collaborate on this project
+title: "[ACCESS REQUEST] "
+labels: ["access-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Repository Access Request
+        
+        Thank you for your interest in collaborating on this project! Please fill out the information below to request repository access.
+        
+  - type: input
+    id: github-username
+    attributes:
+      label: GitHub Username
+      description: Your GitHub username
+      placeholder: e.g., johndoe
+    validations:
+      required: true
+      
+  - type: textarea
+    id: background
+    attributes:
+      label: Background & Experience
+      description: Brief description of your background and relevant experience
+      placeholder: Tell us about your programming experience, relevant skills, or previous projects
+    validations:
+      required: true
+      
+  - type: textarea
+    id: contribution-intent
+    attributes:
+      label: How would you like to contribute?
+      description: Describe how you'd like to contribute to this project
+      placeholder: e.g., bug fixes, new features, documentation, testing, etc.
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: access-level
+    attributes:
+      label: Requested Access Level
+      description: What level of access do you need?
+      options:
+        - Read (view and clone repository)
+        - Write (view, clone, and contribute code)
+        - Not sure
+      default: 1
+    validations:
+      required: true
+      
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this request, you agree to follow our community guidelines
+      options:
+        - label: I agree to follow this project's Code of Conduct and contribution guidelines
+          required: true
