@@ -1,28 +1,32 @@
 // src/hooks/useMapController.ts
-import { useEffect } from 'react';
 import { useMapStore } from '../store/mapStore';
+import { useCallback } from 'react';
 
 export const useMapController = () => {
-  const {
-    map,
-    avatarPosition,
-    bearing,
-    isInitialFlightDone,
-    completeInitialFlight,
-    resetCamera,
-  } = useMapStore();
+  // Получаем доступ ко всему стору, включая метод getState
+  const { map, completeInitialFlight, isInitialFlightDone } = useMapStore();
+  const getState = useMapStore.getState;
 
-  useEffect(() => {
+  /**
+   * Выполняет "прилёт" камеры к текущей позиции аватара.
+   * Читает avatarPosition и bearing напрямую из стора в момент вызова.
+   */
+  const flyToAvatar = useCallback(() => {
+    // Получаем самые свежие данные прямо из стора
+    const { avatarPosition, bearing } = getState();
+    
     if (!map || !avatarPosition) return;
+    
+    console.log('[useMapController] Выполняю принудительный полёт к аватару...');
+    
+    const currentIsInitialFlightDone = isInitialFlightDone;
 
-    // Если "прилет" еще не был совершен, делаем flyTo
-    if (!isInitialFlightDone) {
-      console.log('[useMapController] Выполняю первый полёт к аватару...');
+    if (!currentIsInitialFlightDone) {
       map.flyTo({
         center: avatarPosition as [number, number],
         zoom: 17,
         pitch: 60,
-        bearing: 360 - bearing,
+        bearing: (bearing + 360) % 360,
       });
 
       map.once('moveend', () => {
@@ -31,13 +35,13 @@ export const useMapController = () => {
     } else {
       map.easeTo({
         center: avatarPosition as [number, number],
-        bearing: 360 - bearing,
-        duration: 500,
+        zoom: 17,
+        duration: 1000,
       });
     }
-  }, [map, avatarPosition, bearing, isInitialFlightDone, completeInitialFlight]);
+  }, [map, isInitialFlightDone, completeInitialFlight, getState]); 
 
   return {
-    resetCamera,
+    flyToAvatar,
   };
 };

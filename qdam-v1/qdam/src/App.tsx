@@ -1,7 +1,10 @@
 // src/App.tsx
 import { useCallback, useMemo, useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
+import * as turf from '@turf/turf';
+import type { Feature, Polygon, MultiPolygon, GeoJsonProperties } from 'geojson';
 import 'react-toastify/dist/ReactToastify.css';
+import { Lock } from 'lucide-react';
 import './App.css';
 
 // --- Импорты ---
@@ -30,8 +33,8 @@ function App() {
   const planner = useMapPlanner();
   const tracker = useTracking();
   const simulator = useSimulator();
-  const { geolocationState, locateUser, resetGeolocationState } = useGeolocation(); 
-  const mapController = useMapController(); 
+  const { geolocationState, locateUser, resetGeolocationState } = useGeolocation();
+  const { flyToAvatar } = useMapController(); 
 
   useDeviceOrientation(tracker.trackingState === 'recording');
 
@@ -44,46 +47,98 @@ function App() {
   );
 
   // === Локальное состояние ===
+
+  // === Базы и сферы ===
   const [bases, setBases] = useState<Base[]>([]);
+  const [spheres, setSpheres] = useState<any>(turf.featureCollection([]));
+
   const [simulationState, setSimulationState] = useState<
     'idle' | 'pickingStart' | 'pickingEnd' | 'ready' | 'simulating'
   >('idle');
-
-  // === НОВЫЙ useEffect для управления курсором ===
+  
+  // === УПРАВЛЕНИЕ КУРСОРОМ ===
   useEffect(() => {
     if (!map) return;
-
     const isPickingMode =
       simulationState === 'pickingStart' || simulationState === 'pickingEnd';
-    
-    // Получаем canvas карты и меняем его стиль
     map.getCanvas().style.cursor = isPickingMode ? 'crosshair' : '';
-
   }, [simulationState, map]);
+
+  // === СЛЕЖЕНИЕ КАМЕРЫ ВО ВРЕМЯ СИМУЛЯЦИИ ===
+  useEffect(() => {
+    if (simulationState !== 'simulating' || !map || !avatarPosition) {
+      return;
+    }
+
+    // Нормализуем bearing
+    const normalizedBearing = (bearing + 360) % 360;
+
+    // Вместо медленного easeTo, который конфликтует с частыми обновлениями
+    map.setCenter(avatarPosition as [number, number]);
+    map.setBearing(normalizedBearing);
+    map.setPitch(60); // Поддерживаем 3D вид
+    map.setZoom(17); // Поддерживаем зум
+    
+  }, [simulationState, map, avatarPosition, bearing]);
+
+  // === УПРАВЛЕНИЕ ЖИЗНЕННЫМ ЦИКЛОМ БАЗ (для анимаций) ===
+  useEffect(() => {
+    // Ищем базы, которые нужно "устаканить"
+    const newBasesExist = bases.some(b => b.status === 'new');
+
+    if (newBasesExist) {
+      // Через 100 миллисекунд (чтобы React успел отрендерить с классом анимации)
+      // мы обновим их статус.
+      const timer = setTimeout(() => {
+        console.log('%c[App.tsx]', 'color: #4CAF50; font-weight: bold;', 'Changing status of new bases to "established".');
+        setBases(currentBases =>
+          currentBases.map(base =>
+            base.status === 'new' ? { ...base, status: 'established' } : base
+          )
+        );
+      }, 100); // Небольшая задержка
+
+      return () => clearTimeout(timer); // Очистка таймера
+    }
+  }, [bases]);
+
+  // === ГЕНЕРАЦИЯ СФЕР ВЛИЯНИЯ ===
+  useEffect(() => {
+    if (bases.length > 0) {
+      console.log('%c[App.tsx]', 'color: #9C27B0; font-weight: bold;', 'Recalculating spheres of influence.');
+      const radius = parseFloat(import.meta.env.VITE_SPHERE_RADIUS_KM || '0.5');
+
+      const sphereFeatures = bases
+        .map(base => {
+          if (!base.coordinates) return undefined; // защита
+          const center = turf.point(base.coordinates);
+          const buffered = turf.buffer(center, radius, { units: 'kilometers' });
+          return buffered;
+        })
+        .filter(
+          (f): f is Feature<Polygon | MultiPolygon, GeoJsonProperties> => f !== undefined
+        );
+
+      setSpheres(turf.featureCollection(sphereFeatures));
+    } else {
+      setSpheres(turf.featureCollection([]));
+    }
+  }, [bases]);
+
 
   // === ОБРАБОТЧИКИ ===
 
   // --- "Find Me" ---
   const handleMyLocationClick = useCallback(async () => {
-    console.log('%c[App.tsx]', 'color: #4CAF50; font-weight: bold;', 'handleMyLocationClick triggered.');
-    if (geolocationState === 'success' && avatarPosition) {
-      console.log('%c[App.tsx]', 'color: #4CAF50;', 'Geolocation is already successful. Resetting camera.');
-      mapController.resetCamera();
-      return;
-    }
-
     const coords = await locateUser();
-    console.log('%c[App.tsx]', 'color: #4CAF50;', 'await locateUser() finished. Received coords:', coords);
-
     if (coords) {
+      // Сначала обновляем позицию
       setAvatarPosition(coords);
-      console.log('%c[App.tsx]', 'color: #4CAF50;', 'Coords are valid. Calling setAvatarPosition.');
-    } else {
-      console.warn('%c[App.tsx]', 'color: #4CAF50;', 'Coords are null. No avatar position will be set.');
+      flyToAvatar();
     }
-  }, [locateUser, geolocationState, avatarPosition, setAvatarPosition, mapController]);
+  }, [locateUser, setAvatarPosition, flyToAvatar]);
 
-  // --- Симуляция (вынесена в отдельную функцию) ---
+  // --- Симуляция ---
   const handleStartSimulation = useCallback(() => {
     if (!planner.simulatableRoute) return;
     setSimulationState('simulating');
@@ -105,31 +160,57 @@ function App() {
       toast.info("Сначала определите ваше местоположение кнопкой 'Find Me'");
       return;
     }
-
-    mapController.resetCamera();
-    tracker.startTracking(); 
-  }, [
-    simulationState,
-    tracker,
-    mapController,
-    avatarPosition,
-    handleStartSimulation,
-  ]);
+    
+    // При старте реального трекинга центрируемся на пользователе
+    flyToAvatar();
+    tracker.startTracking();
+  }, [simulationState, tracker, flyToAvatar, avatarPosition, handleStartSimulation]);
 
   // --- Остановка ---
   const handleStop = useCallback(() => {
+    let pathForBases: number[][] | null = null;
+
     if (simulator.isSimulating) {
+      console.log('%c[App.tsx]', 'color: #FF9800; font-weight: bold;', 'Stopping SIMULATION.');
       simulator.stopSimulation();
+      // Источник данных для баз - маршрут из планировщика
+      pathForBases = planner.simulatableRoute;
     } else {
-      tracker.stopTracking();
+      console.log('%c[App.tsx]', 'color: #FF9800; font-weight: bold;', 'Stopping REAL tracking.');
+      // Источник данных - записанный путь из трекера
+      pathForBases = tracker.stopTracking();
     }
+
+    // Общая логика создания баз, которая теперь работает для обоих случаев
+    if (pathForBases && pathForBases.length >= 2) {
+      console.log('%c[App.tsx]', 'color: #4CAF50; font-weight: bold;', 'Path is valid. Creating new bases.');
+      const startPoint = pathForBases[0];
+      const endPoint = pathForBases[pathForBases.length - 1];
+
+      const newStartBase: Base = {
+        id: Date.now(),
+        coordinates: startPoint,
+        status: 'new',
+      };
+      
+      const newEndBase: Base = {
+        id: Date.now() + 1,
+        coordinates: endPoint,
+        status: 'new',
+      };
+
+      setBases(prevBases => [...prevBases, newStartBase, newEndBase]);
+    } else {
+      console.warn('%c[App.tsx]', 'color: #F44336;', 'Path for bases is invalid or too short. No bases created.');
+    }
+
+    // Сброс всех состояний до начальных
     setSimulationState('idle');
     planner.resetPlanner();
-    mapController.resetCamera();
     resetGeolocationState();
-  }, [simulator, tracker, planner, mapController, resetGeolocationState]);
+  }, [simulator, tracker, planner, resetGeolocationState]);
 
-  // --- Симуляция ---
+  // --- Клик на "Simulate" ---
   const handleSimulateClick = useCallback(() => {
     if (simulator.isSimulating) {
       toast.warn('Сначала остановите текущую симуляцию');
@@ -167,6 +248,7 @@ function App() {
       onMapLoad: setMap,
       routeWaypoints: planner.routeWaypoints,
       bases,
+      spheres,
       isDrawingMode:
         simulationState === 'pickingStart' || simulationState === 'pickingEnd',
       onMapClick: handleMapClick,
@@ -179,6 +261,7 @@ function App() {
       tracker.currentPath,
       planner.routeWaypoints,
       bases,
+      spheres,
       simulationState,
       handleMapClick,
     ]
@@ -229,6 +312,15 @@ function App() {
       <LeftSidebar {...leftSidebarProps} />
       <TrackingControls {...trackingControlsProps} />
       <RightSidebar {...rightSidebarProps} />
+      
+      {/* Индикатор блокировки карты */}
+      {simulationState === 'simulating' && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-yellow-500 text-black px-4 py-1 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg z-20">
+          <Lock size={14} />
+          <span>Режим симуляции: управление картой ограничено</span>
+        </div>
+      )}
+
       <ToastContainer position="top-center" theme="dark" autoClose={2500} />
     </div>
   );

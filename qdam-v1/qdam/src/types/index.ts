@@ -6,6 +6,7 @@
 export interface Base {
   id: number;
   coordinates: number[];
+  status: 'new' | 'established'; // 'new' для анимации, 'established' - обычное состояние
 }
 
 /**
@@ -24,6 +25,7 @@ export interface MapProps {
   currentPath: number[][];
   routeWaypoints: number[][];
   bases: Base[];
+  spheres: any;
   
   // State
   isDrawingMode: boolean;

@@ -34,8 +34,6 @@ export const useMapStore = create<MapState>((set) => ({
     isMapLoaded: !!mapInstance // true если mapInstance не null, иначе false
   }),
   setAvatarPosition: (coords) => {
-    // --- LOG ---
-    console.log('%c[mapStore]', 'color: #FFC107; font-weight: bold;', 'setAvatarPosition called. New coords:', coords);
     set({ avatarPosition: coords });
   },
   setBearing: (b) => set({ bearing: b }),
