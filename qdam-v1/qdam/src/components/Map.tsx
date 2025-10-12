@@ -1,202 +1,152 @@
 // src/components/Map.tsx
-
-import { useRef, useEffect, useState, useCallback } from 'react'; 
+import { useRef, useEffect } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import type { Feature, LineString } from 'geojson'; 
 
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
+import { useMapbox } from '../hooks/useMapbox';
+import { updateGeoJSONSource } from '../utils/mapUtils';
+import type { MapProps } from '../types';
 
-const INITIAL_LNG = 76.9286;
-const INITIAL_LAT = 43.2567;
-const INITIAL_ZOOM = 10;
+export const Map = ({
+  avatarPosition,
+  bearing,
+  simulatableRoute,
+  currentPath,
+  routeWaypoints,
+  bases,
+  isDrawingMode,
+  onMapClick,
+  onMapLoad,
+}: MapProps) => {
+  const mapContainer = useRef<HTMLDivElement>(null!);
+  const { map, isMapLoaded } = useMapbox(mapContainer, onMapLoad);
+  const avatarMarkerRef = useRef<mapboxgl.Marker | null>(null);
 
-type TrackingState = 'idle' | 'recording' | 'paused';
-
-const Map = () => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const [lng, setLng] = useState(INITIAL_LNG);
-  const [lat, setLat] = useState(INITIAL_LAT);
-  const [zoom, setZoom] = useState(INITIAL_ZOOM);
-  const [trackingState, setTrackingState] = useState<TrackingState>('idle');
-
-  const [currentPath, setCurrentPath] = useState<number[][]>([]);
-  
-  const watchIdRef = useRef<number | null>(null);
-
-  // Function to re-center the map
-  const recenterMap = useCallback(() => {
-    if (map.current) {
-      map.current.flyTo({
-        center: [INITIAL_LNG, INITIAL_LAT],
-        zoom: INITIAL_ZOOM,
-        speed: 1.5, 
-      });
-    }
-  }, []);
-
-  const handleStart = () => {
-    console.log("Начинаем запись...");
-    setCurrentPath([]);
-    setTrackingState('recording');
-
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      (position) => {
-        const { longitude, latitude } = position.coords;
-        // Добавляем новую точку в маршрут, только если идет запись
-        // Используем функциональное обновление, чтобы всегда иметь доступ к последней версии state
-        setCurrentPath(prevPath => [...prevPath, [longitude, latitude]]);
-        // Плавно перемещаем карту, чтобы пользователь всегда был в центре
-        map.current?.panTo([longitude, latitude]);
-      },
-      (error) => {
-        console.error("Ошибка геолокации:", error);
-      },
+  // === Создание и обновление аватара ===
+  useEffect(() => {
+    console.log(
+      '%c[Map.tsx]',
+      'color: #E91E63; font-weight: bold;',
+      'Avatar useEffect triggered. Dependencies:',
       {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
+        avatarPosition,
+        isMapLoaded,
+        isMapInstanceReady: !!map.current
       }
     );
-  };
+    if (!map.current || !isMapLoaded) {
+      // --- LOG ---
+      console.warn('%c[Map.tsx]', 'color: #E91E63;', 'Skipping avatar render: map is not ready.');
+      return;
+    };
 
-  const handlePause = () => {
-    console.log("Запись на паузе.");
-    setTrackingState('paused');
-  };
+    if (avatarPosition) {
+      console.log('%c[Map.tsx]', 'color: #E91E63;', 'avatarPosition is valid. Creating or updating marker at:', avatarPosition);
+      if (!avatarMarkerRef.current) {
+        console.log('%c[Map.tsx]', 'color: #E91E63;', 'Creating NEW avatar marker.');
+        const el = document.createElement('div');
+        el.className = 'pulsing-avatar'; // Стили управляют видом и анимацией
 
-  const handleResume = () => {
-    console.log("Продолжаем запись...");
-    setTrackingState('recording');
-  };
+        const newMarker = new mapboxgl.Marker({ element: el, anchor: 'center' })
+          .setLngLat(avatarPosition as [number, number])
+          .addTo(map.current);
 
-  const handleStop = () => {
-    console.log("Запись остановлена.");
-    setTrackingState('idle');
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-      watchIdRef.current = null;
+        avatarMarkerRef.current = newMarker;
+      } else {
+        console.log('%c[Map.tsx]', 'color: #E91E63;', 'Updating EXISTING avatar marker.');
+        avatarMarkerRef.current.setLngLat(avatarPosition as [number, number]);
+      }
+    } else {
+      console.log('%c[Map.tsx]', 'color: #E91E63;', 'avatarPosition is null. Removing marker if it exists.');
+      if (avatarMarkerRef.current) {
+        avatarMarkerRef.current.remove();
+        avatarMarkerRef.current = null;
+      }
     }
-  };
+  }, [avatarPosition, isMapLoaded, map]);
 
+  // === Поворот аватара ===
   useEffect(() => {
-    if (map.current) return;
-    if (mapContainer.current) {
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/dark-v11',
-        center: [lng, lat],
-        zoom: zoom
-      });
-
-      // Добавляем контролы на карту
-      map.current.addControl(new mapboxgl.GeolocateControl({ /* ... */ }), 'bottom-right');
-
-      // Ждем, пока карта полностью загрузится, чтобы добавить наши слои
-      map.current.on('load', () => {
-        // НОВЫЙ КОД: Создаем источник данных и слой для отрисовки маршрута
-        map.current?.addSource('route', {
-          'type': 'geojson',
-          'data': {
-            'type': 'Feature',
-            'properties': {},
-            'geometry': {
-              'type': 'LineString',
-              'coordinates': []
-            }
-          }
-        });
-
-        map.current?.addLayer({
-          'id': 'route',
-          'type': 'line',
-          'source': 'route',
-          'layout': {
-            'line-join': 'round',
-            'line-cap': 'round'
-          },
-          'paint': {
-            'line-color': '#3b82f6', // Синий цвет линии
-            'line-width': 5,
-            'line-opacity': 0.8
-          }
-        });
-      });
+    if (avatarMarkerRef.current) {
+      const el = avatarMarkerRef.current.getElement();
+      // Только CSS-поворот — без манипуляций DOM
+      el.style.setProperty('--bearing', `${360 - bearing}deg`);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [bearing]);
 
+  // === Обработка кликов по карте ===
   useEffect(() => {
-    // Этот эффект будет срабатывать каждый раз, когда меняется currentPath
-    if (!map.current || !map.current.isStyleLoaded()) {
-      return; // Убедимся, что карта готова
-    }
+    if (!map.current || !isDrawingMode) return;
 
-    // Получаем источник данных 'route' с карты
-    const source = map.current.getSource('route') as mapboxgl.GeoJSONSource;
-    if (source) {
-      // Создаем GeoJSON объект из нашего массива координат
-      const data: Feature<LineString> = {
-        type: 'Feature',
+    const handleMapClick = (e: mapboxgl.MapLayerMouseEvent) => {
+      onMapClick?.([e.lngLat.lng, e.lngLat.lat]);
+    };
+
+    map.current.on('click', handleMapClick);
+    return () => {
+      map.current?.off('click', handleMapClick);
+    };
+  }, [map, isDrawingMode, onMapClick]);
+
+  // === Синхронизация данных на карте ===
+  useEffect(() => {
+    if (!map.current || !isMapLoaded) return;
+
+    const emptyLineFeature = {
+      type: 'Feature' as const,
+      geometry: { type: 'LineString' as const, coordinates: [] },
+      properties: {},
+    };
+
+    const routeGeoJSON =
+      simulatableRoute && simulatableRoute.length > 1
+        ? {
+            type: 'Feature' as const,
+            geometry: { type: 'LineString', coordinates: simulatableRoute },
+            properties: {},
+          }
+        : emptyLineFeature;
+
+    const recordedPathGeoJSON =
+      currentPath && currentPath.length > 1
+        ? {
+            type: 'Feature' as const,
+            geometry: { type: 'LineString', coordinates: currentPath },
+            properties: {},
+          }
+        : emptyLineFeature;
+
+    updateGeoJSONSource(map.current, 'recordedPath', recordedPathGeoJSON);
+    updateGeoJSONSource(map.current, 'route', routeGeoJSON);
+
+    // Waypoints
+    if (routeWaypoints?.length) {
+      const points = routeWaypoints.map((p) => ({
+        type: 'Feature' as const,
+        geometry: { type: 'Point', coordinates: p },
         properties: {},
-        geometry: {
-          type: 'LineString',
-          coordinates: currentPath,
-        },
-      };
-      // Обновляем данные в источнике, что приводит к перерисовке линии
-      source.setData(data);
+      }));
+      updateGeoJSONSource(map.current, 'waypoints', {
+        type: 'FeatureCollection',
+        features: points,
+      });
     }
-    // Проверяем, что состояние 'recording' перед добавлением новой точки, 
-    // чтобы избежать добавления точки после паузы
-  }, [currentPath, trackingState]); 
 
-  return (
-    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <div className="sidebar">
-        Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
-      </div>
-      
-      {/* Кнопка ре-центра остается */}
-      <button onClick={recenterMap} className="recenter-button" title="Recenter Map">
-        🎯
-      </button>
+    // Bases
+    if (bases?.length) {
+      const basePoints = bases.map((b) => ({
+        type: 'Feature' as const,
+        geometry: { type: 'Point', coordinates: b.coordinates },
+        properties: {},
+      }));
+      updateGeoJSONSource(map.current, 'bases', {
+        type: 'FeatureCollection',
+        features: basePoints,
+      });
+    }
+  }, [isMapLoaded, map, simulatableRoute, currentPath, routeWaypoints, bases]);
 
-      {/* НОВЫЙ БЛОК: Панель управления записью */}
-      <div className="tracking-controls">
-        {trackingState === 'idle' && (
-          <button onClick={handleStart} className="control-button start-button">
-            Старт
-          </button>
-        )}
-
-        {trackingState === 'recording' && (
-          <>
-            <button onClick={handlePause} className="control-button pause-button">
-              Пауза
-            </button>
-            <button onClick={handleStop} className="control-button stop-button">
-              Стоп
-            </button>
-          </>
-        )}
-
-        {trackingState === 'paused' && (
-          <>
-            <button onClick={handleResume} className="control-button resume-button">
-              Продолжить
-            </button>
-            <button onClick={handleStop} className="control-button stop-button">
-              Стоп
-            </button>
-          </>
-        )}
-      </div>
-
-      <div ref={mapContainer} className="map-container" />
-    </div>
-  );
+  return <div ref={mapContainer} className="w-full h-full" />;
 };
 
 export default Map;
