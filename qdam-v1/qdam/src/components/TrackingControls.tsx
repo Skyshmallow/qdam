@@ -1,111 +1,208 @@
-// src/components/TrackingControls.tsx
-import React from 'react';
-import { Play, Pause, Square, Route } from 'lucide-react'; 
+import { Play, Pause, Square, Trash2 } from 'lucide-react';
 import type { TrackingState } from '../types';
 
-// --- Reusable Button Sub-components  ---
+type ActivityState =
+  | 'idle'
+  | 'tracking'
+  | 'tracking_paused'
+  | 'planning_start'
+  | 'planning_end'
+  | 'ready_to_simulate'
+  | 'simulating';
 
-const GameControlButton: React.FC<{icon: React.ReactNode, label: string, onClick?: () => void}> = ({ icon, label, onClick }) => (
-    <button onClick={onClick} className="flex flex-col items-center gap-1.5 px-4 py-1 text-white uppercase font-bold tracking-wider text-xs group transition-transform duration-150 ease-in-out hover:scale-105 active:scale-100">
-        <div className="p-3 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full border-2 border-gray-600 shadow-lg group-hover:border-teal-400 group-hover:shadow-teal-400/50 transition-all duration-200">
-            {icon}
-        </div>
-        <span>{label}</span>
-    </button>
-);
-
-const MainActionButton: React.FC<{icon: React.ReactNode, label: string, onClick?: () => void, className?: string}> = ({ icon, label, onClick, className }) => (
-    <button onClick={onClick} className="relative group mx-2">
-        <div className={`absolute -inset-1 bg-gradient-to-r ${className} rounded-full blur opacity-80 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt`}></div>
-        <div className="relative flex items-center justify-center gap-2 px-8 py-4 bg-gray-900 rounded-full text-white font-bold text-lg uppercase tracking-widest leading-none">
-            {icon}
-            <span>{label}</span>
-        </div>
-    </button>
-);
-
-
-// --- Main Component ---
 interface TrackingControlsProps {
-    trackingState: TrackingState;
-    onStart: () => void;
-    onStop: () => void;
-    onPause: () => void;
-    onResume: () => void;
-    onSimulateClick: () => void;
-    simulationState: 'idle' | 'pickingStart' | 'pickingEnd' | 'ready' | 'simulating';
+  activityState: ActivityState;
+  trackingState: TrackingState;
+  onStart: () => void;
+  onPause: () => void;
+  onResume: () => void;
+  onStop: () => void;
+  // NEW: Simulation mode props
+  isSimulationMode: boolean;
+  onClearTestData: () => void;
 }
 
-export const TrackingControls: React.FC<TrackingControlsProps> = ({ trackingState, onStart, onStop, onPause, onResume, onSimulateClick, simulationState}) => {
+export const TrackingControls = ({
+  activityState,
+  trackingState,
+  onStart,
+  onPause,
+  onResume,
+  onStop,
+  isSimulationMode,
+  onClearTestData,
+}: TrackingControlsProps) => {
+  const renderControls = () => {
+    // === IDLE STATE ===
+    if (activityState === 'idle') {
+      // If simulation mode is active, show only Clear Test Data
+      if (isSimulationMode) {
+        return (
+          <div className="flex gap-2">
+            <button
+              onClick={onClearTestData}
+              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+              title="Удалить все тестовые данные"
+            >
+              <Trash2 size={20} />
+              <span>🗑️ Clear Test Data</span>
+            </button>
+          </div>
+        );
+      }
 
-    const renderControls = () => {
-        if (simulationState === 'ready') {
-            return (
-                <MainActionButton
-                    icon={<Play size={20} fill="currentColor"/>}
-                    label="Play Simulation"
-                    onClick={onStart} 
-                    className="from-blue-400 to-purple-500"
-                />
-            );
-        }
-        switch (trackingState) {
-            case 'recording':
-                return (
-                    <>
-                        <GameControlButton icon={<Route size={14} />} label="Simulate" onClick={onSimulateClick} />
-
-                        <MainActionButton
-                            icon={<Pause size={14} fill="currentColor"/>}
-                            label="Pause"
-                            onClick={onPause}
-                            className="from-yellow-400 to-orange-500"
-                        />
-                        <MainActionButton
-                            icon={<Square size={14} fill="currentColor"/>}
-                            label="Stop"
-                            onClick={onStop}
-                            className="from-red-500 to-pink-500"
-                        />
-                    </>
-                );
-            case 'paused':
-                return (
-                    <>
-                        <GameControlButton icon={<Route size={14} />} label="Simulate" onClick={onSimulateClick} />
-
-                        <MainActionButton
-                            icon={<Play size={14} fill="currentColor"/>}
-                            label="Continue"
-                            onClick={onResume}
-                            className="from-green-400 to-cyan-500"
-                        />
-                         <MainActionButton
-                            icon={<Square size={14} fill="currentColor"/>}
-                            label="Stop"
-                            onClick={onStop}
-                            className="from-red-500 to-pink-500"
-                        />
-                    </>
-                );
-            case 'idle':
-            default:
-                 return (
-                    <>
-                        <MainActionButton
-                            icon={<Play size={20} fill="currentColor"/>}
-                            label="Start"
-                            onClick={onStart}
-                            className="from-green-400 to-cyan-500"
-                        />
-                    </>
-                );
-        }
-    };
-    
-    return (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-neutral-900 bg-opacity-70 backdrop-blur-md rounded-full flex items-center justify-center p-2 shadow-2xl border border-gray-700 z-20">
-            {renderControls()}
+      // Normal mode: show Start Walk button
+      return (
+        <div className="flex gap-2">
+          <button
+            onClick={onStart}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+            title="Начать реальный поход с GPS-трекингом"
+          >
+            <Play size={20} />
+            <span>🚶 Начать Поход</span>
+          </button>
         </div>
-    );
+      );
+    }
+
+    // === TRACKING (Real Walk) ===
+    if (activityState === 'tracking') {
+      return (
+        <div className="flex gap-2">
+          <button
+            onClick={onPause}
+            className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+            title="Приостановить поход"
+          >
+            <Pause size={20} />
+            <span>Пауза</span>
+          </button>
+          <button
+            onClick={onStop}
+            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+            title="Завершить поход и создать цепочку"
+          >
+            <Square size={20} />
+            <span>Завершить Поход</span>
+          </button>
+        </div>
+      );
+    }
+
+    // === PAUSED ===
+    if (activityState === 'tracking_paused') {
+      return (
+        <div className="flex gap-2">
+          <button
+            onClick={onResume}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+            title="Продолжить поход"
+          >
+            <Play size={20} />
+            <span>Продолжить</span>
+          </button>
+          <button
+            onClick={onStop}
+            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+            title="Завершить поход"
+          >
+            <Square size={20} />
+            <span>Завершить</span>
+          </button>
+        </div>
+      );
+    }
+
+    // === PLANNING MODE (Selecting Points) ===
+    if (activityState === 'planning_start') {
+      return (
+        <div className="flex flex-col gap-2">
+          <div className="bg-blue-100 text-blue-900 px-4 py-2 rounded-lg font-medium">
+            📍 Выберите начальную точку на карте
+          </div>
+          <button
+            onClick={onClearTestData}
+            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm transition-colors"
+            title="Удалить тестовые данные"
+          >
+            <Trash2 size={16} />
+            <span>Clear Test Data</span>
+          </button>
+        </div>
+      );
+    }
+
+    if (activityState === 'planning_end') {
+      return (
+        <div className="flex flex-col gap-2">
+          <div className="bg-blue-100 text-blue-900 px-4 py-2 rounded-lg font-medium">
+            📍 Выберите конечную точку на карте
+          </div>
+          <button
+            onClick={onClearTestData}
+            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm transition-colors"
+            title="Удалить тестовые данные"
+          >
+            <Trash2 size={16} />
+            <span>Clear Test Data</span>
+          </button>
+        </div>
+      );
+    }
+
+    // === READY TO SIMULATE ===
+    if (activityState === 'ready_to_simulate') {
+      return (
+        <div className="flex gap-2">
+          <button
+            onClick={onStart}
+            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+            title="Запустить симуляцию движения по маршруту"
+          >
+            <Play size={20} />
+            <span>▶️ Play Simulation</span>
+          </button>
+          <button
+            onClick={onClearTestData}
+            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm transition-colors"
+            title="Удалить тестовые данные"
+          >
+            <Trash2 size={16} />
+            <span>Clear Test Data</span>
+          </button>
+        </div>
+      );
+    }
+
+    // === SIMULATING ===
+    if (activityState === 'simulating') {
+      return (
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={onStop}
+            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+            title="Остановить симуляцию и создать замки"
+          >
+            <Square size={20} />
+            <span>⏹️ Stop & Create Castles</span>
+          </button>
+          
+          {isSimulationMode && (
+            <div className="text-center text-xs text-yellow-300 bg-black/30 px-2 py-1 rounded">
+              ⚠️ Замки будут временными (не сохранятся)
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
+      {renderControls()}
+    </div>
+  );
 };

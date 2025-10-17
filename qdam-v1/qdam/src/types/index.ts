@@ -1,12 +1,26 @@
-// src/types/index.ts
+import type { Feature, Polygon } from 'geojson';
 
 /**
- * Описывает игровую Базу
+ * Представляет узел (точку) в игровой сети
  */
-export interface Base {
-  id: number;
-  coordinates: number[];
-  status: 'new' | 'established'; // 'new' для анимации, 'established' - обычное состояние
+export interface Node {
+  id: string;
+  coordinates: [number, number];
+  createdAt: number;
+  status: 'pending' | 'established';
+  isTemporary?: boolean; // Флаг для тестовых узлов 
+}
+
+/**
+ * Представляет цепочку между двумя узлами
+ */
+export interface Chain {
+  id: string;
+  nodeA_id: string;
+  nodeB_id: string;
+  path: number[][];
+  createdAt: number;
+  isTemporary?: boolean; //  Флаг для тестовых цепочек
 }
 
 /**
@@ -18,19 +32,23 @@ export type TrackingState = 'idle' | 'recording' | 'paused';
  * Props для компонента Map
  */
 export interface MapProps {
-  // Data to display
   avatarPosition: number[] | null;
-  bearing: number; 
+  bearing: number;
   simulatableRoute: number[][] | null;
   currentPath: number[][];
   routeWaypoints: number[][];
-  bases: Base[];
+  nodes: Node[];
+  territory: Feature<Polygon> | null;
   spheres: any;
-  
-  // State
   isDrawingMode: boolean;
-  
-  // Event handlers
   onMapClick: (coordinates: [number, number]) => void;
   onMapLoad?: (map: any) => void;
+  onThreeLayerReady?: (threeLayer: any) => void;
+}
+
+/** @deprecated Use Node instead */
+export interface Base {
+  id: number;
+  coordinates: number[];
+  status: 'new' | 'established';
 }

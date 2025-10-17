@@ -1,92 +1,96 @@
-// src/ui/LeftSideBar.tsx
-import React from 'react';
-import { User, History, Navigation, Loader2, NavigationOff } from 'lucide-react';
-import { IconButton } from './IconButton';
+import { User, History, MapPin, FlaskConical } from 'lucide-react';
 import type { GeolocationState } from '../hooks/useGeolocation';
 
-const ActionIconButton: React.FC<{
-    icon: React.ReactNode;
-    tooltip: string;
-    onClick?: () => void;
-    isDisabled?: boolean;
-}> = ({ icon, tooltip, onClick, isDisabled = false }) => (
-    <div className="relative group mt-2">
-        <button
-            onClick={() => {
-                // --- LOG ---
-                console.log('%c[LeftSidebar]', 'color: #8A2BE2; font-weight: bold;', 'ActionIconButton clicked!');
-                onClick?.();
-            }}
-            disabled={isDisabled}
-            className="p-3.5 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg text-white shadow-lg group-hover:scale-110 transition-transform duration-200 ease-in-out active:scale-100 disabled:from-gray-500 disabled:to-gray-600 disabled:scale-100 disabled:cursor-not-allowed"
-        >
-            {icon}
-        </button>
-        <div className={`absolute px-2 py-1 bg-black bg-opacity-80 text-white text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none -translate-y-1/2 top-1/2 left-full ml-3`}>
-            {tooltip}
-        </div>
-    </div>
-);
-
-
 interface LeftSidebarProps {
-  onProfileClick?: () => void;
-  onHistoryClick?: () => void;
-  onMyLocationClick?: () => void;
+  onProfileClick: () => void;
+  onHistoryClick: () => void;
+  onMyLocationClick: () => void;
   geolocationState: GeolocationState;
+  isSimulating: boolean;
+  onSimulateClick: () => void;
 }
 
-export const LeftSidebar: React.FC<LeftSidebarProps> = ({
+export const LeftSidebar = ({
   onProfileClick,
   onHistoryClick,
   onMyLocationClick,
   geolocationState,
-}) => {
+  isSimulating,
+  onSimulateClick,
+}: LeftSidebarProps) => {
+
+  // Button base classes
+  const baseClasses = 'w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110';
   
-  const renderLocateButton = () => {
-    let icon: React.ReactNode;
-    let tooltip: string;
-    let isDisabled = false;
-
-    switch (geolocationState) {
-      case 'prompting':
-      case 'locating':
-        icon = <Loader2 size={15} className="animate-spin" />;
-        tooltip = 'Locating...';
-        isDisabled = true;
-        break;
-      case 'denied':
-      case 'error':
-        icon = <NavigationOff size={15} />;
-        tooltip = 'Geolocation is unavailable';
-        isDisabled = false; 
-        break;
-      case 'success':
-      case 'idle':
-      default:
-        icon = <Navigation size={15} />;
-        tooltip = geolocationState === 'success' ? 'Center on me' : 'Find me';
-        isDisabled = false;
-        break;
+  // Helper to determine geolocation button style
+  const getGeolocationClasses = () => {
+    if (geolocationState === 'success') {
+      return 'bg-green-500 text-white hover:bg-green-600';
     }
-
-    return (
-      <ActionIconButton
-        icon={icon}
-        tooltip={tooltip}
-        onClick={onMyLocationClick}
-        isDisabled={isDisabled}
-      />
-    );
+    if (geolocationState === 'denied') {
+      return 'bg-red-500 text-white hover:bg-red-600';
+    }
+    if (geolocationState === 'error') {
+      return 'bg-orange-500 text-white hover:bg-orange-600';
+    }
+    if (geolocationState === 'prompting' || geolocationState === 'locating') {
+      return 'bg-white/90 text-gray-800 hover:bg-white opacity-50 cursor-not-allowed';
+    }
+    return 'bg-white/90 text-gray-800 hover:bg-white';
   };
-    
+
+  const isGeolocationBusy = geolocationState === 'prompting' || geolocationState === 'locating';
+  
   return (
-    <aside className="absolute left-3 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1 p-1.5 bg-neutral-800 bg-opacity-80 backdrop-blur-sm rounded-lg shadow-2xl z-20">
-      <div className="flex flex-col gap-1">
-        <IconButton icon={<User size={13} />} tooltip={'Profile'} onClick={onProfileClick} />
-        <IconButton icon={<History size={13} />} tooltip={'History'} onClick={onHistoryClick} />
-      </div>
-      {renderLocateButton()}
-    </aside>
+    <div className="absolute left-4 top-4 flex flex-col gap-4 z-10">
+      {/* Profile */}
+      <button
+        onClick={onProfileClick}
+        className={`${baseClasses} bg-white/90 text-gray-800 hover:bg-white`}
+        title="Профиль"
+        aria-label="Profile"
+      >
+        <User size={20} />
+      </button>
+
+      {/* History */}
+      <button
+        onClick={onHistoryClick}
+        className={`${baseClasses} bg-white/90 text-gray-800 hover:bg-white`}
+        title="История"
+        aria-label="History"
+      >
+        <History size={20} />
+      </button>
+
+      {/* Find Me */}
+      <button
+        onClick={onMyLocationClick}
+        className={`${baseClasses} ${getGeolocationClasses()}`}
+        title="Моё местоположение"
+        aria-label="My Location"
+        disabled={isGeolocationBusy}
+      >
+        {isGeolocationBusy ? (
+          <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+        ) : (
+          <MapPin size={20} />
+        )}
+      </button>
+
+      {/* NEW: Simulate Button */}
+      <button
+        onClick={onSimulateClick}
+        className={`${baseClasses} ${
+          isSimulating
+            ? 'bg-red-500 text-white hover:bg-red-600 ring-2 ring-yellow-500 animate-pulse'
+            : 'bg-white/90 text-gray-800 hover:bg-white'
+        }`}
+        title={isSimulating ? "Остановить симуляцию" : "Режим симуляции"}
+        aria-label={isSimulating ? "Stop Simulation" : "Start Simulation"}
+      >
+        <FlaskConical size={20} />
+      </button>
+    </div>
   );
 };

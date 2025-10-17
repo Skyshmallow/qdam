@@ -1,3 +1,5 @@
+// qdam/qdam-v1/qdam/src/ui/RightSidebar.tsx
+
 import { Plus, Minus, Search, LocateFixed, Layers } from 'lucide-react';
 import { IconButton } from './IconButton';
 

@@ -1,3 +1,5 @@
+/* src/App.css */
+
 @import "tailwindcss";
 
 /* === Общие настройки === */
@@ -131,19 +133,16 @@ html, body, #root {
 .castle-marker {
   width: 48px;
   height: 48px;
-
-  /* Указываем путь к иконке */
-  background-image: url('/castle.svg'); /* относительный путь из папки public */
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-
   cursor: pointer;
-}
-
-/* Анимация появления замка */
-.castle-marker.appearing {
-  animation: appear-effect 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  
+  /* Надежный способ: используем SVG как маску. 
+     Цвет можно будет легко менять через background-color. */
+  background-color: #e2e8f0; /* Цвет замка (светло-серый) */
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 21v-4H2v4h20z'/%3E%3Cpath d='M18 21V11l-4-4-4 4v10'/%3E%3Cpath d='M10 21V11l-4-4-4 4v10'/%3E%3Cpath d='M6 11V7l4-4 4 4v4'/%3E%3Cpath d='M14 7h-4'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 21v-4H2v4h20z'/%3E%3Cpath d='M18 21V11l-4-4-4 4v10'/%3E%3Cpath d='M10 21V11l-4-4-4 4v10'/%3E%3Cpath d='M6 11V7l4-4 4 4v4'/%3E%3Cpath d='M14 7h-4'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
 }
 
 @keyframes appear-effect {
@@ -194,5 +193,42 @@ html, body, #root {
   100% {
     transform: scale(1);
     opacity: 0;
+  }
+}
+
+
+/* 🎨 Sphere Animation Keyframes */
+@keyframes sphere-pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes sphere-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Apply to your map container if needed */
+.sphere-effect {
+  animation: sphere-pulse 2s ease-in-out infinite;
+}
+
+/* Glowing border effect */
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
+  }
+  50% {
+    box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff, 0 0 40px #00d4ff;
   }
 }
