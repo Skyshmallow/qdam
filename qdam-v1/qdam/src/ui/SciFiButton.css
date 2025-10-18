@@ -1,0 +1,343 @@
+/* === Sci-Fi/Cyberpunk Button System === */
+
+/* Base button structure */
+.scifi-button {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Metal base */
+  background: linear-gradient(135deg, #151921 0%, #0a0e14 100%);
+  
+  /* Glass layer */
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  
+  /* Brushed metal texture */
+  background-image: 
+    linear-gradient(45deg, transparent 48%, rgba(255,255,255,0.03) 50%, transparent 52%);
+  background-size: 3px 3px;
+  
+  /* Border */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  
+  /* Base shadow */
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+/* Icon styling */
+.scifi-button svg {
+  position: relative;
+  z-index: 2;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+/* Hover state */
+.scifi-button:hover {
+  transform: scale(1.05);
+}
+
+/* Active state */
+.scifi-button:active {
+  transform: scale(0.95);
+}
+
+/* Disabled state */
+.scifi-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* === Individual Button Styles === */
+
+/* Profile - Cyan ID Chip */
+.scifi-button-profile {
+  border-color: rgba(0, 217, 255, 0.3);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(0, 217, 255, 0.15),
+    inset 0 1px 0 rgba(0, 217, 255, 0.2);
+}
+
+.scifi-button-profile:hover {
+  border-color: rgba(0, 217, 255, 0.5);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(0, 217, 255, 0.3),
+    inset 0 1px 0 rgba(0, 217, 255, 0.3);
+  background: linear-gradient(135deg, #151921 0%, #0a0e14 100%),
+              radial-gradient(circle at center, rgba(0, 217, 255, 0.1), transparent);
+}
+
+.scifi-button-profile svg {
+  filter: drop-shadow(0 0 8px rgba(0, 217, 255, 0.5));
+}
+
+.scifi-button-profile:active {
+  animation: ring-pulse-cyan 0.6s ease-out;
+}
+
+@keyframes ring-pulse-cyan {
+  0% { box-shadow: 0 0 0 0 rgba(0, 217, 255, 0.7); }
+  100% { box-shadow: 0 0 0 12px rgba(0, 217, 255, 0); }
+}
+
+/* History - Purple Timeline */
+.scifi-button-history {
+  border-color: rgba(124, 58, 237, 0.3);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(124, 58, 237, 0.15),
+    inset 0 1px 0 rgba(124, 58, 237, 0.2);
+}
+
+.scifi-button-history:hover {
+  border-color: rgba(124, 58, 237, 0.5);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(124, 58, 237, 0.3),
+    inset 0 1px 0 rgba(124, 58, 237, 0.3);
+  background: linear-gradient(135deg, #151921 0%, #0a0e14 100%),
+              radial-gradient(circle at center, rgba(124, 58, 237, 0.1), transparent);
+}
+
+.scifi-button-history svg {
+  filter: drop-shadow(0 0 8px rgba(124, 58, 237, 0.5));
+}
+
+.scifi-button-history:active {
+  animation: ring-pulse-purple 0.6s ease-out;
+}
+
+@keyframes ring-pulse-purple {
+  0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.7); }
+  100% { box-shadow: 0 0 0 12px rgba(124, 58, 237, 0); }
+}
+
+/* Location - Emerald GPS */
+.scifi-button-location {
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(16, 185, 129, 0.15),
+    inset 0 1px 0 rgba(16, 185, 129, 0.2);
+}
+
+.scifi-button-location:hover {
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(16, 185, 129, 0.3),
+    inset 0 1px 0 rgba(16, 185, 129, 0.3);
+  background: linear-gradient(135deg, #151921 0%, #0a0e14 100%),
+              radial-gradient(circle at center, rgba(16, 185, 129, 0.1), transparent);
+}
+
+.scifi-button-location svg {
+  filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));
+}
+
+.scifi-button-location:active {
+  animation: ring-pulse-emerald 0.6s ease-out;
+}
+
+@keyframes ring-pulse-emerald {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  100% { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); }
+}
+
+/* Location States */
+.scifi-button-location.success {
+  border-color: rgba(16, 185, 129, 0.6);
+  background: linear-gradient(135deg, #10b98180 0%, #059669 100%);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(16, 185, 129, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.scifi-button-location.error {
+  border-color: rgba(239, 68, 68, 0.6);
+  background: linear-gradient(135deg, #ef444480 0%, #dc2626 100%);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(239, 68, 68, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.scifi-button-location.loading {
+  border-color: rgba(59, 130, 246, 0.6);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.scifi-button-location .spinner {
+  animation: rotate-ring 1s linear infinite;
+}
+
+@keyframes rotate-ring {
+  to { transform: rotate(360deg); }
+}
+
+/* Simulate - Amber Quantum */
+.scifi-button-simulate {
+  border-color: rgba(245, 158, 11, 0.3);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(245, 158, 11, 0.15),
+    inset 0 1px 0 rgba(245, 158, 11, 0.2);
+}
+
+.scifi-button-simulate:hover {
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(245, 158, 11, 0.3),
+    inset 0 1px 0 rgba(245, 158, 11, 0.3);
+  background: linear-gradient(135deg, #151921 0%, #0a0e14 100%),
+              radial-gradient(circle at center, rgba(245, 158, 11, 0.1), transparent);
+}
+
+.scifi-button-simulate svg {
+  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5));
+}
+
+.scifi-button-simulate:active {
+  animation: ring-pulse-amber 0.6s ease-out;
+}
+
+.scifi-button-simulate.active {
+  border-color: rgba(245, 158, 11, 0.7);
+  background: linear-gradient(135deg, #f59e0b80 0%, #d97706 100%);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(245, 158, 11, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  animation: pulse-glow-amber 2s ease-in-out infinite;
+}
+
+@keyframes ring-pulse-amber {
+  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+  100% { box-shadow: 0 0 0 12px rgba(245, 158, 11, 0); }
+}
+
+@keyframes pulse-glow-amber {
+  0%, 100% { 
+    box-shadow: 
+      0 4px 16px rgba(0, 0, 0, 0.4),
+      0 0 30px rgba(245, 158, 11, 0.5);
+  }
+  50% { 
+    box-shadow: 
+      0 4px 16px rgba(0, 0, 0, 0.4),
+      0 0 40px rgba(245, 158, 11, 0.7);
+  }
+}
+
+/* Zoom In - Blue Focus */
+.scifi-button-zoom-in {
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(59, 130, 246, 0.15),
+    inset 0 1px 0 rgba(59, 130, 246, 0.2);
+}
+
+.scifi-button-zoom-in:hover {
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(59, 130, 246, 0.3),
+    inset 0 1px 0 rgba(59, 130, 246, 0.3);
+  background: linear-gradient(135deg, #151921 0%, #0a0e14 100%),
+              radial-gradient(circle at center, rgba(59, 130, 246, 0.1), transparent);
+}
+
+.scifi-button-zoom-in svg {
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+}
+
+.scifi-button-zoom-in:active {
+  animation: ring-pulse-blue 0.6s ease-out;
+}
+
+@keyframes ring-pulse-blue {
+  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+  100% { box-shadow: 0 0 0 12px rgba(59, 130, 246, 0); }
+}
+
+/* Zoom Out - Indigo Expand */
+.scifi-button-zoom-out {
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(99, 102, 241, 0.15),
+    inset 0 1px 0 rgba(99, 102, 241, 0.2);
+}
+
+.scifi-button-zoom-out:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(99, 102, 241, 0.3),
+    inset 0 1px 0 rgba(99, 102, 241, 0.3);
+  background: linear-gradient(135deg, #151921 0%, #0a0e14 100%),
+              radial-gradient(circle at center, rgba(99, 102, 241, 0.1), transparent);
+}
+
+.scifi-button-zoom-out svg {
+  filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.5));
+}
+
+.scifi-button-zoom-out:active {
+  animation: ring-pulse-indigo 0.6s ease-out;
+}
+
+@keyframes ring-pulse-indigo {
+  0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+  100% { box-shadow: 0 0 0 12px rgba(99, 102, 241, 0); }
+}
+
+/* Layers - Violet Hologram */
+.scifi-button-layers {
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(139, 92, 246, 0.15),
+    inset 0 1px 0 rgba(139, 92, 246, 0.2);
+}
+
+.scifi-button-layers:hover {
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(139, 92, 246, 0.3),
+    inset 0 1px 0 rgba(139, 92, 246, 0.3);
+  background: linear-gradient(135deg, #151921 0%, #0a0e14 100%),
+              radial-gradient(circle at center, rgba(139, 92, 246, 0.1), transparent);
+}
+
+.scifi-button-layers svg {
+  filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.5));
+}
+
+.scifi-button-layers:active {
+  animation: ring-pulse-violet 0.6s ease-out;
+}
+
+@keyframes ring-pulse-violet {
+  0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7); }
+  100% { box-shadow: 0 0 0 12px rgba(139, 92, 246, 0); }
+}

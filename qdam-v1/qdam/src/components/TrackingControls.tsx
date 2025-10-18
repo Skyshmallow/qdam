@@ -1,5 +1,6 @@
 import { Play, Pause, Square, Trash2 } from 'lucide-react';
 import type { TrackingState } from '../types';
+import { GameButton } from '../ui/buttons/GameButton';
 
 type ActivityState =
   | 'idle'
@@ -12,7 +13,7 @@ type ActivityState =
 
 interface TrackingControlsProps {
   activityState: ActivityState;
-  trackingState: TrackingState;
+  trackingState?: TrackingState; // Optional - kept for backwards compatibility
   onStart: () => void;
   onPause: () => void;
   onResume: () => void;
@@ -22,16 +23,15 @@ interface TrackingControlsProps {
   onClearTestData: () => void;
 }
 
-export const TrackingControls = ({
+export function TrackingControls({
   activityState,
-  trackingState,
   onStart,
   onPause,
   onResume,
   onStop,
   isSimulationMode,
   onClearTestData,
-}: TrackingControlsProps) => {
+}: TrackingControlsProps) {
   const renderControls = () => {
     // === IDLE STATE ===
     if (activityState === 'idle') {
@@ -39,14 +39,13 @@ export const TrackingControls = ({
       if (isSimulationMode) {
         return (
           <div className="flex gap-2">
-            <button
+            <GameButton
               onClick={onClearTestData}
-              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
-              title="Удалить все тестовые данные"
+              variant="danger"
+              icon={<Trash2 size={20} />}
             >
-              <Trash2 size={20} />
-              <span>🗑️ Clear Test Data</span>
-            </button>
+              Clear Test Data
+            </GameButton>
           </div>
         );
       }
@@ -54,14 +53,14 @@ export const TrackingControls = ({
       // Normal mode: show Start Walk button
       return (
         <div className="flex gap-2">
-          <button
+          <GameButton
             onClick={onStart}
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
-            title="Начать реальный поход с GPS-трекингом"
+            variant="success"
+            size="lg"
+            icon={<Play size={20} />}
           >
-            <Play size={20} />
-            <span>🚶 Начать Поход</span>
-          </button>
+            Start Journey
+          </GameButton>
         </div>
       );
     }
@@ -70,22 +69,20 @@ export const TrackingControls = ({
     if (activityState === 'tracking') {
       return (
         <div className="flex gap-2">
-          <button
+          <GameButton
             onClick={onPause}
-            className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
-            title="Приостановить поход"
+            variant="warning"
+            icon={<Pause size={20} />}
           >
-            <Pause size={20} />
-            <span>Пауза</span>
-          </button>
-          <button
+            Pause
+          </GameButton>
+          <GameButton
             onClick={onStop}
-            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
-            title="Завершить поход и создать цепочку"
+            variant="danger"
+            icon={<Square size={20} />}
           >
-            <Square size={20} />
-            <span>Завершить Поход</span>
-          </button>
+            Finish Journey
+          </GameButton>
         </div>
       );
     }
@@ -94,22 +91,20 @@ export const TrackingControls = ({
     if (activityState === 'tracking_paused') {
       return (
         <div className="flex gap-2">
-          <button
+          <GameButton
             onClick={onResume}
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
-            title="Продолжить поход"
+            variant="success"
+            icon={<Play size={20} />}
           >
-            <Play size={20} />
-            <span>Продолжить</span>
-          </button>
-          <button
+            Resume
+          </GameButton>
+          <GameButton
             onClick={onStop}
-            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
-            title="Завершить поход"
+            variant="danger"
+            icon={<Square size={20} />}
           >
-            <Square size={20} />
-            <span>Завершить</span>
-          </button>
+            Finish
+          </GameButton>
         </div>
       );
     }
@@ -119,16 +114,16 @@ export const TrackingControls = ({
       return (
         <div className="flex flex-col gap-2">
           <div className="bg-blue-100 text-blue-900 px-4 py-2 rounded-lg font-medium">
-            📍 Выберите начальную точку на карте
+            📍 Select start point on map
           </div>
-          <button
+          <GameButton
             onClick={onClearTestData}
-            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm transition-colors"
-            title="Удалить тестовые данные"
+            variant="danger"
+            size="sm"
+            icon={<Trash2 size={16} />}
           >
-            <Trash2 size={16} />
-            <span>Clear Test Data</span>
-          </button>
+            Clear Test Data
+          </GameButton>
         </div>
       );
     }
@@ -137,16 +132,16 @@ export const TrackingControls = ({
       return (
         <div className="flex flex-col gap-2">
           <div className="bg-blue-100 text-blue-900 px-4 py-2 rounded-lg font-medium">
-            📍 Выберите конечную точку на карте
+            📍 Select end point on map
           </div>
-          <button
+          <GameButton
             onClick={onClearTestData}
-            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm transition-colors"
-            title="Удалить тестовые данные"
+            variant="danger"
+            size="sm"
+            icon={<Trash2 size={16} />}
           >
-            <Trash2 size={16} />
-            <span>Clear Test Data</span>
-          </button>
+            Clear Test Data
+          </GameButton>
         </div>
       );
     }
@@ -155,22 +150,21 @@ export const TrackingControls = ({
     if (activityState === 'ready_to_simulate') {
       return (
         <div className="flex gap-2">
-          <button
+          <GameButton
             onClick={onStart}
-            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
-            title="Запустить симуляцию движения по маршруту"
+            variant="primary"
+            icon={<Play size={20} />}
           >
-            <Play size={20} />
-            <span>▶️ Play Simulation</span>
-          </button>
-          <button
+            Play Simulation
+          </GameButton>
+          <GameButton
             onClick={onClearTestData}
-            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm transition-colors"
-            title="Удалить тестовые данные"
+            variant="danger"
+            size="sm"
+            icon={<Trash2 size={16} />}
           >
-            <Trash2 size={16} />
-            <span>Clear Test Data</span>
-          </button>
+            Clear Test Data
+          </GameButton>
         </div>
       );
     }
@@ -179,18 +173,17 @@ export const TrackingControls = ({
     if (activityState === 'simulating') {
       return (
         <div className="flex flex-col gap-2">
-          <button
+          <GameButton
             onClick={onStop}
-            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
-            title="Остановить симуляцию и создать замки"
+            variant="danger"
+            icon={<Square size={20} />}
           >
-            <Square size={20} />
-            <span>⏹️ Stop & Create Castles</span>
-          </button>
+            Stop & Create Castles
+          </GameButton>
           
           {isSimulationMode && (
             <div className="text-center text-xs text-yellow-300 bg-black/30 px-2 py-1 rounded">
-              ⚠️ Замки будут временными (не сохранятся)
+              ⚠️ Castles will be temporary (won't be saved)
             </div>
           )}
         </div>

@@ -1,14 +1,14 @@
 import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
 import * as turf from '@turf/turf';
 import type { Feature, Polygon, MultiPolygon, GeoJsonProperties } from 'geojson';
-import 'react-toastify/dist/ReactToastify.css';
 import { Lock } from 'lucide-react';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './App.css';
 
 // --- Imports ---
 import { useMapStore } from './store/mapStore';
+import { useNotificationStore } from './store/notificationStore';
+import { useUIStore } from './store/uiStore';
 import { useMapController } from './hooks/useMapController';
 import { useSimulator } from './hooks/useSimulator';
 import { useMapPlanner } from './hooks/useMapPlanner';
@@ -17,6 +17,7 @@ import { useDeviceOrientation } from './hooks/useDeviceOrientation';
 import { usePositionWatcher } from './hooks/usePositionWatcher';
 import { useChainAttempt } from './hooks/useChainAttempt';
 import { usePlayerStats } from './hooks/usePlayerStats';
+import { useZoom } from './hooks/useZoom';
 import { ThreeLayer } from './utils/ThreeLayer';
 
 // NEW: Simulation mode
@@ -25,12 +26,19 @@ import { useSimulationMode } from './simulation/useSimulationMode';
 // NEW: Utils
 import { saveNodes, saveChains, loadNodes, loadChains } from './utils/storage';
 import { canCreateChainToday, canStartChain, isValidPath } from './utils/gameRules';
-import { createChainFromPath, finalizeNode } from './utils/chainFactory';
+import { createChainFromPath } from './utils/chainFactory';
 
 import { Map } from './components/Map';
 import { TrackingControls } from './components/TrackingControls';
 import { RightSidebar } from './ui/RightSidebar';
 import { LeftSidebar } from './ui/LeftSideBar';
+import { ZoomIndicator } from './ui/ZoomIndicator';
+
+// NEW: Notification System & Overlays
+import { NotificationContainer } from './ui/notifications/NotificationContainer';
+import { ProfileOverlay } from './ui/overlays/ProfileOverlay';
+import { HistoryOverlay } from './ui/overlays/HistoryOverlay';
+import { LayersOverlay } from './ui/overlays/LayersOverlay';
 
 // --- Types ---
 import type { Node, Chain } from './types';
@@ -48,12 +56,15 @@ type ActivityState =
 function App() {
   // === Global Store State ===
   const { map, avatarPosition, bearing, setMap, setAvatarPosition, setBearing } = useMapStore();
+  const { showSuccess, showError, showWarning, showInfo } = useNotificationStore();
+  const { activeOverlay, openOverlay, closeOverlay } = useUIStore();
 
   // === Business Logic Hooks ===
   const planner = useMapPlanner();
   const simulator = useSimulator();
   const { geolocationState, locateUser, resetGeolocationState } = useGeolocation();
   const { flyToAvatar } = useMapController();
+  const { zoomIn, zoomOut } = useZoom();
   const threeLayerRef = useRef<ThreeLayer | null>(null);
   const chainAttempt = useChainAttempt();
   const playerStats = usePlayerStats();
@@ -127,7 +138,7 @@ function App() {
   // Anti-cheat handler
   const handleCheatDetected = useCallback(() => {
     log('Cheat detected - stopping chain attempt');
-    toast.error('Скорость превышает допустимую для ходьбы!');
+    showError('Скорость превышает допустимую для ходьбы!');
     chainAttempt.clearAttempt();
     setActivityState('idle');
   }, [chainAttempt, log]);
@@ -485,7 +496,7 @@ function App() {
         setNodes(prev => [...prev, nodeA, nodeB]);
         setChains(prev => [...prev, chain]);
         
-        toast.success(
+        showSuccess(
           simulation.isSimulationMode
             ? 'Симуляция завершена! Замки созданы (временные).'
             : 'Симуляция завершена! Замки созданы.'
@@ -509,7 +520,7 @@ function App() {
     // Validate path
     const pathValidation = isValidPath(path);
     if (!pathValidation.allowed) {
-      toast.warn(pathValidation.reason || 'Путь слишком короткий для создания цепочки');
+      showWarning(pathValidation.reason || 'Путь слишком короткий для создания цепочки');
       chainAttempt.clearAttempt();
       setActivityState('idle');
       return;
@@ -552,7 +563,7 @@ function App() {
       isTemporary: simulation.isSimulationMode
     });
 
-    toast.success(
+    showSuccess(
       simulation.isSimulationMode 
         ? 'Цепочка создана (тестовая, не сохранится)!' 
         : 'Цепочка успешно создана!'
@@ -613,7 +624,7 @@ function App() {
     // Check avatar position
     if (!avatarPosition) {
       log('Cannot start - no avatar position');
-      toast.info("Сначала определите ваше местоположение кнопкой 'Find Me'");
+      showInfo("Сначала определите ваше местоположение кнопкой 'Find Me'");
       return;
     }
 
@@ -622,10 +633,10 @@ function App() {
       const info = chainAttempt.getAttemptInfo();
       if (info) {
         log('Active attempt found', info);
-        toast.warn(`У вас уже есть незавершенный поход (${info.durationMinutes} мин назад)`);
+        showWarning(`У вас уже есть незавершенный поход (${info.durationMinutes} мин назад)`);
       } else {
         log('Active attempt found (no info available)');
-        toast.warn('У вас уже есть незавершенный поход');
+        showWarning('У вас уже есть незавершенный поход');
       }
       setActivityState('tracking');
       return;
@@ -633,7 +644,7 @@ function App() {
 
     // Check daily limit (skip in simulation mode)
     if (!canCreateChainToday(playerStats.chainsCreatedToday, simulation.isSimulationMode)) {
-      toast.error(`Вы достигли дневного лимита (${playerStats.maxChainsPerDay} цепочек в день)`);
+      showError(`Вы достигли дневного лимита (${playerStats.maxChainsPerDay} цепочек в день)`);
       return;
     }
 
@@ -647,7 +658,7 @@ function App() {
     
     if (!sphereCheck.allowed) {
       log('Sphere check failed', { reason: sphereCheck.reason });
-      toast.error(sphereCheck.reason);
+      showError(sphereCheck.reason || 'Cannot start chain outside sphere of influence');
       return;
     }
 
@@ -655,7 +666,7 @@ function App() {
     chainAttempt.startAttempt(avatarPosition as [number, number]);
     flyToAvatar();
     setActivityState('tracking');
-    toast.success(
+    showSuccess(
       simulation.isSimulationMode 
         ? 'Начат тестовый поход!' 
         : 'Начат новый поход!'
@@ -677,13 +688,13 @@ function App() {
   const handlePause = useCallback(() => {
     log('Pause clicked');
     setActivityState('tracking_paused');
-    toast.info('Поход приостановлен');
+    showInfo('Поход приостановлен');
   }, [log]);
 
   const handleResume = useCallback(() => {
     log('Resume clicked');
     setActivityState('tracking');
-    toast.info('Поход возобновлен');
+    showInfo('Поход возобновлен');
   }, [log]);
 
   // ✅ handleSimulateClick - Don't clear active chain
@@ -706,13 +717,13 @@ function App() {
       }
       
       simulation.exitSimulationMode();
-      toast.info('Режим симуляции выключен');
+      showInfo('Режим симуляции выключен');
       return;
     }
     
     // Block if real walk is active
     if (chainAttempt.currentAttempt) {
-      toast.error('Сначала завершите текущий реальный поход!');
+      showError('Сначала завершите текущий реальный поход!');
       return;
     }
     
@@ -721,7 +732,7 @@ function App() {
     simulation.enterSimulationMode();
     planner.resetPlanner();
     setActivityState('planning_start');
-    toast.info('🧪 Режим симуляции активирован! Выберите начальную точку на карте');
+    showInfo('🧪 Режим симуляции активирован! Выберите начальную точку на карте');
     
   }, [
     simulation, 
@@ -750,18 +761,18 @@ function App() {
       );
       
       if (!sphereCheck.allowed) {
-        toast.error(sphereCheck.reason);
+        showError(sphereCheck.reason || 'Cannot plan route outside sphere of influence');
         return;
       }
 
       await planner.addWaypoint(coordinates);
       setActivityState('planning_end');
-      toast.info('Выберите конечную точку на карте');
+      showInfo('Выберите конечную точку на карте');
 
     } else if (activityState === 'planning_end') {
       await planner.addWaypoint(coordinates);
       setActivityState('ready_to_simulate');
-      toast.success('Маршрут построен. Нажмите Play для запуска симуляции.');
+      showSuccess('Маршрут построен. Нажмите Play для запуска симуляции.');
     }
   }, [activityState, planner, chains, nodes, simulation.isSimulationMode, log]);
 
@@ -827,17 +838,21 @@ function App() {
   ]);
 
   const rightSidebarProps = useMemo(() => ({ 
-    onMyLocationClick: handleMyLocationClick 
-  }), [handleMyLocationClick]);
+    onMyLocationClick: handleMyLocationClick,
+    onZoomIn: zoomIn,
+    onZoomOut: zoomOut,
+    onLayers: () => openOverlay('layers'),
+  }), [handleMyLocationClick, zoomIn, zoomOut, openOverlay]);
   
   const leftSidebarProps = useMemo(() => ({
-    onProfileClick: () => toast.info('Profile page is not implemented yet.'),
-    onHistoryClick: () => toast.info('History page is not implemented yet.'),
+    onProfileClick: () => openOverlay('profile'),
+    onHistoryClick: () => openOverlay('history'),
     geolocationState: geolocationState,
     onMyLocationClick: handleMyLocationClick,
     isSimulating: simulation.isSimulationMode,
     onSimulateClick: handleSimulateClick,
   }), [
+    openOverlay,
     geolocationState, 
     handleMyLocationClick, 
     simulation.isSimulationMode, 
@@ -882,7 +897,15 @@ function App() {
         </div>
       )}
 
-      <ToastContainer position="top-center" theme="dark" autoClose={2500} />
+      <NotificationContainer />
+
+      <ZoomIndicator />
+
+      <ProfileOverlay isOpen={activeOverlay === 'profile'} onClose={closeOverlay} />
+      <HistoryOverlay isOpen={activeOverlay === 'history'} onClose={closeOverlay} />
+      
+      {/* Layers Overlay (Mini version, no backdrop) */}
+      <LayersOverlay isOpen={activeOverlay === 'layers'} onClose={closeOverlay} />
     </div>
   );
 }
