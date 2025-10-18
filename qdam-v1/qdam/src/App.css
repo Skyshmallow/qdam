@@ -70,24 +70,37 @@ html, body, #root {
 
 /* === Аватар пользователя (пульсирующий и вращающийся) === */
 .pulsing-avatar {
-  width: 80px;
-  height: 80px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  pointer-events: none;
+  width: 30px;
+  height: 30px;
+  position: relative; 
+  background: radial-gradient(circle, #3b82f6 40%, transparent 70%);
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+  
+  transform: rotate(var(--bearing, 0deg)) translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  
+  animation: pulse 2s infinite;
+}
 
-  /* Управляем вращением через переменную из JS */
-  transform: rotate(var(--bearing, 0deg));
-  transition: transform 0.2s linear; /* Плавное вращение */
-  position: relative;
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 1);
+  }
 }
 
 /* --- Треугольник-индикатор направления --- */
 .pulsing-avatar::before {
   content: '';
   position: absolute;
-  top: 15px; /* Немного выдвигаем вперед */
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 0;
   height: 0;
   border-left: 7px solid transparent;
@@ -100,13 +113,17 @@ html, body, #root {
 /* --- Внутренняя точка (центр) --- */
 .pulsing-avatar::after {
   content: '';
-  width: 20px;
-  height: 20px;
-  background-color: #008b17; /* Синий — как у GPS-маркера */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+  width: 12px; 
+  height: 12px;
+  background-color: #008b17;
   border-radius: 50%;
-  border: 3px solid white;
+  border: 2px solid white;
   z-index: 2;
-  animation: pulse-dot-animation 2s infinite; /* Эффект пульсации */
+  animation: pulse-dot-animation 2s infinite;
 }
 
 /* --- Анимация пульсации синего круга --- */

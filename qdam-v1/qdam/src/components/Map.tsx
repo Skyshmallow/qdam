@@ -37,13 +37,21 @@ export const Map = ({
         console.log('[Map.tsx] Creating NEW avatar marker');
         const el = document.createElement('div');
         el.className = 'pulsing-avatar';
+        
+        el.style.position = 'absolute';
+        el.style.pointerEvents = 'none';
 
-        const newMarker = new mapboxgl.Marker({ element: el, anchor: 'center' })
+        const newMarker = new mapboxgl.Marker({ 
+          element: el, 
+          anchor: 'center',
+          pitchAlignment: 'viewport',
+          rotationAlignment: 'viewport',
+        })
           .setLngLat(avatarPosition as [number, number])
-          .setPitchAlignment('map')
           .addTo(map.current);
 
         avatarMarkerRef.current = newMarker;
+        
       } else {
         avatarMarkerRef.current.setLngLat(avatarPosition as [number, number]);
       }

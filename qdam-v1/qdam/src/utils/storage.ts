@@ -61,8 +61,10 @@ export function saveChains(chains: Chain[], isSimulationMode: boolean): void {
     const permanentChains = chains.filter(c => !c.isTemporary);
     
     if (permanentChains.length > 0) {
-      localStorage.setItem(CHAINS_KEY, JSON.stringify(permanentChains));
+      const serialized = JSON.stringify(permanentChains);
+      localStorage.setItem(CHAINS_KEY, serialized);
       console.log(`[Storage] Saved ${permanentChains.length} permanent chains`);
+      console.log('[Storage] Sample chain:', permanentChains[0]);
     } else {
       localStorage.removeItem(CHAINS_KEY);
       console.log('[Storage] No permanent chains to save, removed from localStorage');

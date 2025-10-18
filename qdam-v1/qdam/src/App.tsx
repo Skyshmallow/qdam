@@ -72,6 +72,8 @@ function App() {
     }
   }, [simulation.isSimulationMode]);
 
+
+
   // === Local State ===
   const [nodes, setNodes] = useState<Node[]>([]);
   const [chains, setChains] = useState<Chain[]>([]);
@@ -80,55 +82,43 @@ function App() {
   const [territory, setTerritory] = useState<Feature<Polygon> | null>(null);
   const isInitialLoadDone = useRef(false);
   const [isFollowingAvatar, setIsFollowingAvatar] = useState(false);
+  const [isThreeLayerReady, setIsThreeLayerReady] = useState(false);
 
   // === Load data from localStorage on mount ===
   useEffect(() => {
+    log('Loading initial data from localStorage');
+    
     try {
       const savedNodes = loadNodes();
       const savedChains = loadChains();
 
       if (savedNodes.length > 0) {
-        const now = Date.now();
-        const expirationTime = 3 * 24 * 60 * 60 * 1000;
-        
-        const validNodes = savedNodes.filter(node => {
-          if (node.status === 'pending' && (now - node.createdAt) > expirationTime) {
-            log('Removing expired pending node', { id: node.id });
-            return false;
-          }
-          return true;
-        });
-        
-        setNodes(validNodes);
-        log('Loaded nodes from storage', { 
-          total: validNodes.length,
-          established: validNodes.filter(n => n.status === 'established').length
-        });
+        setNodes(savedNodes);
+        log('Loaded nodes', { count: savedNodes.length });
       }
 
       if (savedChains.length > 0) {
         setChains(savedChains);
-        log('Loaded chains from storage', { count: savedChains.length });
+        log('Loaded chains', { count: savedChains.length });
       }
       
-      // ✅ NEW: Mark initial load as done
       isInitialLoadDone.current = true;
+      log('Initial data load complete');
       
     } catch (error) {
       console.error('[App] Failed to load from storage', error);
+      isInitialLoadDone.current = true;
     }
   }, [log]);
 
   // === Save nodes/chains to localStorage (with simulation filter) ===
   useEffect(() => {
-    // ✅ NEW: Skip first save after mount
     if (!isInitialLoadDone.current) return;
     
     saveNodes(nodes, simulation.isSimulationMode);
   }, [nodes, simulation.isSimulationMode]);
 
   useEffect(() => {
-    // ✅ NEW: Skip first save after mount
     if (!isInitialLoadDone.current) return;
     
     saveChains(chains, simulation.isSimulationMode);
@@ -182,11 +172,19 @@ function App() {
   const handleThreeLayerReady = useCallback((threeLayer: ThreeLayer) => {
     log('ThreeLayer ready, storing reference');
     threeLayerRef.current = threeLayer;
+    setIsThreeLayerReady(true);
   }, [log]);
 
   // === Update 3D castles when chains change ===
   useEffect(() => {
-    if (!threeLayerRef.current) return;
+    if (!threeLayerRef.current || !isThreeLayerReady || !isInitialLoadDone.current) {
+      log('Waiting for ThreeLayer or initial data load', {
+        hasThreeLayer: !!threeLayerRef.current,
+        isReady: isThreeLayerReady,
+        isDataLoaded: isInitialLoadDone.current
+      });
+      return;
+    }
     
     if (chains.length === 0) {
       log('No chains to display');
@@ -199,7 +197,7 @@ function App() {
       const nodeB = nodes.find(n => n.id === chain.nodeB_id);
       
       if (!nodeA || !nodeB) {
-        console.warn('[App] Chain references missing nodes', { chain });
+        console.warn('[App] Chain has missing nodes', { chainId: chain.id });
         return null;
       }
       
@@ -214,7 +212,7 @@ function App() {
     
     log('Updating 3D layer with chains', { count: chainsData.length });
     threeLayerRef.current.setChains(chainsData as any);
-  }, [chains, nodes, log]);
+  }, [chains, nodes, isThreeLayerReady, log]);
 
   // === CURSOR ===
   useEffect(() => {
