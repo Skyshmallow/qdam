@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Environment variables
+.env.local
+.env.production
+.env.development
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -25,3 +30,7 @@ dist-ssr
 
 # Custom ignored files
 LOGGING_GUIDE.md
+
+
+# Supabase 
+.supabase
