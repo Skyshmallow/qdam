@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
 
 interface PlayerStats {
+  [x: string]: any;
   chainsCreatedToday: number;
   totalChains: number;
   territoryKm2: number;
