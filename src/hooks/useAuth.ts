@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseEnabled } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
 
 export interface AuthState {
@@ -11,11 +11,16 @@ export interface AuthState {
 export const useAuth = () => {
   const [state, setState] = useState<AuthState>({
     user: null,
-    loading: true,
+    loading: false,
     error: null,
   });
 
   useEffect(() => {
+    if (!isSupabaseEnabled() || !supabase) {
+      setState({ user: null, loading: false, error: null });
+      return;
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
@@ -36,6 +41,11 @@ export const useAuth = () => {
   }, []);
 
   const signInWithGoogle = async () => {
+    if (!isSupabaseEnabled() || !supabase) {
+      console.warn('Supabase not configured');
+      return;
+    }
+    
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -55,6 +65,11 @@ export const useAuth = () => {
   };
 
   const signOut = async () => {
+    if (!isSupabaseEnabled() || !supabase) {
+      setState({ user: null, loading: false, error: null });
+      return;
+    }
+
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
       const { error } = await supabase.auth.signOut();

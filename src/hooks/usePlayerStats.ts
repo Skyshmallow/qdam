@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseEnabled } from '../lib/supabase';
 import { useAuth } from './useAuth';
 
 interface PlayerStats {
@@ -38,11 +38,12 @@ export function usePlayerStats(): PlayerStats {
   const [stats, setStats] = useState<PlayerStats>(DEFAULT_STATS);
 
   useEffect(() => {
-    if (!user) {
-      // Если не авторизован, показать локальные stats из localStorage
-      const localChains = JSON.parse(
-        localStorage.getItem('qdam_chains') || '[]'
-      );
+    // Always load local stats
+    const localChains = JSON.parse(
+      localStorage.getItem('qdam_chains') || '[]'
+    );
+    
+    if (!user || !isSupabaseEnabled() || !supabase) {
       setStats({
         chainsCreatedToday: 0,
         totalChains: localChains.length,
@@ -52,9 +53,12 @@ export function usePlayerStats(): PlayerStats {
       return;
     }
 
+    // Store supabase in a local variable for type narrowing
+    const supabaseClient = supabase;
+
     // Загрузить stats из Supabase
     const loadStats = async () => {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('player_stats')
         .select<'*', PlayerStatsDB>('*')
         .eq('user_id', user.id)
@@ -78,7 +82,7 @@ export function usePlayerStats(): PlayerStats {
     loadStats();
 
     // Подписаться на изменения stats в реальном времени
-    const channel = supabase
+    const channel = supabaseClient
       .channel('player_stats_changes')
       .on(
         'postgres_changes',
