@@ -28,6 +28,22 @@ export const Map = ({
   );
   const avatarMarkerRef = useRef<mapboxgl.Marker | null>(null);
 
+  // === Mobile optimization ===
+  useEffect(() => {
+    if (!map.current || !isMapLoaded) return;
+    
+    // Disable map rotation on mobile
+    if (window.innerWidth <= 768) {
+      map.current.dragRotate.disable();
+      map.current.touchZoomRotate.disableRotation();
+    }
+    
+    // Better touch handling
+    map.current.on('touchstart', (e) => {
+      e.preventDefault();
+    });
+  }, [map, isMapLoaded]);
+
   // === Avatar creation ===
   useEffect(() => {
     if (!map.current || !isMapLoaded) return;
