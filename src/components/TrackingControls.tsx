@@ -13,12 +13,11 @@ type ActivityState =
 
 interface TrackingControlsProps {
   activityState: ActivityState;
-  trackingState?: TrackingState; // Optional - kept for backwards compatibility
+  trackingState?: TrackingState; 
   onStart: () => void;
   onPause: () => void;
   onResume: () => void;
   onStop: () => void;
-  // NEW: Simulation mode props
   isSimulationMode: boolean;
   onClearTestData: () => void;
 }

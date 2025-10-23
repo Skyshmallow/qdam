@@ -453,24 +453,18 @@ html, body, #root {
 
 /* Tracking Controls - BASE desktop styles only */
 .tracking-controls {
-  position: fixed;
+  position: absolute; /* или fixed, в зависимости от контейнера */
   left: 50%;
   transform: translateX(-50%);
-  bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
-  z-index: 1000;
-  display: flex;
-  gap: 1rem;
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.7);
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
+  bottom: calc(24px + env(safe-area-inset-bottom));
   
-  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
-}
-
-/* Адаптация для iOS Safari с видимым toolbar */
-@supports (height: 100dvh) {
-  .tracking-controls {
-    bottom: max(2rem, calc(2rem + env(safe-area-inset-bottom, 0px)));
-  }
+  z-index: 10;
+  display: flex;
+  gap: 12px;
+  background-color: rgba(20, 23, 28, 0.85);
+  backdrop-filter: blur(8px);
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
