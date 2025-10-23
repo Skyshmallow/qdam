@@ -55,13 +55,13 @@
   /* Bottom positioning for panels on mobile - FIX для Safari */
   .tracking-controls {
     position: fixed !important;
-    bottom: max(6rem, calc(2rem + env(safe-area-inset-bottom, 0px) + 88px)) !important;
+    bottom: calc(4.5rem + env(safe-area-inset-bottom, 20px)) !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: calc(100% - 2rem) !important;
     max-width: 400px !important;
     padding-bottom: 0 !important;
-    z-index: 10 !important;  
+    z-index: 999 !important;
   }
   
   /* Ensure tracking controls are visible */
