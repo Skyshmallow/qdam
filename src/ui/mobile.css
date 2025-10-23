@@ -54,12 +54,14 @@
   
   /* Bottom positioning for panels on mobile - FIX для Safari */
   .tracking-controls {
-    bottom: calc(4rem + env(safe-area-inset-bottom, 20px)) !important;
+    position: fixed !important;
+    bottom: max(6rem, calc(2rem + env(safe-area-inset-bottom, 0px) + 88px)) !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: calc(100% - 2rem) !important;
     max-width: 400px !important;
-    padding-bottom: var(--sab, 0) !important;
+    padding-bottom: 0 !important;
+    z-index: 10 !important;  
   }
   
   /* Ensure tracking controls are visible */
@@ -119,29 +121,16 @@
 
 /* Extra small devices */
 @media (max-width: 480px) {
-  .left-sidebar {
-    width: 50px !important;
-  }
-  
-  .left-sidebar button {
-    width: 40px !important;
-    height: 40px !important;
-    font-size: 1rem !important;
-  }
-  
   .tracking-controls {
-    bottom: calc(0.5rem + var(--sab, 0)) !important;
+    bottom: max(6.5rem, calc(2rem + env(safe-area-inset-bottom, 0px) + 100px)) !important;
   }
 }
+
 
 /* Landscape mode on mobile */
 @media (max-width: 896px) and (orientation: landscape) {
   .tracking-controls {
-    bottom: calc(0.5rem + var(--sab, 0)) !important;
+    bottom: max(5rem, calc(1rem + env(safe-area-inset-bottom, 0px) + 60px)) !important;
     max-width: 300px !important;
-  }
-  
-  .left-sidebar {
-    padding: 0.25rem !important;
   }
 }

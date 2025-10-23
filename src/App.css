@@ -444,9 +444,15 @@ html, body, #root {
   flex-shrink: 0;
 }
 
-/* Mobile-safe bottom positioning */
+/* Tracking Controls - BASE desktop styles only */
+.tracking-controls {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 2rem;
+  z-index: 10;
+}
+
+/* Tracking Controls - positioned at bottom center */
 @media (max-width: 768px) {
-  .absolute.bottom-8 {
-    bottom: max(2rem, env(safe-area-inset-bottom, 0px) + 4rem) !important;
-  }
 }

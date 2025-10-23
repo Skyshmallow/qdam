@@ -194,7 +194,7 @@ export function TrackingControls({
   };
 
   return (
-    <div className="tracking-controls absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
+    <div className="tracking-controls">
       {renderControls()}
     </div>
   );
