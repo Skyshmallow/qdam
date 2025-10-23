@@ -11,6 +11,7 @@ html, body, #root {
   overflow: hidden;
   background-color: #1a1a1a;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .map-container { 
@@ -455,10 +456,21 @@ html, body, #root {
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 2rem;
-  z-index: 10;
+  bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+  z-index: 1000;
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
 }
 
-/* Tracking Controls - positioned at bottom center */
-@media (max-width: 768px) {
+/* Адаптация для iOS Safari с видимым toolbar */
+@supports (height: 100dvh) {
+  .tracking-controls {
+    bottom: max(2rem, calc(2rem + env(safe-area-inset-bottom, 0px)));
+  }
 }

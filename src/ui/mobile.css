@@ -70,10 +70,11 @@
     padding-top: calc(0.5rem + var(--sat, 0)) !important;
   }
   
-  /* Bottom positioning for panels on mobile - FIX для Safari */
+  /* Bottom positioning for panels on mobile */
   .tracking-controls {
     position: fixed !important;
-    bottom: calc(2rem + env(safe-area-inset-bottom, 20px)) !important;
+    bottom: max(6rem, calc(2rem + env(safe-area-inset-bottom, 0px) + 44px)) !important;
+    
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: calc(100% - 2rem) !important;
