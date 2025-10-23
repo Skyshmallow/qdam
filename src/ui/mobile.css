@@ -17,15 +17,33 @@
     width: 100%;
     overflow: hidden;
   }
+
+  @supports (height: 100dvh) {
+    body {
+      min-height: 100dvh;
+    }
+  }
   
   html {
     height: -webkit-fill-available;
+  }
+
+  @supports (height: 100dvh) {
+    html {
+      height: 100dvh;
+    }
   }
   
   #root {
     height: 100vh;
     height: -webkit-fill-available;
     overflow: auto;
+  }
+
+  @supports (height: 100dvh) {
+    #root {
+      height: 100dvh;
+    }
   }
 
   /* Left Sidebar - make narrower on mobile */
@@ -55,7 +73,7 @@
   /* Bottom positioning for panels on mobile - FIX для Safari */
   .tracking-controls {
     position: fixed !important;
-    bottom: calc(4.5rem + env(safe-area-inset-bottom, 20px)) !important;
+    bottom: calc(2rem + env(safe-area-inset-bottom, 20px)) !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: calc(100% - 2rem) !important;
@@ -116,6 +134,12 @@
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
+  }
+
+  @supports (height: 100dvh) {
+    .map-container {
+      height: 100dvh !important;
+    }
   }
 }
 

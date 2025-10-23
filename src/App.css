@@ -18,6 +18,12 @@ html, body, #root {
   width: 100%; 
 }
 
+@supports (height: 100dvh) {
+  .map-container {
+    height: 100dvh;
+  }
+}
+
 /* === Боковая панель === */
 .sidebar {
   background-color: rgba(26, 26, 26, 0.8);

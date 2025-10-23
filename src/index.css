@@ -6,8 +6,16 @@ body,
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh;
   overflow: hidden; 
+}
+
+@supports (height: 100dvh) {
+  html,
+  body,
+  #root {
+    height: 100dvh;
+  }
 }
 
 .user-dot {
@@ -65,7 +73,12 @@ body {
   overflow: hidden;
   width: 100%;
   height: 100vh;
-  height: -webkit-fill-available;
+}
+
+@supports (height: 100dvh) {
+  body {
+    height: 100dvh;
+  }
 }
 
 /* Prevent text selection and tap highlight */
