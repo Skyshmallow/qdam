@@ -1,35 +1,48 @@
 @import "tailwindcss";
 
+:root {
+  --vh: 1vh; /* CSS переменная для JavaScript */
+}
+
 html, body, #root {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100vh; 
+  
+  /* Fallback для старых браузеров */
+  height: 100vh;
+  
+  /* iOS Safari специальная высота */
+  height: -webkit-fill-available;
+  
+  /* Используем JavaScript переменную если доступна */
+  height: calc(var(--vh, 1vh) * 100);
+  
   overflow-x: hidden;
   overscroll-behavior-y: contain;
 }
 
-/* Используем dvh, если браузер его поддерживает */
-@supports (height: 100dvh) {
+/* Используем svh вместо dvh для предотвращения jank */
+@supports (height: 100svh) {
   html, body, #root {
-    height: 100dvh;
+    height: 100svh;
   }
 }
 
+/* iOS Safari специфичные стили */
 @supports (-webkit-touch-callout: none) {
   body {
-    /* iOS Safari нужна специальная высота */
     min-height: -webkit-fill-available;
   }
 }
 
 .user-dot {
-  width: 1rem; /* 16px */
-  height: 1rem; /* 16px */
-  background-color: #3b82f6; /* bg-blue-500 */
-  border-radius: 9999px; /* rounded-full */
+  width: 1rem;
+  height: 1rem;
+  background-color: #3b82f6;
+  border-radius: 9999px;
   border: 2px solid white;
-  box-shadow: 0 0 0 3px #3b82f680; /* A soft outer glow */
+  box-shadow: 0 0 0 3px #3b82f680;
   animation: pulse 2s infinite;
 }
 
@@ -59,18 +72,6 @@ html, body, #root {
   }
 }
 
-/* Mobile browser fixes */
-@supports (-webkit-touch-callout: none) {
-  /* iOS Safari specific */
-  body {
-    min-height: -webkit-fill-available;
-  }
-  
-  #root {
-    min-height: -webkit-fill-available;
-  }
-}
-
 /* Prevent pull-to-refresh and overscroll */
 body {
   overscroll-behavior-y: contain;
@@ -85,4 +86,3 @@ button {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
-

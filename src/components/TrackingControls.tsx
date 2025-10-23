@@ -1,6 +1,7 @@
 import { Play, Pause, Square, Trash2 } from 'lucide-react';
 import type { TrackingState } from '../types';
 import { GameButton } from '../ui/buttons/GameButton';
+import { useViewportHeight } from '../hooks/useViewportHeight';
 
 type ActivityState =
   | 'idle'
@@ -31,6 +32,9 @@ export function TrackingControls({
   isSimulationMode,
   onClearTestData,
 }: TrackingControlsProps) {
+
+  useViewportHeight();
+
   const renderControls = () => {
     // === IDLE STATE ===
     if (activityState === 'idle') {
