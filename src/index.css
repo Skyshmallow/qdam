@@ -46,3 +46,35 @@ body,
   }
 }
 
+/* Mobile browser fixes */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari specific */
+  body {
+    min-height: -webkit-fill-available;
+  }
+  
+  #root {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Prevent pull-to-refresh and overscroll */
+body {
+  overscroll-behavior-y: contain;
+  position: fixed;
+  overflow: hidden;
+  width: 100%;
+  height: 100vh;
+  height: -webkit-fill-available;
+}
+
+/* Prevent text selection and tap highlight */
+.map-container,
+.game-button,
+button {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
