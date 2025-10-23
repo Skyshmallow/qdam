@@ -1,3 +1,4 @@
+/* src/ui/mobile.css */
 /* Mobile Sidebar Adaptations */
 
 /* iOS Safari safe area support */
@@ -72,18 +73,20 @@
   
   /* Bottom positioning for panels on mobile */
   .tracking-controls {
-    /* Дополнительный отступ для iOS Safari toolbar */
-    bottom: max(2.5rem, calc(2.5rem + env(safe-area-inset-bottom, 0px))) !important;
+    bottom: max(6rem, calc(6rem + env(safe-area-inset-bottom, 0px))) !important;
     
     width: calc(100% - 2rem) !important;
     max-width: 400px !important;
+    
+    /* iOS Safari specific - add extra space */
+    padding-bottom: 1rem !important;
   }
   
   /* iOS Safari специфичный отступ когда toolbar виден */
   @supports (-webkit-touch-callout: none) {
     .tracking-controls {
-      /* Дополнительные 44px для iOS Safari toolbar в portrait */
-      bottom: max(2.5rem, calc(2.5rem + env(safe-area-inset-bottom, 0px) + 44px)) !important;
+      /* 80px = safe margin above toolbar */
+      bottom: max(8rem, calc(8rem + env(safe-area-inset-bottom, 0px))) !important;
     }
   }
   

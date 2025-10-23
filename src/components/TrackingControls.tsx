@@ -1,3 +1,5 @@
+// src/components/TrackingControls.tsx
+
 import { Play, Pause, Square, Trash2 } from 'lucide-react';
 import type { TrackingState } from '../types';
 import { GameButton } from '../ui/buttons/GameButton';
