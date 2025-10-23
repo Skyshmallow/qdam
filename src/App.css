@@ -8,10 +8,16 @@ html, body, #root {
   padding: 0;
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  height: 100vh; 
+  overflow-x: hidden;
   background-color: #1a1a1a;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@supports (height: 100dvh) {
+  html, body, #root {
+    height: 100dvh;
+  }
 }
 
 .map-container { 
@@ -467,4 +473,21 @@ html, body, #root {
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+  .tracking-controls {
+    /* Учитываем safe-area (вырезы экрана) */
+    bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+    width: calc(100% - 2rem);
+    max-width: 400px;
+  }
+  
+  /* Для iOS Safari специально */
+  @supports (-webkit-touch-callout: none) {
+    .tracking-controls {
+      /* Дополнительный отступ для toolbar iOS */
+      bottom: calc(2rem + env(safe-area-inset-bottom, 0px) + 44px);
+    }
+  }
 }

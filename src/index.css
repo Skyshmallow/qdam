@@ -4,9 +4,9 @@ html, body, #root {
   margin: 0;
   padding: 0;
   width: 100%;
-  overflow: hidden;
-  
   height: 100vh; 
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
 }
 
 /* Используем dvh, если браузер его поддерживает */
@@ -16,6 +16,12 @@ html, body, #root {
   }
 }
 
+@supports (-webkit-touch-callout: none) {
+  body {
+    /* iOS Safari нужна специальная высота */
+    min-height: -webkit-fill-available;
+  }
+}
 
 .user-dot {
   width: 1rem; /* 16px */
