@@ -54,7 +54,7 @@
   
   /* Bottom positioning for panels on mobile - FIX для Safari */
   .tracking-controls {
-    bottom: calc(1rem + var(--sab, 0)) !important; /* Добавляем отступ от safe area */
+    bottom: calc(4rem + env(safe-area-inset-bottom, 20px)) !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: calc(100% - 2rem) !important;
