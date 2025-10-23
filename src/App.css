@@ -443,3 +443,10 @@ html, body, #root {
   font-weight: bold;
   flex-shrink: 0;
 }
+
+/* Mobile-safe bottom positioning */
+@media (max-width: 768px) {
+  .absolute.bottom-8 {
+    bottom: max(2rem, env(safe-area-inset-bottom, 0px) + 4rem) !important;
+  }
+}
