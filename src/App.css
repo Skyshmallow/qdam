@@ -454,28 +454,6 @@ body {
   flex-shrink: 0;
 }
 
-/* === TRACKING CONTROLS === */
-.tracking-controls {
-  position: fixed;
-  left: 50%;
-  
-  /* Hardware acceleration для плавности */
-  transform: translateX(-50%) translateZ(0);
-  will-change: transform;
-  backface-visibility: hidden;
-  
-  /* Базовая позиция снизу */
-  bottom: 2rem;
-  
-  z-index: 1000;
-  display: flex;
-  gap: 1rem;
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.7);
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-}
-
 /* Desktop и современные браузеры */
 @supports (height: 100svh) {
   .tracking-controls {

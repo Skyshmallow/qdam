@@ -73,20 +73,25 @@
   
   /* Bottom positioning for panels on mobile */
   .tracking-controls {
-    bottom: max(6rem, calc(6rem + env(safe-area-inset-bottom, 0px))) !important;
-    
     width: calc(100% - 2rem) !important;
     max-width: 400px !important;
+    gap: 0.75rem !important;
+    padding: 0.75rem !important;
     
-    /* iOS Safari specific - add extra space */
-    padding-bottom: 1rem !important;
+    /* Base mobile spacing: 6rem = 96px */
+    bottom: 6rem !important;
   }
   
   /* iOS Safari специфичный отступ когда toolbar виден */
   @supports (-webkit-touch-callout: none) {
     .tracking-controls {
-      /* 80px = safe margin above toolbar */
-      bottom: max(8rem, calc(8rem + env(safe-area-inset-bottom, 0px))) !important;
+      /* 11rem = 176px total clearance
+         This accounts for:
+         - Home indicator: ~34px
+         - Safari toolbar when visible: ~60px
+         - Extra safe margin: ~82px
+      */
+      bottom: max(11rem, calc(11rem + env(safe-area-inset-bottom, 0px))) !important;
     }
   }
   
@@ -152,12 +157,12 @@
 /* Extra small devices */
 @media (max-width: 480px) {
   .tracking-controls {
-    bottom: max(3rem, calc(3rem + env(safe-area-inset-bottom, 0px))) !important;
+    bottom: 5rem !important;
   }
   
   @supports (-webkit-touch-callout: none) {
     .tracking-controls {
-      bottom: max(3rem, calc(3rem + env(safe-area-inset-bottom, 0px) + 60px)) !important;
+      bottom: max(10rem, calc(10rem + env(safe-area-inset-bottom, 0px))) !important;
     }
   }
 }
@@ -165,7 +170,7 @@
 /* Landscape mode on mobile */
 @media (max-width: 896px) and (orientation: landscape) {
   .tracking-controls {
-    bottom: max(1.5rem, calc(1.5rem + env(safe-area-inset-bottom, 0px))) !important;
+    bottom: 3rem !important;
     max-width: 300px !important;
     gap: 0.5rem !important;
     padding: 0.5rem !important;
@@ -173,7 +178,8 @@
   
   @supports (-webkit-touch-callout: none) {
     .tracking-controls {
-      bottom: max(1.5rem, calc(1.5rem + env(safe-area-inset-bottom, 0px) + 30px)) !important;
+      /* Landscape: toolbar is smaller, use 5rem */
+      bottom: max(5rem, calc(5rem + env(safe-area-inset-bottom, 0px))) !important;
     }
   }
 }
