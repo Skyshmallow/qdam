@@ -71,24 +71,6 @@
     padding-top: calc(0.5rem + var(--sat, 0)) !important;
   }
   
-  /* Bottom positioning for panels on mobile */
-  .tracking-controls {
-    width: calc(100% - 2rem) !important;
-    max-width: 400px !important;
-    gap: 0.75rem !important;
-    padding: 0.75rem !important;
-    
-    /* Base mobile spacing: 6rem = 96px */
-    bottom: 6rem !important;
-  }
-  
-  /* Tracking toolbar */
-  .tracking-toolbar {
-    bottom: calc(1rem + var(--sab, 0)) !important;
-    margin-bottom: env(safe-area-inset-bottom, 0) !important;
-    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0)) !important;
-  }
-  
   /* Zoom indicator */
   .zoom-indicator {
     bottom: calc(6rem + var(--sab, 0)) !important;

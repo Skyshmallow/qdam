@@ -197,7 +197,7 @@ export function TrackingControls({
   };
 
   return (
-    <div className="tracking-controls">
+    <div className="tracking-controls tracking-toolbar">
       {renderControls()}
     </div>
   );

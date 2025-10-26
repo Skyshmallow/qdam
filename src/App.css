@@ -2,35 +2,12 @@
 
 @import "tailwindcss";
 
-/* === Общие настройки === */
-/* html, body, #root {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  
-  height: 100vh;
-  
-  height: -webkit-fill-available;
-  
-  height: calc(var(--vh, 1vh) * 100);
-  
-  overflow-x: hidden;
-  background-color: #1a1a1a;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-@supports (height: 100svh) {
-  html, body, #root {
-    height: 100svh;
-  }
-} */
-
 /* Body должен быть overflow: hidden, но map-container - scrollable */
 body {
   overflow: hidden;
 }
 
-.map-container { 
+/* .map-container { 
   height: 100vh;
   height: -webkit-fill-available;
   height: calc(var(--vh, 1vh) * 100);
@@ -44,7 +21,7 @@ body {
   .map-container {
     height: 100svh;
   }
-}
+} */
 
 /* === Боковая панель === */
 .sidebar {
@@ -453,6 +430,27 @@ body {
 /* ЕДИНОЕ ПРАВИЛО ДЛЯ ПОЗИЦИОНИРОВАНИЯ ПАНЕЛИ УПРАВЛЕНИЯ */
 .tracking-controls {
   bottom: calc(1.5rem + env(safe-area-inset-bottom));
+}
+
+/* --- Панель трекера (нижняя, центр) --- */
+.tracking-toolbar {
+  position: absolute;
+  /* Отступ от низа с учетом безопасной зоны iPhone */
+  bottom: calc(1.5rem + env(safe-area-inset-bottom, 1.5rem)); 
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  gap: 12px;
+  background-color: rgba(20, 23, 28, 0.85);
+  backdrop-filter: blur(8px);
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  width: calc(100% - 2rem); /* Ширина для мобильных */
+  max-width: 400px;
+  justify-content: center;
 }
 
 /* Адаптация размеров для мобильных устройств */
