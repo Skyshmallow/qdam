@@ -3,18 +3,15 @@
 @import "tailwindcss";
 
 /* === Общие настройки === */
-html, body, #root {
+/* html, body, #root {
   margin: 0;
   padding: 0;
   width: 100%;
   
-  /* Fallback */
   height: 100vh;
   
-  /* iOS Safari */
   height: -webkit-fill-available;
   
-  /* JavaScript переменная */
   height: calc(var(--vh, 1vh) * 100);
   
   overflow-x: hidden;
@@ -22,12 +19,11 @@ html, body, #root {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Используем svh для предотвращения jank */
 @supports (height: 100svh) {
   html, body, #root {
     height: 100svh;
   }
-}
+} */
 
 /* Body должен быть overflow: hidden, но map-container - scrollable */
 body {
@@ -454,21 +450,17 @@ body {
   flex-shrink: 0;
 }
 
-/* Desktop и современные браузеры */
-@supports (height: 100svh) {
-  .tracking-controls {
-    bottom: max(2rem, calc(2rem + env(safe-area-inset-bottom, 0px)));
-  }
+/* ЕДИНОЕ ПРАВИЛО ДЛЯ ПОЗИЦИОНИРОВАНИЯ ПАНЕЛИ УПРАВЛЕНИЯ */
+.tracking-controls {
+  bottom: calc(1.5rem + env(safe-area-inset-bottom));
 }
 
-/* Mobile adaptations */
+/* Адаптация размеров для мобильных устройств */
 @media (max-width: 768px) {
   .tracking-controls {
     width: calc(100% - 2rem);
     max-width: 400px;
     gap: 0.75rem;
     padding: 0.75rem;
-    
-    bottom: max(2rem, calc(2rem + env(safe-area-inset-bottom, 0px)));
   }
 }

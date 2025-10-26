@@ -82,19 +82,6 @@
     bottom: 6rem !important;
   }
   
-  /* iOS Safari специфичный отступ когда toolbar виден */
-  @supports (-webkit-touch-callout: none) {
-    .tracking-controls {
-      /* 11rem = 176px total clearance
-         This accounts for:
-         - Home indicator: ~34px
-         - Safari toolbar when visible: ~60px
-         - Extra safe margin: ~82px
-      */
-      bottom: max(11rem, calc(11rem + env(safe-area-inset-bottom, 0px))) !important;
-    }
-  }
-  
   /* Tracking toolbar */
   .tracking-toolbar {
     bottom: calc(1rem + var(--sab, 0)) !important;
@@ -155,7 +142,7 @@
 }
 
 /* Extra small devices */
-@media (max-width: 480px) {
+/* @media (max-width: 480px) {
   .tracking-controls {
     bottom: 5rem !important;
   }
@@ -165,10 +152,10 @@
       bottom: max(10rem, calc(10rem + env(safe-area-inset-bottom, 0px))) !important;
     }
   }
-}
+} */
 
 /* Landscape mode on mobile */
-@media (max-width: 896px) and (orientation: landscape) {
+/* @media (max-width: 896px) and (orientation: landscape) {
   .tracking-controls {
     bottom: 3rem !important;
     max-width: 300px !important;
@@ -178,8 +165,7 @@
   
   @supports (-webkit-touch-callout: none) {
     .tracking-controls {
-      /* Landscape: toolbar is smaller, use 5rem */
       bottom: max(5rem, calc(5rem + env(safe-area-inset-bottom, 0px))) !important;
     }
   }
-}
+} */

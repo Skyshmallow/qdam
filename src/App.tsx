@@ -1,3 +1,4 @@
+// src/App.tsx
 import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import * as turf from '@turf/turf';
 import type { Feature, Polygon, MultiPolygon, GeoJsonProperties } from 'geojson';

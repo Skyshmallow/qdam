@@ -1,9 +1,8 @@
 /* src/index.css */
-
 @import "tailwindcss";
 
 :root {
-  --vh: 1vh; /* CSS переменная для JavaScript */
+  --vh: 1vh;
 }
 
 html, body, #root {
@@ -11,20 +10,16 @@ html, body, #root {
   padding: 0;
   width: 100%;
   
-  /* Fallback для старых браузеров */
   height: 100vh;
   
-  /* iOS Safari специальная высота */
   height: -webkit-fill-available;
   
-  /* Используем JavaScript переменную если доступна */
   height: calc(var(--vh, 1vh) * 100);
   
   overflow-x: hidden;
   overscroll-behavior-y: contain;
 }
 
-/* Используем svh вместо dvh для предотвращения jank */
 @supports (height: 100svh) {
   html, body, #root {
     height: 100svh;
