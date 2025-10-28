@@ -2,17 +2,11 @@
 
 @import "tailwindcss";
 
-/* Body должен быть overflow: hidden, но map-container - scrollable */
-body {
-  overflow: hidden;
-}
-
-/* .map-container { 
+.map-container { 
   height: 100vh;
   height: -webkit-fill-available;
   height: calc(var(--vh, 1vh) * 100);
   width: 100%;
-  
   overflow: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -21,7 +15,7 @@ body {
   .map-container {
     height: 100svh;
   }
-} */
+}
 
 /* === Боковая панель === */
 .sidebar {
@@ -435,8 +429,7 @@ body {
 /* --- Панель трекера (нижняя, центр) --- */
 .tracking-toolbar {
   position: absolute;
-  /* Отступ от низа с учетом безопасной зоны iPhone */
-  bottom: calc(1.5rem + env(safe-area-inset-bottom, 1.5rem)); 
+  bottom: max(3.5rem, calc(3.5rem + env(safe-area-inset-bottom)));
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
