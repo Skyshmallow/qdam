@@ -39,10 +39,6 @@ export const Map = ({
       map.current.touchZoomRotate.disableRotation();
     }
     
-    // Better touch handling
-    map.current.on('touchstart', (e) => {
-      e.preventDefault();
-    });
   }, [map, isMapLoaded]);
 
   // === Avatar creation ===

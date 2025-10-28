@@ -1,35 +1,29 @@
 /* src/index.css */
 @import "tailwindcss";
 
-:root {
-  --vh: 1vh;
-}
-
-html, body{
+html, body, #root {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100svh;
-  overflow: hidden;
-  position: relative; 
-  overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-#root {
-  width: 100%;
   height: 100%;
   overflow: hidden;
-  position: relative; 
+  font-family: system-ui, sans-serif;
+  background-color: #0a0f1e;
 }
 
-/* iOS Safari специфичные стили */
+/* iOS Safari support */
 @supports (-webkit-touch-callout: none) {
-  body {
-    min-height: -webkit-fill-available;
+  html, body, #root {
+    height: -webkit-fill-available;
   }
 }
 
+/* Prevent pull-to-refresh */
+body {
+  overscroll-behavior-y: none;
+}
+
+/* User dot animation */
 .user-dot {
   width: 1rem;
   height: 1rem;
@@ -66,28 +60,10 @@ html, body{
   }
 }
 
-/* Prevent pull-to-refresh and overscroll */
-body {
-  overscroll-behavior-y: none;
-}
-
-/* Prevent text selection and tap highlight */
-.map-container,
+/* Prevent text selection on UI elements only */
 .game-button,
 button {
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-
-.mapboxgl-canvas-container,
-.mapboxgl-canvas {
-  touch-action: pan-x pan-y !important;
-  cursor: grab !important;
-}
-
-.mapboxgl-canvas-container:active,
-.mapboxgl-canvas:active {
-  cursor: grabbing !important;
 }
