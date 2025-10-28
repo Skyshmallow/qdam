@@ -10,8 +10,8 @@ html, body{
   padding: 0;
   width: 100%;
   height: 100svh;
-  overflow-x: hidden;
-  position: fixed;
+  overflow: hidden;
+  position: relative; 
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
 }
@@ -69,7 +69,6 @@ html, body{
 /* Prevent pull-to-refresh and overscroll */
 body {
   overscroll-behavior-y: none;
-  -webkit-overflow-scrolling: auto;
 }
 
 /* Prevent text selection and tap highlight */
@@ -80,4 +79,15 @@ button {
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+}
+
+.mapboxgl-canvas-container,
+.mapboxgl-canvas {
+  touch-action: pan-x pan-y !important;
+  cursor: grab !important;
+}
+
+.mapboxgl-canvas-container:active,
+.mapboxgl-canvas:active {
+  cursor: grabbing !important;
 }
