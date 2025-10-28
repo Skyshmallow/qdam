@@ -8,11 +8,11 @@
 }
 
 @media (max-width: 768px) {
-  /* Left Sidebar */
+  /* Left Sidebar - учитываем safe area сверху */
   .left-sidebar {
     width: 60px !important;
     padding: 0.5rem !important;
-    top: var(--sat, 0) !important;
+    top: calc(0.5rem + var(--sat, 0)) !important;
     padding-top: calc(0.5rem + var(--sat, 0)) !important;
   }
   
@@ -23,28 +23,24 @@
     min-height: 44px !important;
   }
   
-  /* Right Sidebar */
+  /* Right Sidebar - учитываем safe area сверху */
   .right-sidebar {
     width: auto !important;
     max-width: 90vw !important;
     right: 0.5rem !important;
-    top: var(--sat, 0) !important;
+    top: calc(0.5rem + var(--sat, 0)) !important;
     padding-top: calc(0.5rem + var(--sat, 0)) !important;
   }
   
-  /* Zoom indicator */
-  .zoom-indicator {
-    bottom: calc(6rem + var(--sab, 0)) !important;
-    right: 1rem !important;
-  }
-  
-  /* Overlays */
+  /* Overlays - учитываем safe area со всех сторон */
   .overlay-base {
     width: 100vw !important;
     height: 100vh !important;
     border-radius: 0 !important;
     padding-top: calc(1rem + var(--sat, 0)) !important;
     padding-bottom: calc(1rem + var(--sab, 0)) !important;
+    padding-left: calc(1rem + var(--sal, 0)) !important;
+    padding-right: calc(1rem + var(--sar, 0)) !important;
   }
   
   /* Prevent zoom on inputs */
@@ -58,12 +54,4 @@
     min-height: 44px !important;
   }
   
-  /* Tracking controls */
-  .tracking-controls {
-    bottom: calc(1.5rem + var(--sab, 0)) !important;
-    left: 1rem !important;
-    right: 1rem !important;
-    transform: none !important;
-    width: calc(100% - 2rem) !important;
-  }
 }

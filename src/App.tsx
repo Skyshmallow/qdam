@@ -33,7 +33,6 @@ import { Map } from './components/Map';
 import { TrackingControls } from './components/TrackingControls';
 import { RightSidebar } from './ui/RightSidebar';
 import { LeftSidebar } from './ui/LeftSideBar';
-import { ZoomIndicator } from './ui/ZoomIndicator';
 
 // NEW: Notification System & Overlays
 import { NotificationContainer } from './ui/notifications/NotificationContainer';
@@ -899,8 +898,6 @@ function App() {
       )}
 
       <NotificationContainer />
-
-      <ZoomIndicator />
 
       <ProfileOverlay isOpen={activeOverlay === 'profile'} onClose={closeOverlay} />
       <HistoryOverlay isOpen={activeOverlay === 'history'} onClose={closeOverlay} />

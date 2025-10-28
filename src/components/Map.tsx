@@ -36,9 +36,9 @@ export const Map = ({
     // Disable map rotation on mobile
     if (window.innerWidth <= 768) {
       map.current.dragRotate.disable();
-      map.current.touchZoomRotate.disableRotation();
+      map.current.touchZoomRotate.enable();
     }
-    
+
   }, [map, isMapLoaded]);
 
   // === Avatar creation ===
