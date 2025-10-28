@@ -2,14 +2,14 @@
 
 @import "tailwindcss";
 
-.map-container { 
+/* .map-container { 
   height: 100vh;
   height: -webkit-fill-available;
   height: calc(var(--vh, 1vh) * 100);
   width: 100%;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
-}
+} */
 
 @supports (height: 100svh) {
   .map-container {
@@ -46,23 +46,6 @@
   backdrop-filter: blur(8px);
   padding: 8px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
-/* --- Панель трекера (нижняя, центр) --- */
-.tracking-toolbar {
-  position: absolute;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  display: flex;
-  gap: 12px;
-  background-color: rgba(20, 23, 28, 0.85);
-  backdrop-filter: blur(8px);
-  padding: 8px;
-  border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
