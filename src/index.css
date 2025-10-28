@@ -9,11 +9,10 @@ html, body, #root {
   margin: 0;
   padding: 0;
   width: 100%;
-  
   height: 100svh;
-
   overflow-x: hidden;
-  overscroll-behavior-y: contain;
+  position: fixed;
+  overscroll-behavior-y: none;
 }
 
 /* iOS Safari специфичные стили */
@@ -61,7 +60,8 @@ html, body, #root {
 
 /* Prevent pull-to-refresh and overscroll */
 body {
-  overscroll-behavior-y: contain;
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: auto;
 }
 
 /* Prevent text selection and tap highlight */
