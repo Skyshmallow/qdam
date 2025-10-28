@@ -1,3 +1,4 @@
+/* src/styles/globals.css */
 @import "tailwindcss";
 
 /* ========================================
@@ -288,16 +289,12 @@ body {
 
 @supports (-webkit-touch-callout: none) {
   .map-container {
-    height: 100vh;
-    
-    height: -webkit-fill-available;
+    height: 100vh !important;
   }
 }
 
-@supports (height: 100dvh) {
-  .map-container {
-    height: 100dvh;
-  }
+.map-container {
+  height: 100vh !important; /* Карта всегда на весь экран */
 }
 
 .pulsing-avatar {
@@ -450,6 +447,21 @@ body {
   pointer-events: none;
   transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   max-width: calc(100vw - 2rem);
+}
+
+@supports (-webkit-touch-callout: none) {
+  .tracking-controls {
+    bottom: calc(1rem + var(--sab, 0px));
+    /* Используем динамический viewport для адаптации */
+  }
+}
+
+/* Адаптация к динамическому viewport */
+@supports (height: 100dvh) {
+  .tracking-controls {
+    /* Рассчитываем отступ от нижнего края динамического viewport */
+    bottom: calc(1rem + var(--sab, 0px));
+  }
 }
 
 .tracking-toolbar {
