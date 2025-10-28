@@ -862,7 +862,7 @@ function App() {
 
   // === UI ===
   return (
-    <div className="w-screen h-screen relative">
+    <div className="app-container">
       <Map {...mapProps} />
       <LeftSidebar {...leftSidebarProps} />
       <TrackingControls {...trackingControlsProps} />
