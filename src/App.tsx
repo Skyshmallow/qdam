@@ -4,7 +4,6 @@ import * as turf from '@turf/turf';
 import type { Feature, Polygon, MultiPolygon, GeoJsonProperties } from 'geojson';
 import { Lock } from 'lucide-react';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import './App.css';
 
 // --- Imports ---
 import { useMapStore } from './store/mapStore';
