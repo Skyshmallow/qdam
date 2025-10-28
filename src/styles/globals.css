@@ -436,31 +436,47 @@ body {
 
 .tracking-controls {
   position: fixed;
-  bottom: calc(1rem + var(--sab, 0px));
+  bottom: max(1rem, env(safe-area-inset-bottom, 0px));
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateZ(0);
   z-index: 20;
+  
+  /* Плавная адаптация к viewport */
+  transition: 
+    bottom 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  
+  /* GPU-ускорение */
+  will-change: bottom;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  
+  /* Анти-алиасинг для плавности */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  pointer-events: none;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 0.75rem;
-  pointer-events: none;
-  transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   max-width: calc(100vw - 2rem);
 }
 
+/* iOS Safari viewport transition override */
 @supports (-webkit-touch-callout: none) {
   .tracking-controls {
-    bottom: calc(1rem + var(--sab, 0px));
-    /* Используем динамический viewport для адаптации */
+    /* Для iOS используем более медленный easing для сглаживания */
+    transition: 
+      bottom 0.4s cubic-bezier(0.25, 0.1, 0.25, 1.0),
+      transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1.0);
   }
 }
 
-/* Адаптация к динамическому viewport */
+/* Адаптация под dynamic viewport height (dvh) */
 @supports (height: 100dvh) {
   .tracking-controls {
-    /* Рассчитываем отступ от нижнего края динамического viewport */
-    bottom: calc(1rem + var(--sab, 0px));
+    bottom: calc(100dvh - 100vh + 1rem + env(safe-area-inset-bottom, 0px));
   }
 }
 
