@@ -2,14 +2,16 @@
 
 @import "tailwindcss";
 
-/* .map-container { 
-  height: 100vh;
-  height: -webkit-fill-available;
-  height: calc(var(--vh, 1vh) * 100);
+.map-container { 
   width: 100%;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-} */
+  height: 100%;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
 
 @supports (height: 100svh) {
   .map-container {
@@ -406,35 +408,40 @@
 
 /* ЕДИНОЕ ПРАВИЛО ДЛЯ ПОЗИЦИОНИРОВАНИЯ ПАНЕЛИ УПРАВЛЕНИЯ */
 .tracking-controls {
-  bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  position: fixed;
+  bottom: 3.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  pointer-events: auto;
 }
 
 /* --- Панель трекера (нижняя, центр) --- */
 .tracking-toolbar {
-  position: absolute;
-  bottom: max(3.5rem, calc(3.5rem + env(safe-area-inset-bottom)));
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  display: flex;
-  gap: 12px;
-  background-color: rgba(20, 23, 28, 0.85);
-  backdrop-filter: blur(8px);
-  padding: 8px;
-  border-radius: 16px;
+  background: rgba(20, 23, 28, 0.95);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  width: calc(100% - 2rem); /* Ширина для мобильных */
-  max-width: 400px;
-  justify-content: center;
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 /* Адаптация размеров для мобильных устройств */
 @media (max-width: 768px) {
   .tracking-controls {
-    width: calc(100% - 2rem);
-    max-width: 400px;
-    gap: 0.75rem;
+    bottom: calc(2rem + var(--sab, 0));
+    gap: 0.5rem;
+  }
+  
+  .tracking-toolbar {
     padding: 0.75rem;
+    max-width: calc(100vw - 2rem);
   }
 }

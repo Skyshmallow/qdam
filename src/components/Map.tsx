@@ -146,7 +146,7 @@ export const Map = ({
 
   }, [isMapLoaded, map, simulatableRoute, currentPath, routeWaypoints, territory, spheres]);
 
-  return <div ref={mapContainer} className="w-full h-full" />;
+  return <div ref={mapContainer} className="map-container w-full h-full" />;
 };
 
 export default Map;

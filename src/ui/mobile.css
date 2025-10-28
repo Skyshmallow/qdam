@@ -10,44 +10,18 @@
 }
 
 @media (max-width: 768px) {
-  /* Fix body height for mobile browsers */
-  body {
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-    width: 100%;
-    overflow: hidden;
-    position: fixed; 
-  }
 
-  @supports (height: 100svh) {
-    body {
-      min-height: 100svh;
-    }
-  }
-  
-  html {
-    height: -webkit-fill-available;
+   #root {
+    height: 100%;
     overflow: hidden;
   }
 
-  @supports (height: 100svh) {
-    html {
-      height: 100svh;
-    }
-  }
-  
-  #root {
-    height: 100vh;
-    height: -webkit-fill-available;
-    overflow-x: hidden;
-    position: fixed;
-    width: 100%;
-  }
-
-  @supports (height: 100svh) {
-    #root {
-      height: 100svh;
-    }
+  /* Map container adjustments */
+  .map-container {
+    height: 100% !important;
+    position: absolute !important;
+    overflow: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
   }
 
   /* Left Sidebar - make narrower on mobile */
@@ -110,51 +84,16 @@
     padding: 0.75rem !important;
   }
   
-  /* Map container adjustments */
-  .map-container {
-    height: 100vh !important;
-    height: -webkit-fill-available !important;
-    position: fixed !important; 
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    overflow: hidden !important;
-    -webkit-overflow-scrolling: auto !important;
+  /* Tracking controls mobile positioning */
+  .tracking-controls {
+    bottom: calc(1.5rem + var(--sab, 0)) !important;
+    left: 1rem !important;
+    right: 1rem !important;
+    transform: none !important;
+    width: calc(100% - 2rem) !important;
   }
-
-  @supports (height: 100svh) {
-    .map-container {
-      height: 100svh !important;
-    }
+  
+  .tracking-toolbar {
+    width: 100%;
   }
 }
-
-/* Extra small devices */
-/* @media (max-width: 480px) {
-  .tracking-controls {
-    bottom: 5rem !important;
-  }
-  
-  @supports (-webkit-touch-callout: none) {
-    .tracking-controls {
-      bottom: max(10rem, calc(10rem + env(safe-area-inset-bottom, 0px))) !important;
-    }
-  }
-} */
-
-/* Landscape mode on mobile */
-/* @media (max-width: 896px) and (orientation: landscape) {
-  .tracking-controls {
-    bottom: 3rem !important;
-    max-width: 300px !important;
-    gap: 0.5rem !important;
-    padding: 0.5rem !important;
-  }
-  
-  @supports (-webkit-touch-callout: none) {
-    .tracking-controls {
-      bottom: max(5rem, calc(5rem + env(safe-area-inset-bottom, 0px))) !important;
-    }
-  }
-} */
