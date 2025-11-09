@@ -63,7 +63,6 @@ npm run preview
 npm run dev          # Запуск dev-сервера с HMR
 npm run build        # Production сборка
 npm run preview      # Превью production сборки
-npm run lint         # Проверка кода ESLint
 ```
 
 ---
