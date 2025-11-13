@@ -44,6 +44,7 @@ export interface MapProps {
   onMapClick: (coordinates: [number, number]) => void;
   onMapLoad?: (map: any) => void;
   onThreeLayerReady?: (threeLayer: any) => void;
+  threeLayerRef?: React.RefObject<any>;
 }
 
 /** @deprecated Use Node instead */

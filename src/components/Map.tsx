@@ -20,6 +20,7 @@ export const Map = ({
   onMapClick,
   onMapLoad,
   onThreeLayerReady,
+  threeLayerRef,
 }: MapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null!);
   const { map, isMapLoaded } = useMapbox(
@@ -137,8 +138,26 @@ export const Map = ({
     const territoryGeoJSON = territory || turf.featureCollection([]);
     updateGeoJSONSource(map.current, 'territory', territoryGeoJSON);
 
+    // ✅ 3D Grass/Territory Effect
+    if (threeLayerRef?.current) {
+      threeLayerRef.current.updateTerritory(territory);
+    }
+
     // ✅ Spheres
     updateGeoJSONSource(map.current, 'spheres', spheres);
+
+    // ✅ Use ThreeLayer ref instead of getLayer
+    const threeLayer = threeLayerRef?.current;
+    
+    if (threeLayer) {
+      if (threeLayer.updateSpheres) {
+        threeLayer.updateSpheres(spheres);
+      }
+      // 🚫 Grass/Territory disabled temporarily - calculations need fixing
+      // if (threeLayer.updateTerritory) {
+      //   threeLayer.updateTerritory(territory);
+      // }
+    }
 
   }, [isMapLoaded, map, simulatableRoute, currentPath, routeWaypoints, territory, spheres]);
 

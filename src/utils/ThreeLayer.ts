@@ -3,6 +3,8 @@
 import mapboxgl from 'mapbox-gl';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { SphereEffectManager } from '../effects/sphere'; 
+import { TerritoryEffect, type TerritoryConfig } from '../effects/territory';
 
 const MODEL_SCALE = 25;
 
@@ -17,9 +19,14 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
   private renderer?: THREE.WebGLRenderer;
   private castleModel?: THREE.Group;
 
-  // ✅ FIXED: Store each castle with its INDEPENDENT transform
+  // Castles
   private castleObjects = new Map<string, { mesh: THREE.Group; transform: any }>();
   
+  // Sphere Effect Manager
+  private sphereManager?: SphereEffectManager;
+  private lastFrameTime: number = 0;
+  private territoryEffect?: TerritoryEffect;
+
   private pendingChainsData: Array<{ 
     id: number; 
     start: [number, number]; 
@@ -60,6 +67,16 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
     sunlight.position.set(0, -70, 100).normalize();
     this.scene.add(sunlight);
 
+    // Initialize Sphere Manager
+    this.sphereManager = new SphereEffectManager(this.scene, {
+      enableRadar: true,
+      enablePlasma: true,
+      enableSparks: true,
+    });
+    this.log('SphereEffectManager initialized');
+
+    // Territory will be created from real game data via updateTerritory()
+
     // Load 3D model
     const loader = new GLTFLoader();
     loader.load(
@@ -77,23 +94,143 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
       undefined,
       (error) => console.error(`[ThreeLayer:${this.id}] ERROR: Model loading failed`, error)
     );
+
+    // Start animation loop
+    this.lastFrameTime = performance.now();
   }
 
-  // ✅ FIXED: Render each castle INDEPENDENTLY
+  public updateTerritory(territoryGeoJSON: GeoJSON.Feature | null): void {
+    // ✅ Удаляем старую территорию всегда
+    if (this.territoryEffect) {
+      this.scene.remove(this.territoryEffect.getGroup());
+      this.territoryEffect.dispose();
+      this.territoryEffect = undefined;
+    }
+
+    // ✅ Если territoryGeoJSON null - просто выходим (территория удалена)
+    if (!territoryGeoJSON || territoryGeoJSON.geometry.type !== 'Polygon') {
+      return;
+    }
+
+    // Получаем координаты из GeoJSON
+    const coordinates = territoryGeoJSON.geometry.coordinates[0] as [number, number][];
+
+    // ✅ Определяем цвет по владельцу территории
+    const owner = territoryGeoJSON.properties?.owner || 'player';
+    
+    let color: { r: number; g: number; b: number; a: number };
+    
+    if (owner === 'player') {
+      color = { r: 16, g: 185, b: 129, a: 1.0 }; // Зелёный
+    } else if (owner === 'enemy') {
+      color = { r: 239, g: 68, b: 68, a: 1.0 }; // Красный
+    } else if (owner === 'ally') {
+      color = { r: 59, g: 130, b: 246, a: 1.0 }; // Синий
+    } else {
+      color = { r: 156, g: 163, b: 175, a: 1.0 }; // Серый (неизвестный)
+    }
+
+    const config: TerritoryConfig = {
+      coordinates,
+      color,
+      instanceCount: 15000, // ✅ Густая трава
+      map: this.map,
+    };
+
+    this.territoryEffect = new TerritoryEffect(config);
+    this.scene.add(this.territoryEffect.getGroup());
+  }
+
+  // Render castles + spheres + territory
+  // ✅ ПРАВИЛЬНЫЙ ПОРЯДОК: Сферы → Территория → Замки
   render(_gl: WebGLRenderingContext, matrix: number[]): void {
     if (!this.renderer || !this.map) return;
 
+    // Calculate deltaTime
+    const currentTime = performance.now();
+    const deltaTime = (currentTime - this.lastFrameTime) / 1000;
+    this.lastFrameTime = currentTime;
+
+    // ✅ Обновляем анимацию травы
+    if (this.territoryEffect) {
+      this.territoryEffect.update(deltaTime);
+    }
+
     const baseMatrix = new THREE.Matrix4().fromArray(matrix);
 
-    // Render each castle with its own transform
+    // UPDATE sphere animations FIRST (before rendering!)
+    if (this.sphereManager) {
+      this.sphereManager.update(deltaTime);
+    }
+
+    // ✅ СЛОЙ 1: Рендерим сферы ПЕРВЫМИ (нижний слой)
+    if (this.sphereManager && this.renderer) {
+      this.sphereManager.render(_gl, baseMatrix, this.renderer, this.camera);
+    }
+
+    // ✅ СЛОЙ 2: Рендерим территорию (средний слой - закрывает сферы)
+    if (this.territoryEffect) {
+      this.renderTerritory(baseMatrix);
+    }
+
+    // ✅ СЛОЙ 3: Рендерим замки ПОСЛЕДНИМИ (верхний слой - видны поверх всего)
     this.castleObjects.forEach((castle) => {
       this.renderCastle(baseMatrix, castle.mesh, castle.transform);
     });
 
     this.map.triggerRepaint();
   }
+  /**
+   * ✅ Рендерит территорию с transform matrix (как замки/сферы)
+   */
+  private renderTerritory(baseMatrix: THREE.Matrix4): void {
+    if (!this.territoryEffect || !this.renderer) return;
 
-  // ✅ NEW: Render a single castle with its own transform
+    const { translateX, translateY, translateZ, rotateX, rotateY, rotateZ, scale } = this.territoryEffect.transform;
+
+    // Создаём матрицы вращения
+    const rotationX = new THREE.Matrix4().makeRotationX(rotateX);
+    const rotationY = new THREE.Matrix4().makeRotationY(rotateY);
+    const rotationZ = new THREE.Matrix4().makeRotationZ(rotateZ);
+
+    // ✅ TRANSFORM MATRIX КАК У ЗАМКОВ/СФЕР
+    const localTransform = new THREE.Matrix4()
+      .makeTranslation(translateX, translateY, translateZ)
+      .scale(new THREE.Vector3(scale, -scale, scale)) // ← КЛЮЧ! Масштаб через матрицу
+      .multiply(rotationX)
+      .multiply(rotationY)
+      .multiply(rotationZ);
+
+    this.camera.projectionMatrix = baseMatrix.clone().multiply(localTransform);
+
+    // Создаём временную сцену
+    const tempScene = new THREE.Scene();
+    
+    // Добавляем освещение
+    this.scene.children
+      .filter(child => child instanceof THREE.Light)
+      .forEach(light => tempScene.add(light.clone()));
+
+    // Добавляем территорию
+    const grassGroup = this.territoryEffect.getGroup();
+    if (grassGroup.parent === this.scene) {
+      this.scene.remove(grassGroup);
+    }
+    tempScene.add(grassGroup);
+
+    // Рендерим
+    this.renderer.resetState();
+    this.renderer.render(tempScene, this.camera);
+
+    // Возвращаем в основную сцену
+    tempScene.remove(grassGroup);
+    this.scene.add(grassGroup);
+
+    // Очищаем
+    tempScene.clear();
+  }
+
+  // Render a single castle with its own transform
   private renderCastle(baseMatrix: THREE.Matrix4, mesh: THREE.Group, transform: any): void {
     const { translateX, translateY, translateZ, rotateX, rotateY, rotateZ, scale } = transform;
 
@@ -101,7 +238,7 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
     const rotationY = new THREE.Matrix4().makeRotationY(rotateY);
     const rotationZ = new THREE.Matrix4().makeRotationZ(rotateZ);
 
-    // ✅ FIXED: Build transform matrix for THIS castle ONLY
+    // Build transform matrix for THIS castle ONLY
     const localTransformMatrix = new THREE.Matrix4()
       .makeTranslation(translateX, translateY, translateZ)
       .scale(new THREE.Vector3(scale, -scale, scale))
@@ -111,7 +248,7 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
 
     this.camera.projectionMatrix = baseMatrix.clone().multiply(localTransformMatrix);
     
-    // ✅ FIXED: Create temp scene with ONLY this castle
+    // Create temp scene with ONLY this castle
     const tempScene = new THREE.Scene();
     tempScene.add(mesh);
     
@@ -126,12 +263,31 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
   }
   
   onRemove(): void {
+    // Cleanup castles
     this.castleObjects.forEach(castle => {
-      // Remove mesh from temp scene (it was never added to main scene)
       castle.mesh.clear();
     });
     this.castleObjects.clear();
+
+    //  Cleanup spheres
+    if (this.sphereManager) {
+      this.sphereManager.dispose();
+      this.sphereManager = undefined;
+    }
+
     this.scene.clear();
+    this.log('Layer removed and cleaned up');
+  }
+
+  // Public method to sync spheres with GeoJSON
+  public updateSpheres(spheresGeoJSON: GeoJSON.FeatureCollection): void {
+    if (!this.sphereManager) {
+      console.warn('[ThreeLayer] SphereManager not initialized yet');
+      return;
+    }
+
+    this.sphereManager.syncWithGeoJSON(spheresGeoJSON);
+    this.log('Spheres updated', { count: this.sphereManager.getSphereCount() });
   }
   
   public setChains(chains: Array<{
@@ -168,13 +324,13 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
     });
   }
   
-  // ✅ FIXED: Create castle with ABSOLUTE coordinates
+  //  Create castle with ABSOLUTE coordinates
   private addOrUpdateCastle(id: string, coords: [number, number]): void {
     if (this.castleObjects.has(id) || !this.castleModel) {
       return;
     }
 
-    // ✅ Calculate ABSOLUTE transform for this castle
+    // Calculate ABSOLUTE transform for this castle
     const mercatorCoords = mapboxgl.MercatorCoordinate.fromLngLat(coords, 0);
 
     const transform = {
@@ -188,12 +344,8 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
     };
 
     const castleMesh = this.castleModel.clone();
-    // ✅ Position at origin of its own coordinate system
     castleMesh.position.set(0, 0, 0); 
     castleMesh.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
-    
-    // ✅ DON'T add to main scene - we render it separately
-    // this.scene.add(castleMesh); // ← REMOVE THIS LINE
 
     this.castleObjects.set(id, { mesh: castleMesh, transform });
     this.log('Added new castle', { id, coords });

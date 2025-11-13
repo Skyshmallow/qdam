@@ -58,99 +58,63 @@ export const addMapLayers = (map: mapboxgl.Map) => {
   // --- Territory ---
   map.addSource('territory', { type: 'geojson', data: turf.featureCollection([]) });
 
+  // ✅ Territory fill скрыт - используем 3D траву вместо заливки
   map.addLayer({
-  id: 'territory-fill',
-  type: 'fill',
-  source: 'territory',
-  paint: {
-    // ✅ Динамический цвет: синий для постоянной, жёлтый для тестовой
-    'fill-color': [
-      'case',
-      ['get', 'isTemporary'],
-      '#fbbf24', // жёлтый для тестовой территории
-      '#3b82f6'  // синий для постоянной
-    ],
-    'fill-opacity': 0.15
-  }
-});
+    id: 'territory-fill',
+    type: 'fill',
+    source: 'territory',
+    layout: {
+      'visibility': 'none' // ← Скрываем 2D заливку
+    },
+    paint: {
+      'fill-color': [
+        'case',
+        ['==', ['get', 'owner'], 'player'],
+        '#10b981', // Зелёный (игрок)
+        ['==', ['get', 'owner'], 'enemy'],
+        '#ef4444', // Красный (враг)
+        ['==', ['get', 'owner'], 'ally'],
+        '#3b82f6', // Синий (союзник)
+        '#9ca3af'  // Серый (нейтральный)
+      ],
+      'fill-opacity': 0.15
+    }
+  });
 
-map.addLayer({
-  id: 'territory-outline',
-  type: 'line',
-  source: 'territory',
-  paint: {
-    'line-color': [
-      'case',
-      ['get', 'isTemporary'],
-      '#fbbf24', // жёлтый
-      '#60a5fa'  // синий
-    ],
-    'line-width': 2,
-    'line-dasharray': [
-      'case',
-      ['get', 'isTemporary'],
-      ['literal', [4, 2]], // пунктирная для тестовой
-      ['literal', [2, 2]]  // обычная
-    ]
-  }
-});
+  map.addLayer({
+    id: 'territory-outline',
+    type: 'line',
+    source: 'territory',
+    paint: {
+      'line-color': [
+        'case',
+        ['==', ['get', 'owner'], 'player'],
+        '#10b981', // Зелёный
+        ['==', ['get', 'owner'], 'enemy'],
+        '#ef4444', // Красный
+        ['==', ['get', 'owner'], 'ally'],
+        '#3b82f6', // Синий
+        '#9ca3af'  // Серый
+      ],
+      'line-width': 2,
+      'line-dasharray': [2, 2]
+    }
+  });
 
-  // --- Spheres (Enhanced with gradient) ---
+  // ========================================
+  // ✅ SPHERES - Только базовая заливка
+  // ========================================
+  
   map.addSource('spheres', { type: 'geojson', data: turf.featureCollection([]) });
   
+  // Базовая заливка (фон сферы)
   map.addLayer({
     id: 'spheres-fill',
     type: 'fill',
     source: 'spheres',
     paint: {
-      'fill-color': [
-        'interpolate',
-        ['linear'],
-        ['get', 'fill-opacity'],
-        0, '#001a33',
-        0.5, '#0066cc',
-        1, '#00d4ff'
-      ],
-      'fill-opacity': ['get', 'fill-opacity'],
-    }
-  });
-
-  map.addLayer({
-    id: 'spheres-outline',
-    type: 'line',
-    source: 'spheres',
-    layout: {
-      'line-join': 'round',
-      'line-cap': 'round'
-    },
-    paint: {
-      'line-color': [
-        'match',
-        ['get', 'ring'],
-        'inner', '#00ffff',
-        'middle', '#0099ff',
-        'outer', '#0066cc',
-        '#007cbf'
-      ],
-      'line-width': ['get', 'pulse-width'],
-      'line-opacity': ['get', 'pulse-opacity'],
-      'line-blur': 2
-    }
-  });
-
-  map.addLayer({
-    id: 'spheres-glow',
-    type: 'line',
-    source: 'spheres',
-    layout: {
-      'line-join': 'round',
-      'line-cap': 'round'
-    },
-    paint: {
-      'line-color': '#00ffff',
-      'line-width': ['*', ['get', 'pulse-width'], 1.5],
-      'line-opacity': ['*', ['get', 'pulse-opacity'], 0.3],
-      'line-blur': 6
+      'fill-color': 'rgba(251, 191, 36, 0.1)', // Жёлтый полупрозрачный
+      'fill-opacity': 0.15
     }
   });
 };

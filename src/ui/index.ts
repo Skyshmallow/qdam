@@ -16,3 +16,5 @@ export { OverlayBase } from './overlays/OverlayBase';
 export { ProfileOverlay } from './overlays/ProfileOverlay';
 export { HistoryOverlay } from './overlays/HistoryOverlay';
 export { LayersOverlay } from './overlays/LayersOverlay';
+
+// Effects

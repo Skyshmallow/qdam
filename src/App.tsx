@@ -224,6 +224,15 @@ function App() {
     threeLayerRef.current.setChains(chainsData as any);
   }, [chains, nodes, isThreeLayerReady, log]);
 
+  // ✅ Sync 3D spheres when spheres change
+  useEffect(() => {
+    if (!threeLayerRef.current || !isThreeLayerReady || !spheres) return;
+
+    log('Updating 3D spheres', { featureCount: spheres.features.length });
+    threeLayerRef.current.updateSpheres(spheres);
+
+  }, [spheres, isThreeLayerReady, log]);
+
   // === CURSOR ===
   useEffect(() => {
     if (!map) return;
@@ -276,7 +285,7 @@ function App() {
     };
   }, [map, activityState]);
 
-  // === TERRITORY CALCULATION (Convex Hull) ===
+  // === TERRITORY CALCULATION (ПРЯМО ИЗ КООРДИНАТ ЗАМКОВ) ===
   useEffect(() => {
     const allEstablishedNodes = nodes.filter(node => node.status === 'established');
 
@@ -286,34 +295,50 @@ function App() {
     }
 
     try {
-      const points = turf.featureCollection(
-        allEstablishedNodes.map(node => turf.point(node.coordinates))
-      );
-
-      const hull = turf.convex(points);
-
-      if (hull && hull.geometry.type === 'Polygon') {
-        const hasTemporaryNodes = allEstablishedNodes.some(n => n.isTemporary);
-        
-        hull.properties = {
-          ...hull.properties,
-          owner: 'player1',
-          isTemporary: hasTemporaryNodes,
-        };
-        
-        setTerritory(hull);
-        log('Territory recalculated', { 
-          totalNodes: allEstablishedNodes.length,
-          permanent: allEstablishedNodes.filter(n => !n.isTemporary).length,
-          temporary: allEstablishedNodes.filter(n => n.isTemporary).length,
-          isTemporary: hasTemporaryNodes,
-        });
-      } else {
-        setTerritory(null);
-        console.warn('[App] Convex hull result is not a Polygon', hull);
-      }
+      // ✅ БЕРЁМ КООРДИНАТЫ ЗАМКОВ НАПРЯМУЮ (без Convex Hull!)
+      const nodeCoordinates = allEstablishedNodes.map(node => node.coordinates);
+      
+      // ✅ Сортируем по углу от центра (чтобы полигон не самопересекался)
+      const centerPoint = turf.center(turf.featureCollection(
+        allEstablishedNodes.map(n => turf.point(n.coordinates))
+      ));
+      const [centerLng, centerLat] = centerPoint.geometry.coordinates;
+      
+      const sortedCoords = [...nodeCoordinates].sort((a, b) => {
+        const angleA = Math.atan2(a[1] - centerLat, a[0] - centerLng);
+        const angleB = Math.atan2(b[1] - centerLat, b[0] - centerLng);
+        return angleA - angleB;
+      });
+      
+      // ✅ Создаём полигон ИЗ КООРДИНАТ ЗАМКОВ (замыкаем полигон)
+      const territoryPolygon = turf.polygon([
+        [...sortedCoords, sortedCoords[0]] // Первая = последняя
+      ]);
+      
+      // 🔍 DEBUG: Логируем координаты
+      console.log('🏰 [App] Territory nodes:', allEstablishedNodes.map(n => ({
+        id: n.id,
+        coords: n.coordinates
+      })));
+      console.log('🌍 [App] Territory polygon coords:', territoryPolygon.geometry.coordinates[0]);
+      
+      const hasTemporaryNodes = allEstablishedNodes.some(n => n.isTemporary);
+      
+      territoryPolygon.properties = {
+        owner: 'player', // ✅ Используем 'player' (не 'player1')
+        isTemporary: hasTemporaryNodes,
+      };
+      
+      setTerritory(territoryPolygon);
+      log('Territory recalculated', { 
+        totalNodes: allEstablishedNodes.length,
+        permanent: allEstablishedNodes.filter(n => !n.isTemporary).length,
+        temporary: allEstablishedNodes.filter(n => n.isTemporary).length,
+        isTemporary: hasTemporaryNodes,
+      });
     } catch (error) {
-      console.error('[App] Error calculating convex hull:', error);
+      console.error('[App] Error calculating territory:', error);
+      setTerritory(null);
     }
 
   }, [nodes, log]);
@@ -799,6 +824,7 @@ function App() {
       spheres,
       isDrawingMode: activityState === 'planning_start' || activityState === 'planning_end',
       onMapClick: handleMapClick,
+      threeLayerRef, // ✅ Добавлено
     };
   }, [
     avatarPosition,
@@ -812,7 +838,8 @@ function App() {
     territory,
     spheres,
     activityState,
-    handleMapClick
+    handleMapClick,
+    threeLayerRef, // ✅ Добавлено
   ]);
 
   const trackingControlsProps = useMemo(() => ({
@@ -862,6 +889,7 @@ function App() {
   return (
     <div className="app-container">
       <Map {...mapProps} />
+      
       <LeftSidebar {...leftSidebarProps} />
       <TrackingControls {...trackingControlsProps} />
       <RightSidebar {...rightSidebarProps} />
