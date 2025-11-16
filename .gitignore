@@ -34,3 +34,7 @@ LOGGING_GUIDE.md
 
 # Supabase 
 .supabase
+
+
+# SQL files
+*.sql
