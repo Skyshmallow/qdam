@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { SphereEffectManager } from '../effects/sphere'; 
 import { TerritoryEffect, type TerritoryConfig } from '../effects/territory';
+import { gpuDetector } from '@shared/utils/gpuDetector';
 
 const MODEL_SCALE = 25;
 
@@ -26,6 +27,7 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
   private sphereManager?: SphereEffectManager;
   private lastFrameTime: number = 0;
   private territoryEffect?: TerritoryEffect;
+  private otherTerritoryEffects: Map<string, TerritoryEffect> = new Map();
 
   private pendingChainsData: Array<{ 
     id: number; 
@@ -36,9 +38,12 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
   }> | null = null;
 
   private log(step: string, details?: Record<string, unknown>): void {
-    const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
-    const detailsLog = details ? JSON.stringify(details) : '';
-    console.log(`[${timestamp}][ThreeLayer:${this.id}] ${step}`, detailsLog);
+    // Log only in development mode with debug flag
+    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_THREE_LAYER) {
+      const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
+      const detailsLog = details ? JSON.stringify(details) : '';
+      console.log(`[${timestamp}][ThreeLayer:${this.id}] ${step}`, detailsLog);
+    }
   }
 
   constructor(id: string) {
@@ -53,25 +58,38 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
 
   onAdd(map: mapboxgl.Map, gl: WebGLRenderingContext): void {
     this.map = map;
+    
+    // ✅ GPU Detection for adaptive quality
+    const gpuInfo = gpuDetector.gpuInfo;
+    const settings = gpuDetector.settings;
+    this.log('GPU Detection', { 
+      tier: gpuInfo.tier, 
+      renderer: gpuInfo.renderer,
+      grassCount: settings.grassInstanceCount 
+    });
+    
     this.renderer = new THREE.WebGLRenderer({
       canvas: map.getCanvas(),
       context: gl,
-      antialias: true,
+      antialias: settings.antialias,
     });
     this.renderer.autoClear = false;
 
-    // Add lighting
+    // Add lighting (adjust count based on GPU tier)
     const ambient = new THREE.AmbientLight(0xffffff, 0.75);
     this.scene.add(ambient);
-    const sunlight = new THREE.DirectionalLight(0xffffff, 0.75);
-    sunlight.position.set(0, -70, 100).normalize();
-    this.scene.add(sunlight);
+    
+    if (settings.maxLights >= 2) {
+      const sunlight = new THREE.DirectionalLight(0xffffff, 0.75);
+      sunlight.position.set(0, -70, 100).normalize();
+      this.scene.add(sunlight);
+    }
 
-    // Initialize Sphere Manager
+    // Initialize Sphere Manager (disable effects on low-end)
     this.sphereManager = new SphereEffectManager(this.scene, {
-      enableRadar: true,
-      enablePlasma: true,
-      enableSparks: true,
+      enableRadar: settings.enableSphereEffects,
+      enablePlasma: settings.enableSphereEffects,
+      enableSparks: settings.enableSphereEffects,
     });
     this.log('SphereEffectManager initialized');
 
@@ -133,12 +151,69 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
     const config: TerritoryConfig = {
       coordinates,
       color,
-      instanceCount: 15000, // ✅ Густая трава
+      instanceCount: gpuDetector.settings.grassInstanceCount, // ✅ Adaptive grass count
       map: this.map,
     };
 
     this.territoryEffect = new TerritoryEffect(config);
     this.scene.add(this.territoryEffect.getGroup());
+  }
+
+  /**
+   * Update other players' territories with their colors
+   */
+  public updateOtherTerritories(
+    territories: Array<{
+      userId: string;
+      territory: GeoJSON.Feature<GeoJSON.Polygon> | null;
+      color: string;
+    }>
+  ): void {
+    // Remove territories that no longer exist
+    const currentUserIds = new Set(territories.map(t => t.userId));
+    for (const [userId, effect] of this.otherTerritoryEffects.entries()) {
+      if (!currentUserIds.has(userId)) {
+        this.scene.remove(effect.getGroup());
+        effect.dispose();
+        this.otherTerritoryEffects.delete(userId);
+      }
+    }
+
+    // Update or create territories
+    territories.forEach(({ userId, territory, color }) => {
+      // Remove old territory for this user
+      const existingEffect = this.otherTerritoryEffects.get(userId);
+      if (existingEffect) {
+        this.scene.remove(existingEffect.getGroup());
+        existingEffect.dispose();
+        this.otherTerritoryEffects.delete(userId);
+      }
+
+      // Create new territory if exists
+      if (territory && territory.geometry.type === 'Polygon') {
+        const coordinates = territory.geometry.coordinates[0] as [number, number][];
+        
+        // Parse hex color to RGB
+        const hexColor = color.replace('#', '');
+        const colorRGB = {
+          r: parseInt(hexColor.substring(0, 2), 16),
+          g: parseInt(hexColor.substring(2, 4), 16),
+          b: parseInt(hexColor.substring(4, 6), 16),
+          a: 1.0,
+        };
+
+        const config: TerritoryConfig = {
+          coordinates,
+          color: colorRGB,
+          instanceCount: gpuDetector.settings.grassInstanceCount,
+          map: this.map,
+        };
+
+        const newEffect = new TerritoryEffect(config);
+        this.scene.add(newEffect.getGroup());
+        this.otherTerritoryEffects.set(userId, newEffect);
+      }
+    });
   }
 
   // Render castles + spheres + territory
@@ -151,9 +226,14 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
     const deltaTime = (currentTime - this.lastFrameTime) / 1000;
     this.lastFrameTime = currentTime;
 
-    // ✅ Обновляем анимацию травы
+    // ✅ Обновляем анимацию травы (своей территории)
     if (this.territoryEffect) {
       this.territoryEffect.update(deltaTime);
+    }
+
+    // ✅ Обновляем анимацию травы (других игроков)
+    for (const effect of this.otherTerritoryEffects.values()) {
+      effect.update(deltaTime);
     }
 
     const baseMatrix = new THREE.Matrix4().fromArray(matrix);
@@ -168,9 +248,15 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
       this.sphereManager.render(_gl, baseMatrix, this.renderer, this.camera);
     }
 
-    // ✅ СЛОЙ 2: Рендерим территорию (средний слой - закрывает сферы)
+    // ✅ СЛОЙ 2: Рендерим территории (средний слой - закрывает сферы)
+    // Own territory
     if (this.territoryEffect) {
       this.renderTerritory(baseMatrix);
+    }
+
+    // Other players' territories
+    for (const effect of this.otherTerritoryEffects.values()) {
+      this.renderOtherTerritory(baseMatrix, effect);
     }
 
     // ✅ СЛОЙ 3: Рендерим замки ПОСЛЕДНИМИ (верхний слой - видны поверх всего)
@@ -213,6 +299,56 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
 
     // Добавляем территорию
     const grassGroup = this.territoryEffect.getGroup();
+    if (grassGroup.parent === this.scene) {
+      this.scene.remove(grassGroup);
+    }
+    tempScene.add(grassGroup);
+
+    // Рендерим
+    this.renderer.resetState();
+    this.renderer.render(tempScene, this.camera);
+
+    // Возвращаем в основную сцену
+    tempScene.remove(grassGroup);
+    this.scene.add(grassGroup);
+
+    // Очищаем
+    tempScene.clear();
+  }
+
+  /**
+   * ✅ Рендерит территорию другого игрока
+   */
+  private renderOtherTerritory(baseMatrix: THREE.Matrix4, effect: TerritoryEffect): void {
+    if (!this.renderer) return;
+
+    const { translateX, translateY, translateZ, rotateX, rotateY, rotateZ, scale } = effect.transform;
+
+    // Создаём матрицы вращения
+    const rotationX = new THREE.Matrix4().makeRotationX(rotateX);
+    const rotationY = new THREE.Matrix4().makeRotationY(rotateY);
+    const rotationZ = new THREE.Matrix4().makeRotationZ(rotateZ);
+
+    // Transform matrix
+    const localTransform = new THREE.Matrix4()
+      .makeTranslation(translateX, translateY, translateZ)
+      .scale(new THREE.Vector3(scale, -scale, scale))
+      .multiply(rotationX)
+      .multiply(rotationY)
+      .multiply(rotationZ);
+
+    this.camera.projectionMatrix = baseMatrix.clone().multiply(localTransform);
+
+    // Создаём временную сцену
+    const tempScene = new THREE.Scene();
+    
+    // Добавляем освещение
+    this.scene.children
+      .filter(child => child instanceof THREE.Light)
+      .forEach(light => tempScene.add(light.clone()));
+
+    // Добавляем территорию
+    const grassGroup = effect.getGroup();
     if (grassGroup.parent === this.scene) {
       this.scene.remove(grassGroup);
     }

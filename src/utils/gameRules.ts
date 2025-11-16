@@ -1,5 +1,7 @@
-import * as turf from '@turf/turf';
+import { point } from '@turf/helpers';
+import distance from '@turf/distance';
 import type { Node, Chain } from '../types';
+import { nodeSpatialIndex } from '@shared/spatial/spatialIndex';
 
 /**
  * Радиус сферы влияния в километрах
@@ -47,6 +49,7 @@ export function canCreateChainToday(
 
 /**
  * Проверить, находится ли точка внутри сферы влияния
+ * ✅ Оптимизировано с помощью spatial index (O(log n) вместо O(n))
  */
 export function isInsideSphereOfInfluence(
   coordinates: [number, number],
@@ -55,12 +58,18 @@ export function isInsideSphereOfInfluence(
 ): boolean {
   if (nodes.length === 0) return false;
 
-  const clickPoint = turf.point(coordinates);
+  // ✅ Используем spatial index для быстрого поиска кандидатов
+  const candidates = nodeSpatialIndex.searchRadius(coordinates);
+  
+  if (candidates.length === 0) return false;
 
-  return nodes.some(node => {
-    const nodePoint = turf.point(node.coordinates);
-    const distance = turf.distance(clickPoint, nodePoint, { units: 'kilometers' });
-    return distance <= radiusKm;
+  // Точная проверка расстояния только для кандидатов
+  const clickPoint = point(coordinates);
+
+  return candidates.some(node => {
+    const nodePoint = point(node.coordinates);
+    const dist = distance(clickPoint, nodePoint, { units: 'kilometers' });
+    return dist <= radiusKm;
   });
 }
 

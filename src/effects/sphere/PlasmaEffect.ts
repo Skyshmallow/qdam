@@ -8,6 +8,7 @@ import { PLASMA_VERTEX_SHADER } from './shaders/plasma.vert';
 import { PLASMA_FRAGMENT_SHADER } from './shaders/plasma.frag';
 import { EFFECT_SIZES, ANIMATION_SPEEDS, VISUAL_PARAMS } from './constants';
 import type { EffectColor } from './types';
+import { geometryCache } from '@shared/utils/geometryCache';
 
 interface PlasmaRing {
   mesh: THREE.Mesh;
@@ -53,11 +54,10 @@ export class PlasmaEffect {
     const { minRadius, thickness } = EFFECT_SIZES.plasma;
     const segments = 64; // Гладкий круг
     
-    const geometry = new THREE.RingGeometry(
-      minRadius - thickness / 2,
-      minRadius + thickness / 2,
-      segments
-    );
+    // ✅ Use cached geometry instead of creating new one
+    const innerRadius = minRadius - thickness / 2;
+    const outerRadius = minRadius + thickness / 2;
+    const geometry = geometryCache.getRing(innerRadius, outerRadius, segments);
     
     return geometry;
   }

@@ -18,7 +18,7 @@ interface ChainCreationResult {
  * 
  * @param startCoords - Координаты начальной точки
  * @param endCoords - Координаты конечной точки
- * @param path - Массив координат пути
+ * @param path - Массив координат пути (должен содержать ровно 2 точки для реальных цепей)
  * @param isTemporary - true = симуляция (не сохранять), false = реальный поход
  * @returns Объект с nodeA, nodeB и chain
  */
@@ -29,6 +29,12 @@ export function createChainFromPath(
   isTemporary: boolean = false
 ): ChainCreationResult {
   const now = Date.now();
+
+  // Для реальных цепей проверяем, что path содержит ровно 2 точки
+  if (!isTemporary && path.length !== 2) {
+    console.warn(`[ChainFactory] Path should have exactly 2 points, got ${path.length}. Reducing...`);
+    path = [path[0], path[path.length - 1]];
+  }
 
   // Создаем узел A (начало)
   const nodeA: Node = {

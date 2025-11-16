@@ -9,6 +9,7 @@ interface LeftSidebarProps {
   geolocationState: GeolocationState;
   isSimulating: boolean;
   onSimulateClick: () => void;
+  isDeveloper: boolean;
 }
 
 export const LeftSidebar = ({
@@ -18,6 +19,7 @@ export const LeftSidebar = ({
   geolocationState,
   isSimulating,
   onSimulateClick,
+  isDeveloper,
 }: LeftSidebarProps) => {
 
   // Helper to determine geolocation button class
@@ -67,15 +69,17 @@ export const LeftSidebar = ({
         )}
       </button>
 
-      {/* Simulate Button */}
-      <button
-        onClick={onSimulateClick}
-        className={`scifi-button scifi-button-simulate ${isSimulating ? 'active' : ''}`}
-        title={isSimulating ? "Остановить симуляцию" : "Режим симуляции"}
-        aria-label={isSimulating ? "Stop Simulation" : "Start Simulation"}
-      >
-        <FlaskConical size={20} strokeWidth={2} />
-      </button>
+      {/* Simulate Button - Only visible to developers */}
+      {isDeveloper && (
+        <button
+          onClick={onSimulateClick}
+          className={`scifi-button scifi-button-simulate ${isSimulating ? 'active' : ''}`}
+          title={isSimulating ? "Остановить симуляцию" : "Режим симуляции"}
+          aria-label={isSimulating ? "Stop Simulation" : "Start Simulation"}
+        >
+          <FlaskConical size={20} strokeWidth={2} />
+        </button>
+      )}
     </div>
   );
 };

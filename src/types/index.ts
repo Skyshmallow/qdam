@@ -29,6 +29,24 @@ export interface Chain {
 export type TrackingState = 'idle' | 'recording' | 'paused';
 
 /**
+ * Player territory for multiplayer display
+ */
+export interface PlayerTerritory {
+  userId: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  territoryKm2: number;
+  territory: Feature<Polygon> | null;
+  color: string;
+  nodes: Array<[number, number]>;
+  chains: Array<{
+    id: string;
+    path: number[][];
+  }>;
+}
+
+/**
  * Props для компонента Map
  */
 export interface MapProps {
@@ -45,6 +63,9 @@ export interface MapProps {
   onMapLoad?: (map: any) => void;
   onThreeLayerReady?: (threeLayer: any) => void;
   threeLayerRef?: React.RefObject<any>;
+  // Multiplayer
+  otherTerritories?: PlayerTerritory[];
+  territoryConflicts?: string[];
 }
 
 /** @deprecated Use Node instead */

@@ -9,6 +9,7 @@ import { RadarEffect } from './RadarEffect';
 import { PlasmaEffect } from './PlasmaEffect';
 import { SparksEffect } from './SparksEffect';
 import { SPHERE_COLORS, DEFAULT_SPHERE_CONFIG, EFFECT_SIZES } from './constants';
+import { geometryCache } from '@shared/utils/geometryCache';
 
 import type { 
   SphereEffectConfig, 
@@ -138,12 +139,10 @@ export class SphereEffectManager {
     const group = new THREE.Group();
     const { radius, thickness } = EFFECT_SIZES.outline;
 
-    // Create circle geometry
-    const geometry = new THREE.RingGeometry(
-      radius - (thickness / 2), // внутренний радиус
-      radius + (thickness / 2), // внешний радиус
-      128         // segments (гладкий круг)
-    );
+    // ✅ Use cached geometry
+    const innerRadius = radius - thickness / 2;
+    const outerRadius = radius + thickness / 2;
+    const geometry = geometryCache.getRing(innerRadius, outerRadius, 128);
 
     // Create glowing material
     const material = new THREE.ShaderMaterial({
@@ -216,7 +215,10 @@ export class SphereEffectManager {
     sphere.transform.translateY = mercatorCoords.y;
     sphere.transform.scale = mercatorCoords.meterInMercatorCoordinateUnits();
 
-    console.log(`[SphereEffectManager] Updated sphere ${id} to`, newCoordinates);
+    // Log only in development mode (reduces console spam)
+    if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_SPHERES) {
+      console.log(`[SphereEffectManager] Updated sphere ${id} to`, newCoordinates);
+    }
   }
 
   /**

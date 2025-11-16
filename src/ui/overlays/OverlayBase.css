@@ -96,6 +96,7 @@
 .overlay-body {
   padding: 1.5rem;
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
 }
 

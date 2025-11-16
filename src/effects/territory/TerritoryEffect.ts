@@ -4,10 +4,14 @@
  */
 import * as THREE from 'three';
 import mapboxgl from 'mapbox-gl';
-import * as turf from '@turf/turf';
+import { point, polygon } from '@turf/helpers';
+import distance from '@turf/distance';
+import bbox from '@turf/bbox';
+import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import { GRASS_VERTEX_SHADER } from './shaders/grass.vert';
 import { GRASS_FRAGMENT_SHADER } from './shaders/grass.frag';
 import type { EffectColor } from '../sphere/types';
+import { geometryCache } from '@shared/utils/geometryCache';
 
 export interface TerritoryConfig {
   coordinates: [number, number][];
@@ -38,7 +42,7 @@ export class TerritoryEffect {
     this.group = new THREE.Group();
     this.dummy = new THREE.Object3D();
     
-    // ✅ Густая трава (15000 травинок)
+    // ✅ Adaptive instance count (будет настроено из ThreeLayer на основе GPU)
     const instanceCount = config.instanceCount || 15000;
     
     // ✅ Вычисляем центр и масштаб территории
@@ -82,8 +86,8 @@ export class TerritoryEffect {
     this.groundMesh.renderOrder = 0; // Рендерить ПЕРВОЙ
     this.group.add(this.groundMesh);
     
-    // ✅ ВЕРТИКАЛЬНАЯ трава в МЕТРАХ
-    const bladeGeometry = new THREE.PlaneGeometry(0.5, 3.0, 1, 4);
+    // ✅ ВЕРТИКАЛЬНАЯ трава в МЕТРАХ - используем cached геометрию
+    const bladeGeometry = geometryCache.getPlane(0.5, 3.0, 1, 4);
     bladeGeometry.rotateX(Math.PI / 2); // ← КЛЮЧЕВОЕ! Поворот в вертикальное положение
     bladeGeometry.translate(0, 0, 1.5); // Сдвиг вверх по Z (трава растет вверх)
     
@@ -144,14 +148,14 @@ export class TerritoryEffect {
       const [lng, lat] = coord;
       
       // Конвертируем в метры от центра
-      const distanceX = turf.distance(
-        turf.point([centerLng, centerLat]),
-        turf.point([lng, centerLat]),
+      const distanceX = distance(
+        point([centerLng, centerLat]),
+        point([lng, centerLat]),
         { units: 'meters' }
       );
-      const distanceY = turf.distance(
-        turf.point([centerLng, centerLat]),
-        turf.point([centerLng, lat]),
+      const distanceY = distance(
+        point([centerLng, centerLat]),
+        point([centerLng, lat]),
         { units: 'meters' }
       );
       
@@ -171,8 +175,8 @@ export class TerritoryEffect {
   
   private positionGrassBlades(coords: [number, number][], center: [number, number], count: number): void {
     // Создаем полигон, убедившись, что он замкнут
-    const polygon = turf.polygon([[...coords, coords[0]]]);
-    const bbox = turf.bbox(polygon);
+    const poly = polygon([[...coords, coords[0]]]);
+    const box = bbox(poly);
     
     // Используем ПЕРЕДАННЫЙ центр, а не вычисляем новый
     const [centerLng, centerLat] = center;
@@ -184,14 +188,14 @@ export class TerritoryEffect {
     const maxAttempts = count * 10;
     
     while (placed < count && attempts < maxAttempts) {
-      const lng = bbox[0] + Math.random() * (bbox[2] - bbox[0]);
-      const lat = bbox[1] + Math.random() * (bbox[3] - bbox[1]);
-      const point = turf.point([lng, lat]);
+      const lng = box[0] + Math.random() * (box[2] - box[0]);
+      const lat = box[1] + Math.random() * (box[3] - box[1]);
+      const pt = point([lng, lat]);
       
-      if (turf.booleanPointInPolygon(point, polygon)) {
+      if (booleanPointInPolygon(pt, poly)) {
         // Все дальнейшие расчеты теперь используют тот же центр, что и земля
-        const distanceX = turf.distance(turf.point([centerLng, centerLat]), turf.point([lng, centerLat]), { units: 'meters' });
-        const distanceY = turf.distance(turf.point([centerLng, centerLat]), turf.point([centerLng, lat]), { units: 'meters' });
+        const distanceX = distance(point([centerLng, centerLat]), point([lng, centerLat]), { units: 'meters' });
+        const distanceY = distance(point([centerLng, centerLat]), point([centerLng, lat]), { units: 'meters' });
         
         const localX = lng > centerLng ? distanceX : -distanceX;
         const localY = lat > centerLat ? distanceY : -distanceY;

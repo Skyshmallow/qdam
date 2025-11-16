@@ -1,11 +1,10 @@
 // src/App.tsx
-import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
-import * as turf from '@turf/turf';
-import type { Feature, Polygon, MultiPolygon, GeoJsonProperties } from 'geojson';
+import { useCallback, useMemo, useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Lock } from 'lucide-react';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 // --- Imports ---
+import { AuthProvider } from './contexts/AuthContext';
 import { useMapStore } from './store/mapStore';
 import { useNotificationStore } from './store/notificationStore';
 import { useUIStore } from './store/uiStore';
@@ -18,15 +17,29 @@ import { usePositionWatcher } from './hooks/usePositionWatcher';
 import { useChainAttempt } from './hooks/useChainAttempt';
 import { usePlayerStats } from './hooks/usePlayerStats';
 import { useZoom } from './hooks/useZoom';
+import { useSphereEffects } from './hooks/useSphereEffects';
+import { useMapEffects } from './hooks/useMapEffects';
+import { useSyncTerritory } from './hooks/useSyncTerritory';
+import { useSyncNodes } from './hooks/useSyncNodes';
+import { useSyncChains } from './hooks/useSyncChains';
+import { useMultiplayerTerritories } from './hooks/useMultiplayerTerritories';
 import { ThreeLayer } from './utils/ThreeLayer';
+import { useAuth } from './contexts/AuthContext';
 
 // NEW: Simulation mode
 import { useSimulationMode } from './simulation/useSimulationMode';
 
-// NEW: Utils
-import { saveNodes, saveChains, loadNodes, loadChains } from './utils/storage';
-import { canCreateChainToday, canStartChain, isValidPath } from './utils/gameRules';
-import { createChainFromPath } from './utils/chainFactory';
+// NEW: Utils (game rules now used in handlers)
+
+// NEW: Feature Hooks
+import { useNodes } from '@features/nodes';
+import { useChains } from '@features/chains';
+import { useTerritory } from '@features/territory';
+
+// NEW: Handlers
+import { useNodeCreationHandler } from './components/handlers/NodeCreationHandler';
+import { useTrackingHandler } from './components/handlers/useTrackingHandler';
+import { useMapControlsHandler } from './components/handlers/useMapControlsHandler';
 
 import { Map } from './components/Map';
 import { TrackingControls } from './components/TrackingControls';
@@ -35,12 +48,13 @@ import { LeftSidebar } from './ui/LeftSideBar';
 
 // NEW: Notification System & Overlays
 import { NotificationContainer } from './ui/notifications/NotificationContainer';
-import { ProfileOverlay } from './ui/overlays/ProfileOverlay';
-import { HistoryOverlay } from './ui/overlays/HistoryOverlay';
-import { LayersOverlay } from './ui/overlays/LayersOverlay';
+
+// Lazy load оверлеев (загружаются только при открытии)
+const ProfileOverlay = lazy(() => import('./ui/overlays/ProfileOverlay').then(m => ({ default: m.ProfileOverlay })));
+const HistoryOverlay = lazy(() => import('./ui/overlays/HistoryOverlay').then(m => ({ default: m.HistoryOverlay })));
+const LayersOverlay = lazy(() => import('./ui/overlays/LayersOverlay').then(m => ({ default: m.LayersOverlay })));
 
 // --- Types ---
-import type { Node, Chain } from './types';
 
 // --- Activity State ---
 type ActivityState =
@@ -71,6 +85,21 @@ function App() {
   // NEW: Simulation mode
   const simulation = useSimulationMode();
 
+  // Auth context for user ID
+  const { user } = useAuth();
+
+  // Check if user is developer (from environment variable)
+  const isDeveloper = useMemo(() => {
+    const devEmail = import.meta.env.VITE_DEV_EMAIL;
+    return user?.email === devEmail;
+  }, [user?.email]);
+
+  // Sync territory to Supabase
+  useSyncTerritory({
+    territoryKm2: playerStats.territoryKm2,
+    enabled: !simulation.isSimulationMode, // Don't sync in simulation mode
+  });
+
   // Logging helper
   const log = useCallback((step: string, details?: Record<string, unknown>) => {
     const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
@@ -84,55 +113,119 @@ function App() {
 
 
 
+  // === Feature Hooks (replace old useState + useEffect) ===
+  const nodesHook = useNodes({
+    isSimulationMode: simulation.isSimulationMode,
+    onLoadComplete: async () => {
+      // ✅ Миграция из localStorage в IndexedDB (if needed)
+      const { migrateToIndexedDB } = await import('@shared/storage/migration');
+      await migrateToIndexedDB();
+      log('Data load complete');
+    }
+  });
+  
+  const chainsHook = useChains({
+    isSimulationMode: simulation.isSimulationMode,
+  });
+  
+  const { nodes } = nodesHook;
+  const { chains } = chainsHook;
+  
+  // ✅ Territory calculation (auto-updates when nodes change)
+  const territory = useTerritory(nodes);
+
+  // Sync nodes and chains to Supabase (after nodes/chains are defined)
+  useSyncNodes(
+    user?.id || null,
+    nodes,
+    simulation.isSimulationMode
+  );
+
+  useSyncChains(
+    user?.id || null,
+    chains,
+    simulation.isSimulationMode
+  );
+
+  // Fetch other players' territories for multiplayer display
+  const multiplayer = useMultiplayerTerritories(
+    user?.id || null,
+    territory,
+    !simulation.isSimulationMode // Enabled only in normal mode
+  );
+  
+  // ✅ Node creation handler
+  const nodeCreation = useNodeCreationHandler({
+    nodesHook,
+    chainsHook,
+    isSimulationMode: simulation.isSimulationMode,
+    onSuccess: showSuccess,
+    onWarning: showWarning,
+  });
+  
   // === Local State ===
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [chains, setChains] = useState<Chain[]>([]);
-  const [spheres, setSpheres] = useState<any>(turf.featureCollection([]));
   const [activityState, setActivityState] = useState<ActivityState>('idle');
-  const [territory, setTerritory] = useState<Feature<Polygon> | null>(null);
-  const isInitialLoadDone = useRef(false);
+  
+  // ✅ Tracking handler (needs activityState, so defined after local state)
+  const tracking = useTrackingHandler({
+    nodesHook,
+    chainsHook,
+    isSimulationMode: simulation.isSimulationMode,
+    activityState,
+    avatarPosition: avatarPosition as [number, number] | null,
+    chainAttempt,
+    playerStats,
+    simulator,
+    planner,
+    setActivityState,
+    setAvatarPosition,
+    setBearing,
+    flyToAvatar,
+    onSuccess: showSuccess,
+    onInfo: showInfo,
+    onError: showError,
+    onWarning: showWarning,
+    log,
+  });
+  
+  // ✅ Map controls handler
+  const mapControls = useMapControlsHandler({
+    activityState,
+    simulation,
+    planner,
+    nodes,
+    chains,
+    locateUser,
+    setAvatarPosition,
+    setActivityState,
+    flyToAvatar,
+    onSuccess: showSuccess,
+    onInfo: showInfo,
+    onError: showError,
+    log,
+  });
+  
   const [isFollowingAvatar, setIsFollowingAvatar] = useState(false);
   const [isThreeLayerReady, setIsThreeLayerReady] = useState(false);
-
-  // === Load data from localStorage on mount ===
-  useEffect(() => {
-    log('Loading initial data from localStorage');
-    
-    try {
-      const savedNodes = loadNodes();
-      const savedChains = loadChains();
-
-      if (savedNodes.length > 0) {
-        setNodes(savedNodes);
-        log('Loaded nodes', { count: savedNodes.length });
-      }
-
-      if (savedChains.length > 0) {
-        setChains(savedChains);
-        log('Loaded chains', { count: savedChains.length });
-      }
-      
-      isInitialLoadDone.current = true;
-      log('Initial data load complete');
-      
-    } catch (error) {
-      console.error('[App] Failed to load from storage', error);
-      isInitialLoadDone.current = true;
-    }
-  }, [log]);
-
-  // === Save nodes/chains to localStorage (with simulation filter) ===
-  useEffect(() => {
-    if (!isInitialLoadDone.current) return;
-    
-    saveNodes(nodes, simulation.isSimulationMode);
-  }, [nodes, simulation.isSimulationMode]);
-
-  useEffect(() => {
-    if (!isInitialLoadDone.current) return;
-    
-    saveChains(chains, simulation.isSimulationMode);
-  }, [chains, simulation.isSimulationMode]);
+  
+  // ✅ Sphere effects (generation + animation)
+  const spheres = useSphereEffects({ chains, nodes, map });
+  
+  // ✅ Map effects (load, three layer sync, cursor)
+  const mapEffects = useMapEffects({
+    map,
+    setMap,
+    threeLayerRef,
+    isThreeLayerReady,
+    setIsThreeLayerReady,
+    chains,
+    nodes,
+    spheres,
+    activityState,
+    nodesHook,
+    chainsHook,
+    log,
+  });
 
   // Anti-cheat handler
   const handleCheatDetected = useCallback(() => {
@@ -171,74 +264,13 @@ function App() {
     }
   }, [chains, nodes, log]);
 
-  // === MAP LOAD ===
-  const handleMapLoad = useCallback((loadedMap: mapboxgl.Map) => {
-    setMap(loadedMap);
-    log('Map loaded');
-    loadedMap.setPitch(60);
-  }, [setMap, log]);
+  // === MAP EVENT HANDLERS ===
+  // ✅ Extracted to useMapEffects
+  const handleMapLoad = mapEffects.handleMapLoad;
+  const handleThreeLayerReady = mapEffects.handleThreeLayerReady;
 
-  // === ThreeLayer ready ===
-  const handleThreeLayerReady = useCallback((threeLayer: ThreeLayer) => {
-    log('ThreeLayer ready, storing reference');
-    threeLayerRef.current = threeLayer;
-    setIsThreeLayerReady(true);
-  }, [log]);
-
-  // === Update 3D castles when chains change ===
-  useEffect(() => {
-    if (!threeLayerRef.current || !isThreeLayerReady || !isInitialLoadDone.current) {
-      log('Waiting for ThreeLayer or initial data load', {
-        hasThreeLayer: !!threeLayerRef.current,
-        isReady: isThreeLayerReady,
-        isDataLoaded: isInitialLoadDone.current
-      });
-      return;
-    }
-    
-    if (chains.length === 0) {
-      log('No chains to display');
-      threeLayerRef.current.setChains([]);
-      return;
-    }
-    
-    const chainsData = chains.map(chain => {
-      const nodeA = nodes.find(n => n.id === chain.nodeA_id);
-      const nodeB = nodes.find(n => n.id === chain.nodeB_id);
-      
-      if (!nodeA || !nodeB) {
-        console.warn('[App] Chain has missing nodes', { chainId: chain.id });
-        return null;
-      }
-      
-      return {
-        id: parseInt(chain.id.slice(0, 8), 36),
-        start: nodeA.coordinates,
-        end: nodeB.coordinates,
-        startCoords: nodeA.coordinates,
-        endCoords: nodeB.coordinates
-      };
-    }).filter(Boolean);
-    
-    log('Updating 3D layer with chains', { count: chainsData.length });
-    threeLayerRef.current.setChains(chainsData as any);
-  }, [chains, nodes, isThreeLayerReady, log]);
-
-  // ✅ Sync 3D spheres when spheres change
-  useEffect(() => {
-    if (!threeLayerRef.current || !isThreeLayerReady || !spheres) return;
-
-    log('Updating 3D spheres', { featureCount: spheres.features.length });
-    threeLayerRef.current.updateSpheres(spheres);
-
-  }, [spheres, isThreeLayerReady, log]);
-
-  // === CURSOR ===
-  useEffect(() => {
-    if (!map) return;
-    const isPickingMode = activityState === 'planning_start' || activityState === 'planning_end';
-    map.getCanvas().style.cursor = isPickingMode ? 'crosshair' : '';
-  }, [activityState, map]);
+  // === 3D LAYER EFFECTS ===
+  // ✅ Chains sync, spheres sync, cursor - extracted to useMapEffects
 
   // === CAMERA FOLLOW DURING SIMULATION ===
   useEffect(() => {
@@ -285,211 +317,16 @@ function App() {
     };
   }, [map, activityState]);
 
-  // === TERRITORY CALCULATION (ПРЯМО ИЗ КООРДИНАТ ЗАМКОВ) ===
-  useEffect(() => {
-    const allEstablishedNodes = nodes.filter(node => node.status === 'established');
+  // === TERRITORY CALCULATION ===
+  // ✅ Territory is now calculated automatically by useTerritory hook
 
-    if (allEstablishedNodes.length < 4) {
-      setTerritory(null); // ✅ Убираем территорию
-      return;
-    }
-
-    try {
-      // ✅ БЕРЁМ КООРДИНАТЫ ЗАМКОВ НАПРЯМУЮ (без Convex Hull!)
-      const nodeCoordinates = allEstablishedNodes.map(node => node.coordinates);
-      
-      // ✅ Сортируем по углу от центра (чтобы полигон не самопересекался)
-      const centerPoint = turf.center(turf.featureCollection(
-        allEstablishedNodes.map(n => turf.point(n.coordinates))
-      ));
-      const [centerLng, centerLat] = centerPoint.geometry.coordinates;
-      
-      const sortedCoords = [...nodeCoordinates].sort((a, b) => {
-        const angleA = Math.atan2(a[1] - centerLat, a[0] - centerLng);
-        const angleB = Math.atan2(b[1] - centerLat, b[0] - centerLng);
-        return angleA - angleB;
-      });
-      
-      // ✅ Создаём полигон ИЗ КООРДИНАТ ЗАМКОВ (замыкаем полигон)
-      const territoryPolygon = turf.polygon([
-        [...sortedCoords, sortedCoords[0]] // Первая = последняя
-      ]);
-      
-      // 🔍 DEBUG: Логируем координаты
-      console.log('🏰 [App] Territory nodes:', allEstablishedNodes.map(n => ({
-        id: n.id,
-        coords: n.coordinates
-      })));
-      console.log('🌍 [App] Territory polygon coords:', territoryPolygon.geometry.coordinates[0]);
-      
-      const hasTemporaryNodes = allEstablishedNodes.some(n => n.isTemporary);
-      
-      territoryPolygon.properties = {
-        owner: 'player', // ✅ Используем 'player' (не 'player1')
-        isTemporary: hasTemporaryNodes,
-      };
-      
-      setTerritory(territoryPolygon);
-      log('Territory recalculated', { 
-        totalNodes: allEstablishedNodes.length,
-        permanent: allEstablishedNodes.filter(n => !n.isTemporary).length,
-        temporary: allEstablishedNodes.filter(n => n.isTemporary).length,
-        isTemporary: hasTemporaryNodes,
-      });
-    } catch (error) {
-      console.error('[App] Error calculating territory:', error);
-      setTerritory(null);
-    }
-
-  }, [nodes, log]);
-
-  // === SPHERE GENERATION (Enhanced with rings) ===
-  useEffect(() => {
-    if (chains.length > 0) {
-      const radius = parseFloat(import.meta.env.VITE_SPHERE_RADIUS_KM || '0.5');
-      const sphereFeatures: Feature<Polygon | MultiPolygon, GeoJsonProperties>[] = [];
-      
-      chains.forEach((chain, chainIndex) => {
-        const nodeA = nodes.find(n => n.id === chain.nodeA_id);
-        const nodeB = nodes.find(n => n.id === chain.nodeB_id);
-        
-        if (!nodeA || !nodeB) return;
-        
-        [nodeA.coordinates, nodeB.coordinates].forEach((coords, pointIndex) => {
-          const center = turf.point(coords);
-          const baseId = `${chain.id}-${pointIndex === 0 ? 'start' : 'end'}`;
-          
-          // Outer ring
-          const outerRing = turf.buffer(center, radius * 1.2, { units: 'kilometers', steps: 64 });
-          if (outerRing) {
-            outerRing.properties = {
-              ...outerRing.properties,
-              id: `${baseId}-outer`,
-              ring: 'outer',
-              chainIndex,
-              pointIndex,
-              'pulse-width': 1,
-              'pulse-opacity': 0.15,
-              'fill-opacity': 0.05,
-            };
-            sphereFeatures.push(outerRing);
-          }
-          
-          // Middle ring
-          const middleRing = turf.buffer(center, radius * 0.8, { units: 'kilometers', steps: 64 });
-          if (middleRing) {
-            middleRing.properties = {
-              ...middleRing.properties,
-              id: `${baseId}-middle`,
-              ring: 'middle',
-              chainIndex,
-              pointIndex,
-              'pulse-width': 2,
-              'pulse-opacity': 0.3,
-              'fill-opacity': 0.08,
-            };
-            sphereFeatures.push(middleRing);
-          }
-          
-          // Inner ring
-          const innerRing = turf.buffer(center, radius * 0.5, { units: 'kilometers', steps: 64 });
-          if (innerRing) {
-            innerRing.properties = {
-              ...innerRing.properties,
-              id: `${baseId}-inner`,
-              ring: 'inner',
-              chainIndex,
-              pointIndex,
-              'pulse-width': 3,
-              'pulse-opacity': 0.6,
-              'fill-opacity': 0.15,
-            };
-            sphereFeatures.push(innerRing);
-          }
-        });
-      });
-      
-      setSpheres(turf.featureCollection(sphereFeatures));
-    } else {
-      setSpheres(turf.featureCollection([]));
-    }
-  }, [chains, nodes]);
-
-  // === SPHERE PULSE ANIMATION ===
-  useEffect(() => {
-    if (!map || spheres.features.length === 0) return;
-
-    let animationFrameId: number;
-    const source = map.getSource('spheres') as mapboxgl.GeoJSONSource;
-
-    const animate = (timestamp: number) => {
-      const time = timestamp / 1000;
-
-      const updatedFeatures = spheres.features.map((feature: any) => {
-        const ring = feature.properties.ring;
-        const chainIndex = feature.properties.chainIndex || 0;
-        const pointIndex = feature.properties.pointIndex || 0;
-        
-        let phaseOffset = 0;
-        if (ring === 'outer') phaseOffset = 0;
-        if (ring === 'middle') phaseOffset = Math.PI * 0.66;
-        if (ring === 'inner') phaseOffset = Math.PI * 1.33;
-        
-        const totalOffset = phaseOffset + (chainIndex * 0.5) + (pointIndex * 0.25);
-        const pulseValue = Math.sin(time * 2 + totalOffset);
-        const normalizedPulse = (pulseValue + 1) / 2;
-
-        let minWidth = 1, maxWidth = 3;
-        let minOpacity = 0.2, maxOpacity = 0.8;
-        let minFillOpacity = 0.05, maxFillOpacity = 0.2;
-        
-        if (ring === 'outer') {
-          maxWidth = 2;
-          maxOpacity = 0.4;
-          maxFillOpacity = 0.1;
-        } else if (ring === 'middle') {
-          maxWidth = 3;
-          maxOpacity = 0.6;
-          maxFillOpacity = 0.15;
-        } else if (ring === 'inner') {
-          maxWidth = 4;
-          maxOpacity = 1.0;
-          maxFillOpacity = 0.25;
-        }
-
-        const currentWidth = minWidth + (maxWidth - minWidth) * normalizedPulse;
-        const currentOpacity = minOpacity + (maxOpacity - minOpacity) * normalizedPulse;
-        const currentFillOpacity = minFillOpacity + (maxFillOpacity - minFillOpacity) * normalizedPulse;
-
-        return {
-          ...feature,
-          properties: {
-            ...feature.properties,
-            'pulse-width': currentWidth,
-            'pulse-opacity': currentOpacity,
-            'fill-opacity': currentFillOpacity,
-          }
-        };
-      });
-
-      const updatedSpheres = turf.featureCollection(updatedFeatures);
-      if (source) source.setData(updatedSpheres);
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    animationFrameId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [map, spheres]);
+  // === SPHERE GENERATION & ANIMATION ===
+  // ✅ Extracted to useSphereEffects hook
 
   // === EVENT HANDLERS ===
   
-  const handleMyLocationClick = useCallback(async () => {
-    const coords = await locateUser();
-    if (coords) {
-      setAvatarPosition(coords);
-      flyToAvatar();
-    }
-  }, [locateUser, setAvatarPosition, flyToAvatar]);
+  // ✅ Map controls extracted to useMapControlsHandler
+  const handleMyLocationClick = mapControls.handleMyLocationClick;
 
   // ✅ NEW: handleStop - Works for both real walk and simulation
   const handleStop = useCallback(() => {
@@ -509,21 +346,10 @@ function App() {
         const startCoords = planner.routeWaypoints[0] as [number, number];
         const endCoords = planner.routeWaypoints[planner.routeWaypoints.length - 1] as [number, number];
         
-        // ✅ FIX: Use simulation.isSimulationMode instead of hardcoded true
-        const { nodeA, nodeB, chain } = createChainFromPath(
+        nodeCreation.createChainFromSimulation(
           startCoords,
           endCoords,
-          planner.simulatableRoute,
-          simulation.isSimulationMode // ✅ FIXED: Was hardcoded `true`
-        );
-        
-        setNodes(prev => [...prev, nodeA, nodeB]);
-        setChains(prev => [...prev, chain]);
-        
-        showSuccess(
-          simulation.isSimulationMode
-            ? 'Симуляция завершена! Замки созданы (временные).'
-            : 'Симуляция завершена! Замки созданы.'
+          planner.simulatableRoute
         );
       }
       
@@ -540,34 +366,26 @@ function App() {
     }
 
     const { nodeA, path } = chainAttempt.currentAttempt;
+    const endCoords = avatarPosition as [number, number];
 
-    // Validate path
-    const pathValidation = isValidPath(path);
-    if (!pathValidation.allowed) {
-      showWarning(pathValidation.reason || 'Путь слишком короткий для создания цепочки');
+    // Reduce path to only 2 points [start, end] for storage
+    const reducedPath = path.length === 2 
+      ? path 
+      : [path[0], path[path.length - 1]];
+
+    log('Chain path reduced', { 
+      originalLength: path.length, 
+      reducedLength: reducedPath.length 
+    });
+
+    // Finish chain creation with validation
+    const result = nodeCreation.finishChainCreation(nodeA, endCoords, reducedPath);
+    
+    if (!result.success) {
       chainAttempt.clearAttempt();
       setActivityState('idle');
       return;
     }
-
-    const startCoords = nodeA.coordinates as [number, number];
-    const endCoords = avatarPosition as [number, number];
-
-    // Create chain (permanent in real mode, temporary in simulation mode)
-    const { nodeA: finalNodeA, nodeB, chain: newChain } = createChainFromPath(
-      startCoords,
-      endCoords,
-      path,
-      simulation.isSimulationMode // isTemporary
-    );
-    
-    // Update state
-    setNodes(prev => {
-      // Remove old pending nodeA, add both final nodes
-      const filtered = prev.filter(n => n.id !== nodeA.id);
-      return [...filtered, finalNodeA, nodeB];
-    });
-    setChains(prev => [...prev, newChain]);
 
     // Clear attempt
     chainAttempt.clearAttempt();
@@ -580,18 +398,12 @@ function App() {
     }
 
     log('Chain created successfully', {
-      chainId: newChain.id,
+      chainId: result.chain?.id,
       pathLength: path.length,
-      nodeA: finalNodeA.id,
-      nodeB: nodeB.id,
+      nodeA: result.nodeA?.id,
+      nodeB: result.nodeB?.id,
       isTemporary: simulation.isSimulationMode
     });
-
-    showSuccess(
-      simulation.isSimulationMode 
-        ? 'Цепочка создана (тестовая, не сохранится)!' 
-        : 'Цепочка успешно создана!'
-    );
 
   }, [
     chainAttempt, 
@@ -602,124 +414,15 @@ function App() {
     resetGeolocationState,
     playerStats,
     simulation.isSimulationMode,
-    log
+    log,
+    nodeCreation,
+    setActivityState
   ]);
 
-  const handleStartSimulation = useCallback(() => {
-    if (!planner.simulatableRoute) {
-      log('Cannot start simulation - no route available');
-      return;
-    }
-    log('Starting simulation', { routeLength: planner.simulatableRoute.length });
-    setActivityState('simulating');
-    
-    simulator.startSimulation(
-      planner.simulatableRoute,
-      (newCoords, newBearing) => {
-        setAvatarPosition(newCoords);
-        setBearing(newBearing);
-      },
-      () => {
-        log('Simulation movement completed (auto-stop disabled)');
-        // Don't auto-stop - let user click Stop to create castles
-      }
-    );
-  }, [planner, simulator, setAvatarPosition, setBearing, log]);
-
-  // ✅ NEW: handleStart - Works for both real walk and simulation
-  const handleStart = useCallback(() => {
-    log('handleStart called', { 
-      currentState: activityState,
-      isSimulation: simulation.isSimulationMode
-    });
-    
-    // If ready to simulate, start simulation
-    if (activityState === 'ready_to_simulate') {
-      handleStartSimulation();
-      return;
-    }
-    
-    // Only start from idle
-    if (activityState !== 'idle') {
-      log('Cannot start - not in idle state');
-      return;
-    }
-
-    // Check avatar position
-    if (!avatarPosition) {
-      log('Cannot start - no avatar position');
-      showInfo("Сначала определите ваше местоположение кнопкой 'Find Me'");
-      return;
-    }
-
-    // Block if already has active attempt
-    if (chainAttempt.currentAttempt) {
-      const info = chainAttempt.getAttemptInfo();
-      if (info) {
-        log('Active attempt found', info);
-        showWarning(`У вас уже есть незавершенный поход (${info.durationMinutes} мин назад)`);
-      } else {
-        log('Active attempt found (no info available)');
-        showWarning('У вас уже есть незавершенный поход');
-      }
-      setActivityState('tracking');
-      return;
-    }
-
-    // Check daily limit (skip in simulation mode)
-    if (!canCreateChainToday(playerStats.chainsCreatedToday, simulation.isSimulationMode)) {
-      showError(`Вы достигли дневного лимита (${playerStats.maxChainsPerDay} цепочек в день)`);
-      return;
-    }
-
-    // Check sphere of influence
-    const sphereCheck = canStartChain(
-      avatarPosition as [number, number],
-      nodes,
-      chains,
-      simulation.isSimulationMode
-    );
-    
-    if (!sphereCheck.allowed) {
-      log('Sphere check failed', { reason: sphereCheck.reason });
-      showError(sphereCheck.reason || 'Cannot start chain outside sphere of influence');
-      return;
-    }
-
-    log('Starting new chain attempt');
-    chainAttempt.startAttempt(avatarPosition as [number, number]);
-    flyToAvatar();
-    setActivityState('tracking');
-    showSuccess(
-      simulation.isSimulationMode 
-        ? 'Начат тестовый поход!' 
-        : 'Начат новый поход!'
-    );
-
-  }, [
-    activityState, 
-    avatarPosition, 
-    chainAttempt,
-    chains,
-    nodes,
-    playerStats,
-    simulation.isSimulationMode,
-    flyToAvatar, 
-    handleStartSimulation, 
-    log
-  ]);
-
-  const handlePause = useCallback(() => {
-    log('Pause clicked');
-    setActivityState('tracking_paused');
-    showInfo('Поход приостановлен');
-  }, [log]);
-
-  const handleResume = useCallback(() => {
-    log('Resume clicked');
-    setActivityState('tracking');
-    showInfo('Поход возобновлен');
-  }, [log]);
+  // ✅ Tracking handlers extracted to useTrackingHandler
+  const handleStart = tracking.handleStart;
+  const handlePause = tracking.handlePause;
+  const handleResume = tracking.handleResume;
 
   // ✅ handleSimulateClick - Don't clear active chain
   const handleSimulateClick = useCallback(() => {
@@ -768,37 +471,7 @@ function App() {
     log
   ]);
 
-  const handleMapClick = useCallback(async (coordinates: [number, number]) => {
-    log('Map clicked', { 
-      coordinates, 
-      activityState,
-      isDrawingMode: activityState === 'planning_start' || activityState === 'planning_end'
-    });
-
-    if (activityState === 'planning_start') {
-      // Check sphere of influence
-      const sphereCheck = canStartChain(
-        coordinates,
-        nodes,
-        chains,
-        simulation.isSimulationMode
-      );
-      
-      if (!sphereCheck.allowed) {
-        showError(sphereCheck.reason || 'Cannot plan route outside sphere of influence');
-        return;
-      }
-
-      await planner.addWaypoint(coordinates);
-      setActivityState('planning_end');
-      showInfo('Выберите конечную точку на карте');
-
-    } else if (activityState === 'planning_end') {
-      await planner.addWaypoint(coordinates);
-      setActivityState('ready_to_simulate');
-      showSuccess('Маршрут построен. Нажмите Play для запуска симуляции.');
-    }
-  }, [activityState, planner, chains, nodes, simulation.isSimulationMode, log]);
+  const handleMapClick = mapControls.handleMapClick;
 
   // === PROPS ===
   const mapProps = useMemo(() => {
@@ -824,7 +497,10 @@ function App() {
       spheres,
       isDrawingMode: activityState === 'planning_start' || activityState === 'planning_end',
       onMapClick: handleMapClick,
-      threeLayerRef, // ✅ Добавлено
+      threeLayerRef,
+      // Multiplayer territories
+      otherTerritories: Array.from(multiplayer.territories.values()),
+      territoryConflicts: multiplayer.conflicts,
     };
   }, [
     avatarPosition,
@@ -839,7 +515,9 @@ function App() {
     spheres,
     activityState,
     handleMapClick,
-    threeLayerRef, // ✅ Добавлено
+    threeLayerRef,
+    multiplayer.territories,
+    multiplayer.conflicts,
   ]);
 
   const trackingControlsProps = useMemo(() => ({
@@ -852,7 +530,19 @@ function App() {
     onResume: handleResume,
     onStop: handleStop,
     isSimulationMode: simulation.isSimulationMode,
-    onClearTestData: () => simulation.clearTestData(setNodes, setChains),
+    onClearTestData: () => {
+      // Clear temporary test data using hooks
+      const allNodes = nodesHook.nodes;
+      const allChains = chainsHook.chains;
+      
+      const temporaryNodes = allNodes.filter(n => n.isTemporary);
+      const temporaryChains = allChains.filter(c => c.isTemporary);
+      
+      temporaryNodes.forEach(n => nodesHook.removeNode(n.id));
+      temporaryChains.forEach(c => chainsHook.removeChain(c.id));
+      
+      console.log(`[SIMULATION] 🗑️ Cleared ${temporaryNodes.length} temporary nodes and ${temporaryChains.length} temporary chains`);
+    },
   }), [
     activityState, 
     chainAttempt.currentAttempt, 
@@ -877,12 +567,14 @@ function App() {
     onMyLocationClick: handleMyLocationClick,
     isSimulating: simulation.isSimulationMode,
     onSimulateClick: handleSimulateClick,
+    isDeveloper,
   }), [
     openOverlay,
     geolocationState, 
     handleMyLocationClick, 
     simulation.isSimulationMode, 
-    handleSimulateClick
+    handleSimulateClick,
+    isDeveloper
   ]);
 
   // === UI ===
@@ -926,13 +618,23 @@ function App() {
 
       <NotificationContainer />
 
-      <ProfileOverlay isOpen={activeOverlay === 'profile'} onClose={closeOverlay} />
-      <HistoryOverlay isOpen={activeOverlay === 'history'} onClose={closeOverlay} />
-      
-      {/* Layers Overlay (Mini version, no backdrop) */}
-      <LayersOverlay isOpen={activeOverlay === 'layers'} onClose={closeOverlay} />
+      {/* Lazy loaded оверлеи */}
+      <Suspense fallback={null}>
+        {activeOverlay === 'profile' && <ProfileOverlay isOpen={true} onClose={closeOverlay} />}
+        {activeOverlay === 'history' && <HistoryOverlay isOpen={true} onClose={closeOverlay} />}
+        {activeOverlay === 'layers' && <LayersOverlay isOpen={true} onClose={closeOverlay} />}
+      </Suspense>
     </div>
   );
 }
 
-export default App;
+// Wrap App with AuthProvider
+function AppWithProviders() {
+  return (
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  );
+}
+
+export default AppWithProviders;

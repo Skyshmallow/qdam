@@ -6,7 +6,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { useMapbox } from '../hooks/useMapbox';
 import { updateGeoJSONSource } from '../utils/mapUtils';
 import type { MapProps } from '../types';
-import * as turf from '@turf/turf';
+import { featureCollection, point, lineString } from '@turf/helpers';
 
 export const Map = ({
   avatarPosition,
@@ -21,6 +21,8 @@ export const Map = ({
   onMapLoad,
   onThreeLayerReady,
   threeLayerRef,
+  otherTerritories = [],
+  territoryConflicts = [],
 }: MapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null!);
   const { map, isMapLoaded } = useMapbox(
@@ -117,31 +119,106 @@ export const Map = ({
 
     const routeGeoJSON =
       simulatableRoute && simulatableRoute.length > 1
-        ? turf.lineString(simulatableRoute)
+        ? lineString(simulatableRoute)
         : emptyLineFeature;
 
     const recordedPathGeoJSON =
       currentPath && currentPath.length > 1
-        ? turf.lineString(currentPath)
+        ? lineString(currentPath)
         : emptyLineFeature;
 
     updateGeoJSONSource(map.current, 'recordedPath', recordedPathGeoJSON);
     updateGeoJSONSource(map.current, 'route', routeGeoJSON);
 
     const waypointsGeoJSON = routeWaypoints?.length
-      ? turf.featureCollection(routeWaypoints.map(p => turf.point(p)))
-      : turf.featureCollection([]);
+      ? featureCollection(routeWaypoints.map(p => point(p)))
+      : featureCollection([]);
 
     updateGeoJSONSource(map.current, 'waypoints', waypointsGeoJSON);
 
-    // ✅ Territory
-    const territoryGeoJSON = territory || turf.featureCollection([]);
+    // ✅ Territory (my territory)
+    const territoryGeoJSON = territory || featureCollection([]);
     updateGeoJSONSource(map.current, 'territory', territoryGeoJSON);
 
-    // ✅ 3D Grass/Territory Effect
+    // ✅ 3D Grass/Territory Effect (own territory)
     if (threeLayerRef?.current) {
       threeLayerRef.current.updateTerritory(territory);
+      
+      // Update other players' territories with colored grass
+      threeLayerRef.current.updateOtherTerritories(
+        otherTerritories.map(player => ({
+          userId: player.userId,
+          territory: player.territory,
+          color: player.color,
+        }))
+      );
     }
+
+    // ✅ Other players' territories (multiplayer)
+    // Note: Only show territory polygons, NOT individual nodes/chains (privacy)
+    otherTerritories.forEach((player) => {
+      const sourceName = `territory-${player.userId}`;
+      const layerName = `territory-layer-${player.userId}`;
+
+      // Check if source exists
+      if (!map.current!.getSource(sourceName)) {
+        // Add source
+        map.current!.addSource(sourceName, {
+          type: 'geojson',
+          data: player.territory || featureCollection([]),
+        });
+
+        // Add territory fill layer
+        map.current!.addLayer({
+          id: layerName,
+          type: 'fill',
+          source: sourceName,
+          paint: {
+            'fill-color': player.color,
+            'fill-opacity': territoryConflicts.includes(player.userId) ? 0.4 : 0.2,
+          },
+        });
+
+        // Add territory outline layer
+        map.current!.addLayer({
+          id: `${layerName}-outline`,
+          type: 'line',
+          source: sourceName,
+          paint: {
+            'line-color': player.color,
+            'line-width': territoryConflicts.includes(player.userId) ? 3 : 2,
+            'line-dasharray': territoryConflicts.includes(player.userId) ? [2, 2] : [1, 0],
+          },
+        });
+
+      } else {
+        // Update existing sources
+        updateGeoJSONSource(
+          map.current!,
+          sourceName,
+          player.territory || featureCollection([])
+        );
+
+        // Update conflict styling
+        if (map.current!.getLayer(layerName)) {
+          map.current!.setPaintProperty(
+            layerName,
+            'fill-opacity',
+            territoryConflicts.includes(player.userId) ? 0.4 : 0.2
+          );
+          map.current!.setPaintProperty(
+            `${layerName}-outline`,
+            'line-width',
+            territoryConflicts.includes(player.userId) ? 3 : 2
+          );
+          map.current!.setPaintProperty(
+            `${layerName}-outline`,
+            'line-dasharray',
+            territoryConflicts.includes(player.userId) ? [2, 2] : [1, 0]
+          );
+        }
+      }
+    });
 
     // ✅ Spheres
     updateGeoJSONSource(map.current, 'spheres', spheres);
@@ -153,13 +230,19 @@ export const Map = ({
       if (threeLayer.updateSpheres) {
         threeLayer.updateSpheres(spheres);
       }
-      // 🚫 Grass/Territory disabled temporarily - calculations need fixing
-      // if (threeLayer.updateTerritory) {
-      //   threeLayer.updateTerritory(territory);
-      // }
     }
 
-  }, [isMapLoaded, map, simulatableRoute, currentPath, routeWaypoints, territory, spheres]);
+  }, [
+    isMapLoaded,
+    map,
+    simulatableRoute,
+    currentPath,
+    routeWaypoints,
+    territory,
+    spheres,
+    otherTerritories,
+    territoryConflicts,
+  ]);
 
   return <div ref={mapContainer} className="map-container w-full h-full" />;
 };

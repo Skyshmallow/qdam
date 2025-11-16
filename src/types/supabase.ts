@@ -140,9 +140,11 @@ export interface Database {
       user_profiles: {
         Row: {
           user_id: string
-          username: string | null
-          display_name: string | null
+          email: string | null                   // ✨ НОВОЕ: Email из Google Auth
+          username: string | null                // Nickname (автогенерируемый или кастомный)
+          display_name: string | null            // Имя + Фамилия из Google
           avatar_url: string | null
+          territory_area_km2: number             // ✨ НОВОЕ: Площадь территории в км²
           territory_color: string
           show_live_position: boolean
           show_detailed_routes: boolean
@@ -151,9 +153,11 @@ export interface Database {
         }
         Insert: {
           user_id: string
+          email?: string | null
           username?: string | null
           display_name?: string | null
           avatar_url?: string | null
+          territory_area_km2?: number
           territory_color?: string
           show_live_position?: boolean
           show_detailed_routes?: boolean
@@ -161,9 +165,11 @@ export interface Database {
           updated_at?: string
         }
         Update: {
+          email?: string | null
           username?: string | null
           display_name?: string | null
           avatar_url?: string | null
+          territory_area_km2?: number
           territory_color?: string
           show_live_position?: boolean
           show_detailed_routes?: boolean

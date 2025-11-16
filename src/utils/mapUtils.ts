@@ -1,4 +1,4 @@
-import * as turf from '@turf/turf';
+import { featureCollection, point } from '@turf/helpers';
 
 export const addMapLayers = (map: mapboxgl.Map) => {
   const emptyLine = {
@@ -28,7 +28,7 @@ export const addMapLayers = (map: mapboxgl.Map) => {
   }, 'route');
 
   // --- Waypoints ---
-  map.addSource('waypoints', { type: 'geojson', data: turf.featureCollection([]) });
+  map.addSource('waypoints', { type: 'geojson', data: featureCollection([]) });
   map.addLayer({
     id: 'waypoints',
     type: 'circle',
@@ -42,7 +42,7 @@ export const addMapLayers = (map: mapboxgl.Map) => {
   });
 
   // --- User Position ---
-  map.addSource('userPosition', { type: 'geojson', data: turf.point([0, 0]) });
+  map.addSource('userPosition', { type: 'geojson', data: point([0, 0]) });
   map.addLayer({
     id: 'userPosition',
     type: 'circle',
@@ -56,7 +56,7 @@ export const addMapLayers = (map: mapboxgl.Map) => {
   });
 
   // --- Territory ---
-  map.addSource('territory', { type: 'geojson', data: turf.featureCollection([]) });
+  map.addSource('territory', { type: 'geojson', data: featureCollection([]) });
 
   // ✅ Territory fill скрыт - используем 3D траву вместо заливки
   map.addLayer({
@@ -105,7 +105,7 @@ export const addMapLayers = (map: mapboxgl.Map) => {
   // ✅ SPHERES - Только базовая заливка
   // ========================================
   
-  map.addSource('spheres', { type: 'geojson', data: turf.featureCollection([]) });
+  map.addSource('spheres', { type: 'geojson', data: featureCollection([]) });
   
   // Базовая заливка (фон сферы)
   map.addLayer({

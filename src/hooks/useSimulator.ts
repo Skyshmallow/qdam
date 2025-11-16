@@ -1,6 +1,9 @@
 // src/hooks/useSimulator.ts
 import { useState, useRef, useCallback } from 'react';
-import * as turf from '@turf/turf';
+import { lineString } from '@turf/helpers';
+import length from '@turf/length';
+import bearing from '@turf/bearing';
+import along from '@turf/along';
 import type { Feature, LineString } from 'geojson';
 
 // Обновленные типы колбэков
@@ -46,7 +49,7 @@ export const useSimulator = () => {
       const line = routeRef.current;
       if (!line) return;
 
-      const totalDistance = turf.length(line, { units: 'kilometers' });
+      const totalDistance = length(line, { units: 'kilometers' });
       const speedKps = 0.15; // скорость (км/с)
       const distanceCovered = elapsedTime * speedKps;
 
@@ -54,7 +57,7 @@ export const useSimulator = () => {
         log('Simulation reached end of route');
         const endPoint = line.geometry.coordinates[line.geometry.coordinates.length - 1];
         const prevPoint = line.geometry.coordinates[line.geometry.coordinates.length - 2];
-        const finalBearing = turf.bearing(prevPoint, endPoint);
+        const finalBearing = bearing(prevPoint, endPoint);
 
         onTickRef.current(endPoint, finalBearing);
         
@@ -71,12 +74,12 @@ export const useSimulator = () => {
         return;
       }
 
-      const newPointFeature = turf.along(line, distanceCovered, { units: 'kilometers' });
+      const newPointFeature = along(line, distanceCovered, { units: 'kilometers' });
       const newCoords = newPointFeature.geometry.coordinates;
 
-      const lookAheadPointFeature = turf.along(line, distanceCovered + 0.001, { units: 'kilometers' });
+      const lookAheadPointFeature = along(line, distanceCovered + 0.001, { units: 'kilometers' });
       const lookAheadCoords = lookAheadPointFeature.geometry.coordinates;
-      const currentBearing = turf.bearing(newCoords, lookAheadCoords);
+      const currentBearing = bearing(newCoords, lookAheadCoords);
 
       onTickRef.current(newCoords, currentBearing);
 
@@ -93,7 +96,7 @@ export const useSimulator = () => {
       }
 
       log('Starting simulation', { routePoints: newRoute.length });
-      routeRef.current = turf.lineString(newRoute);
+      routeRef.current = lineString(newRoute);
       onTickRef.current = onTick;
       onFinishRef.current = onFinish; // Сохраняем колбэк
       setIsSimulating(true);

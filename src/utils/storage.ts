@@ -1,15 +1,13 @@
 import type { Node, Chain } from '../types';
-
-const NODES_KEY = 'qdam_nodes';
-const CHAINS_KEY = 'qdam_chains';
+import * as IDB from '@shared/storage/indexedDB';
 
 /**
- * Сохранить узлы в localStorage
+ * Сохранить узлы в IndexedDB
  * В режиме симуляции ничего не сохраняет
  */
-export function saveNodes(nodes: Node[], isSimulationMode: boolean): void {
+export async function saveNodes(nodes: Node[], isSimulationMode: boolean): Promise<void> {
   if (isSimulationMode) {
-    console.log('[SIMULATION] Skipping localStorage save for nodes');
+    console.log('[SIMULATION] Skipping storage save for nodes');
     return;
   }
 
@@ -18,11 +16,11 @@ export function saveNodes(nodes: Node[], isSimulationMode: boolean): void {
     const permanentNodes = nodes.filter(n => !n.isTemporary);
     
     if (permanentNodes.length > 0) {
-      localStorage.setItem(NODES_KEY, JSON.stringify(permanentNodes));
-      console.log(`[Storage] Saved ${permanentNodes.length} permanent nodes`);
+      await IDB.saveNodes(permanentNodes);
+      console.log(`[Storage] Saved ${permanentNodes.length} permanent nodes to IndexedDB`);
     } else {
-      localStorage.removeItem(NODES_KEY);
-      console.log('[Storage] No permanent nodes to save, removed from localStorage');
+      await IDB.saveNodes([]);
+      console.log('[Storage] No permanent nodes to save');
     }
   } catch (error) {
     console.error('[Storage] Failed to save nodes:', error);
@@ -30,15 +28,12 @@ export function saveNodes(nodes: Node[], isSimulationMode: boolean): void {
 }
 
 /**
- * Загрузить узлы из localStorage
+ * Загрузить узлы из IndexedDB
  */
-export function loadNodes(): Node[] {
+export async function loadNodes(): Promise<Node[]> {
   try {
-    const saved = localStorage.getItem(NODES_KEY);
-    if (!saved) return [];
-    
-    const nodes: Node[] = JSON.parse(saved);
-    console.log(`[Storage] Loaded ${nodes.length} nodes from localStorage`);
+    const nodes = await IDB.loadNodes();
+    console.log(`[Storage] Loaded ${nodes.length} nodes from IndexedDB`);
     return nodes;
   } catch (error) {
     console.error('[Storage] Failed to load nodes:', error);
@@ -47,12 +42,12 @@ export function loadNodes(): Node[] {
 }
 
 /**
- * Сохранить цепочки в localStorage
+ * Сохранить цепочки в IndexedDB
  * В режиме симуляции ничего не сохраняет
  */
-export function saveChains(chains: Chain[], isSimulationMode: boolean): void {
+export async function saveChains(chains: Chain[], isSimulationMode: boolean): Promise<void> {
   if (isSimulationMode) {
-    console.log('[SIMULATION] Skipping localStorage save for chains');
+    console.log('[SIMULATION] Skipping storage save for chains');
     return;
   }
 
@@ -61,13 +56,12 @@ export function saveChains(chains: Chain[], isSimulationMode: boolean): void {
     const permanentChains = chains.filter(c => !c.isTemporary);
     
     if (permanentChains.length > 0) {
-      const serialized = JSON.stringify(permanentChains);
-      localStorage.setItem(CHAINS_KEY, serialized);
-      console.log(`[Storage] Saved ${permanentChains.length} permanent chains`);
+      await IDB.saveChains(permanentChains);
+      console.log(`[Storage] Saved ${permanentChains.length} permanent chains to IndexedDB`);
       console.log('[Storage] Sample chain:', permanentChains[0]);
     } else {
-      localStorage.removeItem(CHAINS_KEY);
-      console.log('[Storage] No permanent chains to save, removed from localStorage');
+      await IDB.saveChains([]);
+      console.log('[Storage] No permanent chains to save');
     }
   } catch (error) {
     console.error('[Storage] Failed to save chains:', error);
@@ -75,15 +69,12 @@ export function saveChains(chains: Chain[], isSimulationMode: boolean): void {
 }
 
 /**
- * Загрузить цепочки из localStorage
+ * Загрузить цепочки из IndexedDB
  */
-export function loadChains(): Chain[] {
+export async function loadChains(): Promise<Chain[]> {
   try {
-    const saved = localStorage.getItem(CHAINS_KEY);
-    if (!saved) return [];
-    
-    const chains: Chain[] = JSON.parse(saved);
-    console.log(`[Storage] Loaded ${chains.length} chains from localStorage`);
+    const chains = await IDB.loadChains();
+    console.log(`[Storage] Loaded ${chains.length} chains from IndexedDB`);
     return chains;
   } catch (error) {
     console.error('[Storage] Failed to load chains:', error);
@@ -92,10 +83,9 @@ export function loadChains(): Chain[] {
 }
 
 /**
- * Очистить все данные из localStorage (для отладки)
+ * Очистить все данные из IndexedDB (для отладки)
  */
-export function clearAllStorage(): void {
-  localStorage.removeItem(NODES_KEY);
-  localStorage.removeItem(CHAINS_KEY);
-  console.log('[Storage] Cleared all game data from localStorage');
+export async function clearAllStorage(): Promise<void> {
+  await IDB.clearDatabase();
+  console.log('[Storage] Cleared all game data from IndexedDB');
 }
