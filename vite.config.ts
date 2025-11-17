@@ -40,8 +40,11 @@ export default defineConfig({
             return 'mapbox';
           }
           
-          // React core
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+          // React ecosystem (включая react, react-dom, lucide-react и другие React-зависимости)
+          if (id.includes('node_modules/react') || 
+              id.includes('node_modules/react-dom') ||
+              id.includes('node_modules/lucide-react') ||
+              id.includes('node_modules/scheduler')) {
             return 'react-vendor';
           }
           
