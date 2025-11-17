@@ -6,6 +6,8 @@ import { isSupabaseEnabled } from '../../lib/supabase';
 import { ProfileService } from '../../services/ProfileService';
 import { Pencil, Check, X } from 'lucide-react';
 
+const MAX_CHAINS_PER_DAY = Number(import.meta.env.VITE_MAX_CHAINS_PER_DAY) || 2;
+
 interface ProfileOverlayProps {
   isOpen: boolean;
   onClose: () => void;
@@ -180,7 +182,7 @@ export function ProfileOverlay({ isOpen, onClose }: ProfileOverlayProps) {
               Chains Today
             </p>
             <p className="text-2xl font-bold text-cyan-400">
-              {stats.chainsCreatedToday} / 3
+              {stats.chainsCreatedToday} / {MAX_CHAINS_PER_DAY}
             </p>
           </div>
           <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
@@ -300,7 +302,7 @@ export function ProfileOverlay({ isOpen, onClose }: ProfileOverlayProps) {
                 Chains Today
               </p>
               <p className="text-2xl font-bold text-cyan-400">
-                {stats.chainsCreatedToday} / 3
+                {stats.chainsCreatedToday} / {MAX_CHAINS_PER_DAY}
               </p>
             </div>
             <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">

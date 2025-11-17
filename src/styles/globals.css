@@ -305,10 +305,8 @@ body {
   border-radius: 50%;
   box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
   animation: pulse 2s infinite;
-  transform: rotate(var(--bearing, 0deg)) translateZ(0);
+  /* Убираем transform отсюда, т.к. Mapbox теперь вращает весь маркер */
   will-change: transform;
-  backface-visibility: hidden;
-  transform-style: preserve-3d;
 }
 
 .pulsing-avatar::before {
@@ -316,7 +314,6 @@ body {
   position: absolute;
   top: -10px;
   left: 50%;
-  transform: translateX(-50%);
   width: 0;
   height: 0;
   border-left: 7px solid transparent;
@@ -324,6 +321,9 @@ body {
   border-bottom: 13px solid rgb(4, 207, 82);
   clip-path: polygon(50% 0%, 100% 100%, 50% 80%, 0% 100%);
   z-index: 5;
+  /* Треугольник вращается относительно bearing */
+  transform: translateX(-50%) rotate(var(--bearing, 0deg));
+  transform-origin: center bottom;
 }
 
 .pulsing-avatar::after {

@@ -5,19 +5,23 @@ interface RightSidebarProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onLayers: () => void;
+  mapStyleTheme?: 'light' | 'dark';
 }
 
 export const RightSidebar = ({ 
   onZoomIn, 
   onZoomOut,
-  onLayers 
+  onLayers,
+  mapStyleTheme = 'dark'
 }: RightSidebarProps) => {
+  const themeClass = mapStyleTheme === 'light' ? 'theme-light' : '';
+
   return (
     <div className="absolute right-4 top-4 flex flex-col gap-3 z-10">
       {/* Zoom In */}
       <button
         onClick={onZoomIn}
-        className="scifi-button scifi-button-zoom-in"
+        className={`scifi-button scifi-button-zoom-in ${themeClass}`}
         title="Приблизить"
         aria-label="Zoom in"
       >
@@ -27,7 +31,7 @@ export const RightSidebar = ({
       {/* Zoom Out */}
       <button
         onClick={onZoomOut}
-        className="scifi-button scifi-button-zoom-out"
+        className={`scifi-button scifi-button-zoom-out ${themeClass}`}
         title="Отдалить"
         aria-label="Zoom out"
       >
@@ -37,7 +41,7 @@ export const RightSidebar = ({
       {/* Layers */}
       <button
         onClick={onLayers}
-        className="scifi-button scifi-button-layers"
+        className={`scifi-button scifi-button-layers ${themeClass}`}
         title="Слои карты"
         aria-label="Map layers"
       >

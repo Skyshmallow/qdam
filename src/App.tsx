@@ -277,12 +277,14 @@ function App() {
     if (!isFollowingAvatar || activityState !== 'simulating' || !map || !avatarPosition) return;
 
     const normalizedBearing = (bearing + 360) % 360;
+    
+    // Плавный поворот карты вместе с направлением движения
     map.easeTo({
       center: avatarPosition as [number, number],
-      bearing: normalizedBearing,
-      pitch: 60,
+      bearing: normalizedBearing, // Карта поворачивается по направлению движения
+      pitch: 60, // 3D вид сверху-сбоку
       zoom: 17,
-      duration: 300,
+      duration: 200, // Быстрее для плавности
       essential: true
     });
   }, [isFollowingAvatar, activityState, map, avatarPosition, bearing]);
@@ -296,24 +298,41 @@ function App() {
     }
   }, [activityState]);
 
-  // ✅ Disable follow when user manually interacts with map
+  // ✅ Disable/Enable map interactions during simulation
   useEffect(() => {
-    if (!map || activityState !== 'simulating') return;
+    if (!map) return;
 
-    const disableFollow = () => {
-      setIsFollowingAvatar(false);
-    };
-
-    map.on('dragstart', disableFollow);
-    map.on('zoomstart', disableFollow);
-    map.on('pitchstart', disableFollow);
-    map.on('rotatestart', disableFollow);
+    if (activityState === 'simulating') {
+      // Блокируем управление картой во время симуляции
+      map.dragPan.disable();
+      map.scrollZoom.disable();
+      map.boxZoom.disable();
+      map.dragRotate.disable();
+      map.keyboard.disable();
+      map.doubleClickZoom.disable();
+      map.touchZoomRotate.disable();
+    } else {
+      // Разблокируем после симуляции
+      map.dragPan.enable();
+      map.scrollZoom.enable();
+      map.boxZoom.enable();
+      map.dragRotate.enable();
+      map.keyboard.enable();
+      map.doubleClickZoom.enable();
+      map.touchZoomRotate.enable();
+    }
 
     return () => {
-      map.off('dragstart', disableFollow);
-      map.off('zoomstart', disableFollow);
-      map.off('pitchstart', disableFollow);
-      map.off('rotatestart', disableFollow);
+      // Cleanup: всегда разблокируем
+      if (map) {
+        map.dragPan.enable();
+        map.scrollZoom.enable();
+        map.boxZoom.enable();
+        map.dragRotate.enable();
+        map.keyboard.enable();
+        map.doubleClickZoom.enable();
+        map.touchZoomRotate.enable();
+      }
     };
   }, [map, activityState]);
 
@@ -553,12 +572,15 @@ function App() {
     simulation
   ]);
 
+  const { mapStyleTheme } = useUIStore();
+
   const rightSidebarProps = useMemo(() => ({ 
     onMyLocationClick: handleMyLocationClick,
     onZoomIn: zoomIn,
     onZoomOut: zoomOut,
     onLayers: () => openOverlay('layers'),
-  }), [handleMyLocationClick, zoomIn, zoomOut, openOverlay]);
+    mapStyleTheme,
+  }), [handleMyLocationClick, zoomIn, zoomOut, openOverlay, mapStyleTheme]);
   
   const leftSidebarProps = useMemo(() => ({
     onProfileClick: () => openOverlay('profile'),
@@ -568,13 +590,15 @@ function App() {
     isSimulating: simulation.isSimulationMode,
     onSimulateClick: handleSimulateClick,
     isDeveloper,
+    mapStyleTheme,
   }), [
     openOverlay,
     geolocationState, 
     handleMyLocationClick, 
     simulation.isSimulationMode, 
     handleSimulateClick,
-    isDeveloper
+    isDeveloper,
+    mapStyleTheme
   ]);
 
   // === UI ===

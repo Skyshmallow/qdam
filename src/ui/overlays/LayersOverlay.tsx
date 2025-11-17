@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMapStore } from '../../store/mapStore';
+import { useUIStore } from '../../store/uiStore';
 
 interface LayersOverlayProps {
   isOpen: boolean;
@@ -14,6 +15,18 @@ interface MapStyle {
 }
 
 const mapStyles: MapStyle[] = [
+  {
+    id: 'standard',
+    name: '3D Standard',
+    url: 'mapbox://styles/mapbox/standard',
+    icon: '🏙️'
+  },
+  {
+    id: 'standard-dark',
+    name: '3D Dark',
+    url: 'mapbox://styles/mapbox/standard',
+    icon: '🌃'
+  },
   {
     id: 'streets',
     name: 'Streets',
@@ -46,8 +59,12 @@ const mapStyles: MapStyle[] = [
   }
 ];
 
+// Light styles that need dark buttons
+const LIGHT_STYLES = ['light', 'streets', 'satellite', 'standard'];
+
 export const LayersOverlay = ({ isOpen, onClose }: LayersOverlayProps) => {
   const { map } = useMapStore();
+  const { setMapStyleTheme } = useUIStore();
   const [activeStyle, setActiveStyle] = useState<string>('dark');
   const overlayRef = useRef<HTMLDivElement>(null);
 
@@ -55,10 +72,27 @@ export const LayersOverlay = ({ isOpen, onClose }: LayersOverlayProps) => {
   useEffect(() => {
     if (!map) return;
     
-    const currentStyleUrl = map.getStyle()?.sprite;
-    if (currentStyleUrl) {
-      const style = mapStyles.find(s => currentStyleUrl.includes(s.id));
-      if (style) setActiveStyle(style.id);
+    const sprite = map.getStyle()?.sprite || '';
+    
+    // Match style by checking sprite URL (more precise order matters!)
+    if (sprite.includes('satellite-streets') || sprite.includes('satellite')) {
+      setActiveStyle('satellite');
+    } else if (sprite.includes('navigation-night')) {
+      setActiveStyle('navigation-night');
+    } else if (sprite.includes('standard')) {
+      // Check lightPreset to distinguish standard vs standard-dark
+      const lightPreset = map.getConfigProperty('basemap', 'lightPreset');
+      if (lightPreset === 'night') {
+        setActiveStyle('standard-dark');
+      } else {
+        setActiveStyle('standard');
+      }
+    } else if (sprite.includes('streets')) {
+      setActiveStyle('streets');
+    } else if (sprite.includes('dark')) {
+      setActiveStyle('dark');
+    } else if (sprite.includes('light')) {
+      setActiveStyle('light');
     }
   }, [map]);
 
@@ -84,22 +118,39 @@ export const LayersOverlay = ({ isOpen, onClose }: LayersOverlayProps) => {
 
   const handleStyleChange = (style: MapStyle) => {
     if (!map) return;
-
-    console.log(`[LayersOverlay] Changing map style to: ${style.name}`);
     
     // Add fade effect
     const container = map.getContainer();
     container.style.transition = 'opacity 0.3s';
     container.style.opacity = '0.5';
 
-    // Change style
+    // Change style (suppress console warnings)
+    const originalWarn = console.warn;
+    const originalError = console.error;
+    console.warn = () => {};
+    console.error = () => {};
+
     map.setStyle(style.url);
 
     // Wait for style to load
     map.once('style.load', () => {
-      console.log(`[LayersOverlay] Style loaded: ${style.name}`);
+      // Apply lightPreset for 3D styles
+      if (style.id === 'standard-dark') {
+        map.setConfigProperty('basemap', 'lightPreset', 'night');
+      } else if (style.id === 'standard') {
+        map.setConfigProperty('basemap', 'lightPreset', 'day');
+      }
+      
+      // Update theme for sidebar buttons
+      const isLightStyle = LIGHT_STYLES.includes(style.id);
+      setMapStyleTheme(isLightStyle ? 'light' : 'dark');
+      
       container.style.opacity = '1';
       setActiveStyle(style.id);
+      
+      // Restore console
+      console.warn = originalWarn;
+      console.error = originalError;
       
       // Auto-close after style change
       setTimeout(() => {

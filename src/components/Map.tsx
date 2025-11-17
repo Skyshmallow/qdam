@@ -7,6 +7,8 @@ import { useMapbox } from '../hooks/useMapbox';
 import { updateGeoJSONSource } from '../utils/mapUtils';
 import type { MapProps } from '../types';
 import { featureCollection, point, lineString } from '@turf/helpers';
+import { Avatar3D } from './Avatar3D.ts';
+import { ThreeLayer } from '../utils/ThreeLayer';
 
 export const Map = ({
   avatarPosition,
@@ -31,6 +33,8 @@ export const Map = ({
     onThreeLayerReady
   );
   const avatarMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const avatar3DRef = useRef<Avatar3D | null>(null);
+  const isInitialLoadRef = useRef(true); // Track if this is the first load
 
   // === Mobile optimization ===
   useEffect(() => {
@@ -44,30 +48,39 @@ export const Map = ({
 
   }, [map, isMapLoaded]);
 
-  // === Avatar creation ===
+  // === Helper: Create avatar marker ===
+  const createAvatarMarker = () => {
+    if (!map.current || !avatarPosition) return;
+    
+    console.log('[Map.tsx] Creating NEW 3D avatar marker');
+    const el = document.createElement('div');
+    el.style.width = '100px';
+    el.style.height = '100px';
+    
+    // Создаём 3D аватар (класс, не React компонент)
+    const avatar3D = new Avatar3D(el);
+    avatar3D.setBearing(bearing);
+    avatar3DRef.current = avatar3D;
+    
+    const newMarker = new mapboxgl.Marker({ 
+      element: el, 
+      anchor: 'center',
+      pitchAlignment: 'map',
+      rotationAlignment: 'map',
+    })
+      .setLngLat(avatarPosition as [number, number])
+      .addTo(map.current);
+
+    avatarMarkerRef.current = newMarker;
+  };
+
+  // === Avatar creation (3D) ===
   useEffect(() => {
     if (!map.current || !isMapLoaded) return;
 
     if (avatarPosition) {
       if (!avatarMarkerRef.current) {
-        console.log('[Map.tsx] Creating NEW avatar marker');
-        const el = document.createElement('div');
-        el.className = 'pulsing-avatar';
-        
-        el.style.position = 'absolute';
-        el.style.pointerEvents = 'none';
-
-        const newMarker = new mapboxgl.Marker({ 
-          element: el, 
-          anchor: 'center',
-          pitchAlignment: 'viewport',
-          rotationAlignment: 'viewport',
-        })
-          .setLngLat(avatarPosition as [number, number])
-          .addTo(map.current);
-
-        avatarMarkerRef.current = newMarker;
-        
+        createAvatarMarker();
       } else {
         avatarMarkerRef.current.setLngLat(avatarPosition as [number, number]);
       }
@@ -76,14 +89,92 @@ export const Map = ({
         avatarMarkerRef.current.remove();
         avatarMarkerRef.current = null;
       }
+      if (avatar3DRef.current) {
+        avatar3DRef.current.dispose();
+        avatar3DRef.current = null;
+      }
     }
-  }, [avatarPosition, isMapLoaded, map]);
+  }, [avatarPosition, isMapLoaded, map, bearing]);
 
-  // === Avatar rotation ===
+  // === Recreate layers and avatar on style change (skip initial load) ===
   useEffect(() => {
-    if (avatarMarkerRef.current) {
-      const el = avatarMarkerRef.current.getElement();
-      el.style.setProperty('--bearing', `${bearing}deg`);
+    if (!map.current) return;
+
+    const handleStyleLoad = () => {
+      // Skip the first style.load event (initial map load)
+      if (isInitialLoadRef.current) {
+        console.log('[Map.tsx] Style loaded (initial), skipping layer recreation');
+        isInitialLoadRef.current = false;
+        return;
+      }
+      
+      console.log('[Map.tsx] Style changed, recreating layers and avatar');
+      
+      // Re-add all map layers (sources were removed by setStyle)
+      import('../utils/mapUtils').then(({ addMapLayers }) => {
+        addMapLayers(map.current!);
+        console.log('[Map.tsx] Map layers re-added after style change');
+        
+        // Re-add ThreeLayer for 3D effects (castles, grass)
+        console.log('[Map.tsx] Re-adding ThreeLayer after style change');
+        const newThreeLayer = new ThreeLayer('castles-3d');
+        
+        // Update the ref so App.tsx can use it
+        if (threeLayerRef) {
+          threeLayerRef.current = newThreeLayer;
+        }
+        
+        map.current!.addLayer(newThreeLayer as any);
+        
+        // Re-position spheres layer under ThreeLayer
+        if (map.current!.getLayer('spheres-fill')) {
+          map.current!.removeLayer('spheres-fill');
+          map.current!.addLayer({
+            id: 'spheres-fill',
+            type: 'fill',
+            source: 'spheres',
+            paint: {
+              'fill-color': 'rgba(251, 191, 36, 0.1)',
+              'fill-opacity': 0.15
+            }
+          }, 'castles-3d');
+        }
+        
+        console.log('[Map.tsx] ThreeLayer re-added');
+        
+        // Notify parent that ThreeLayer is ready
+        if (onThreeLayerReady) {
+          onThreeLayerReady(newThreeLayer);
+        }
+      });
+      
+      // Remove old avatar marker if exists
+      if (avatarMarkerRef.current) {
+        avatarMarkerRef.current.remove();
+        avatarMarkerRef.current = null;
+      }
+      if (avatar3DRef.current) {
+        avatar3DRef.current.dispose();
+        avatar3DRef.current = null;
+      }
+      
+      // Recreate avatar if we have position
+      if (avatarPosition) {
+        createAvatarMarker();
+      }
+    };
+
+    map.current.on('style.load', handleStyleLoad);
+
+    return () => {
+      map.current?.off('style.load', handleStyleLoad);
+    };
+  }, [map, avatarPosition, bearing]);
+
+  // === Update avatar bearing ===
+  useEffect(() => {
+    if (avatar3DRef.current) {
+      avatar3DRef.current.setBearing(bearing);
     }
   }, [bearing]);
 

@@ -10,6 +10,7 @@ interface LeftSidebarProps {
   isSimulating: boolean;
   onSimulateClick: () => void;
   isDeveloper: boolean;
+  mapStyleTheme?: 'light' | 'dark';
 }
 
 export const LeftSidebar = ({
@@ -20,6 +21,7 @@ export const LeftSidebar = ({
   isSimulating,
   onSimulateClick,
   isDeveloper,
+  mapStyleTheme = 'dark',
 }: LeftSidebarProps) => {
 
   // Helper to determine geolocation button class
@@ -32,12 +34,14 @@ export const LeftSidebar = ({
 
   const isGeolocationBusy = geolocationState === 'prompting' || geolocationState === 'locating';
   
+  const themeClass = mapStyleTheme === 'light' ? 'theme-light' : '';
+
   return (
     <div className="absolute left-4 top-4 flex flex-col gap-3 z-10">
       {/* Profile */}
       <button
         onClick={onProfileClick}
-        className="scifi-button scifi-button-profile"
+        className={`scifi-button scifi-button-profile ${themeClass}`}
         title="Профиль"
         aria-label="Profile"
       >
@@ -47,7 +51,7 @@ export const LeftSidebar = ({
       {/* History */}
       <button
         onClick={onHistoryClick}
-        className="scifi-button scifi-button-history"
+        className={`scifi-button scifi-button-history ${themeClass}`}
         title="История"
         aria-label="History"
       >
@@ -57,7 +61,7 @@ export const LeftSidebar = ({
       {/* Find Me */}
       <button
         onClick={onMyLocationClick}
-        className={`scifi-button scifi-button-location ${getGeolocationClass()}`}
+        className={`scifi-button scifi-button-location ${getGeolocationClass()} ${themeClass}`}
         title="Моё местоположение"
         aria-label="My Location"
         disabled={isGeolocationBusy}
@@ -73,7 +77,7 @@ export const LeftSidebar = ({
       {isDeveloper && (
         <button
           onClick={onSimulateClick}
-          className={`scifi-button scifi-button-simulate ${isSimulating ? 'active' : ''}`}
+          className={`scifi-button scifi-button-simulate ${isSimulating ? 'active' : ''} ${themeClass}`}
           title={isSimulating ? "Остановить симуляцию" : "Режим симуляции"}
           aria-label={isSimulating ? "Stop Simulation" : "Start Simulation"}
         >
