@@ -24,7 +24,7 @@ import { useSyncNodes } from './hooks/useSyncNodes';
 import { useSyncChains } from './hooks/useSyncChains';
 import { useMultiplayerTerritories } from './hooks/useMultiplayerTerritories';
 import { ThreeLayer } from './utils/ThreeLayer';
-import { useAuth } from './contexts/AuthContext';
+import { useAuth } from './hooks/useAuth';
 
 // NEW: Simulation mode
 import { useSimulationMode } from './simulation/useSimulationMode';
@@ -55,16 +55,7 @@ const HistoryOverlay = lazy(() => import('./ui/overlays/HistoryOverlay').then(m 
 const LayersOverlay = lazy(() => import('./ui/overlays/LayersOverlay').then(m => ({ default: m.LayersOverlay })));
 
 // --- Types ---
-
-// --- Activity State ---
-type ActivityState =
-  | 'idle'
-  | 'tracking'
-  | 'tracking_paused'
-  | 'planning_start'
-  | 'planning_end'
-  | 'ready_to_simulate'
-  | 'simulating';
+import type { ActivityState, TrackingState } from './types';
 
 function App() {
   // === Global Store State ===
@@ -81,7 +72,7 @@ function App() {
   const threeLayerRef = useRef<ThreeLayer | null>(null);
   const chainAttempt = useChainAttempt();
   const playerStats = usePlayerStats();
-  
+
   // NEW: Simulation mode
   const simulation = useSimulationMode();
 
@@ -123,14 +114,14 @@ function App() {
       log('Data load complete');
     }
   });
-  
+
   const chainsHook = useChains({
     isSimulationMode: simulation.isSimulationMode,
   });
-  
+
   const { nodes } = nodesHook;
   const { chains } = chainsHook;
-  
+
   // ✅ Territory calculation (auto-updates when nodes change)
   const territory = useTerritory(nodes);
 
@@ -153,7 +144,7 @@ function App() {
     territory,
     !simulation.isSimulationMode // Enabled only in normal mode
   );
-  
+
   // ✅ Node creation handler
   const nodeCreation = useNodeCreationHandler({
     nodesHook,
@@ -162,10 +153,10 @@ function App() {
     onSuccess: showSuccess,
     onWarning: showWarning,
   });
-  
+
   // === Local State ===
   const [activityState, setActivityState] = useState<ActivityState>('idle');
-  
+
   // ✅ Tracking handler (needs activityState, so defined after local state)
   const tracking = useTrackingHandler({
     nodesHook,
@@ -187,7 +178,7 @@ function App() {
     onWarning: showWarning,
     log,
   });
-  
+
   // ✅ Map controls handler
   const mapControls = useMapControlsHandler({
     activityState,
@@ -204,13 +195,13 @@ function App() {
     onError: showError,
     log,
   });
-  
+
   const [isFollowingAvatar, setIsFollowingAvatar] = useState(false);
   const [isThreeLayerReady, setIsThreeLayerReady] = useState(false);
-  
+
   // ✅ Sphere effects (generation + animation)
   const spheres = useSphereEffects({ chains, nodes, map });
-  
+
   // ✅ Map effects (load, three layer sync, cursor)
   const mapEffects = useMapEffects({
     map,
@@ -233,7 +224,7 @@ function App() {
     showError('Скорость превышает допустимую для ходьбы!');
     chainAttempt.clearAttempt();
     setActivityState('idle');
-  }, [chainAttempt, log]);
+  }, [chainAttempt, log, showError]);
 
   // ✅ Position watcher - only when chain attempt active (real walk only)
   usePositionWatcher(
@@ -256,8 +247,8 @@ function App() {
   // Log chains/nodes changes
   useEffect(() => {
     if (chains.length > 0 || nodes.length > 0) {
-      log('Storage updated', { 
-        chains: chains.length, 
+      log('Storage updated', {
+        chains: chains.length,
         nodes: nodes.length,
         temporary: nodes.filter(n => n.isTemporary).length
       });
@@ -277,7 +268,7 @@ function App() {
     if (!isFollowingAvatar || activityState !== 'simulating' || !map || !avatarPosition) return;
 
     const normalizedBearing = (bearing + 360) % 360;
-    
+
     // Плавный поворот карты вместе с направлением движения
     map.easeTo({
       center: avatarPosition as [number, number],
@@ -343,35 +334,35 @@ function App() {
   // ✅ Extracted to useSphereEffects hook
 
   // === EVENT HANDLERS ===
-  
+
   // ✅ Map controls extracted to useMapControlsHandler
   const handleMyLocationClick = mapControls.handleMyLocationClick;
 
   // ✅ NEW: handleStop - Works for both real walk and simulation
   const handleStop = useCallback(() => {
-    log('handleStop called', { 
+    log('handleStop called', {
       hasAttempt: !!chainAttempt.currentAttempt,
       activityState,
       isSimulation: simulation.isSimulationMode
     });
-    
+
     // Stop simulation
     if (activityState === 'simulating') {
       log('Stopping simulation');
       simulator.stopSimulation();
-      
+
       // NEW: Create chain from simulation route
       if (planner.routeWaypoints.length >= 2 && planner.simulatableRoute) {
         const startCoords = planner.routeWaypoints[0] as [number, number];
         const endCoords = planner.routeWaypoints[planner.routeWaypoints.length - 1] as [number, number];
-        
+
         nodeCreation.createChainFromSimulation(
           startCoords,
           endCoords,
           planner.simulatableRoute
         );
       }
-      
+
       planner.resetPlanner();
       setActivityState('idle');
       resetGeolocationState();
@@ -388,18 +379,18 @@ function App() {
     const endCoords = avatarPosition as [number, number];
 
     // Reduce path to only 2 points [start, end] for storage
-    const reducedPath = path.length === 2 
-      ? path 
+    const reducedPath = path.length === 2
+      ? path
       : [path[0], path[path.length - 1]];
 
-    log('Chain path reduced', { 
-      originalLength: path.length, 
-      reducedLength: reducedPath.length 
+    log('Chain path reduced', {
+      originalLength: path.length,
+      reducedLength: reducedPath.length
     });
 
     // Finish chain creation with validation
     const result = nodeCreation.finishChainCreation(nodeA, endCoords, reducedPath);
-    
+
     if (!result.success) {
       chainAttempt.clearAttempt();
       setActivityState('idle');
@@ -425,11 +416,11 @@ function App() {
     });
 
   }, [
-    chainAttempt, 
-    avatarPosition, 
-    activityState, 
-    simulator, 
-    planner, 
+    chainAttempt,
+    avatarPosition,
+    activityState,
+    simulator,
+    planner,
     resetGeolocationState,
     playerStats,
     simulation.isSimulationMode,
@@ -445,15 +436,15 @@ function App() {
 
   // ✅ handleSimulateClick - Don't clear active chain
   const handleSimulateClick = useCallback(() => {
-    log('Simulate button clicked', { 
+    log('Simulate button clicked', {
       isSimulating: simulation.isSimulationMode,
-      activityState 
+      activityState
     });
-    
+
     // If simulation is active, exit it (Variant A: just exit)
     if (simulation.isSimulationMode) {
       log('Exiting simulation mode');
-      
+
       // If in middle of planning/simulating, reset it
       if (activityState !== 'idle') {
         simulator.stopSimulation();
@@ -461,33 +452,35 @@ function App() {
         setActivityState('idle');
         resetGeolocationState();
       }
-      
+
       simulation.exitSimulationMode();
       showInfo('Режим симуляции выключен');
       return;
     }
-    
+
     // Block if real walk is active
     if (chainAttempt.currentAttempt) {
       showError('Сначала завершите текущий реальный поход!');
       return;
     }
-    
+
     // Enter simulation mode and start planning
     log('Entering simulation mode');
     simulation.enterSimulationMode();
     planner.resetPlanner();
     setActivityState('planning_start');
     showInfo('🧪 Режим симуляции активирован! Выберите начальную точку на карте');
-    
+
   }, [
-    simulation, 
-    activityState, 
-    chainAttempt, 
-    simulator, 
-    planner, 
+    simulation,
+    activityState,
+    chainAttempt,
+    simulator,
+    planner,
     resetGeolocationState,
-    log
+    log,
+    showError,
+    showInfo
   ]);
 
   const handleMapClick = mapControls.handleMapClick;
@@ -499,7 +492,7 @@ function App() {
     if (chainAttempt.currentAttempt) {
       allNodesForMap.push(chainAttempt.currentAttempt.nodeA);
     }
-    
+
     // Current path from attempt or empty
     const currentPathForMap = chainAttempt.currentAttempt?.path || [];
 
@@ -541,9 +534,9 @@ function App() {
 
   const trackingControlsProps = useMemo(() => ({
     activityState,
-    trackingState: chainAttempt.currentAttempt 
+    trackingState: chainAttempt.currentAttempt
       ? (activityState === 'tracking_paused' ? 'paused' : 'recording')
-      : 'idle' as any,
+      : 'idle' as TrackingState,
     onStart: handleStart,
     onPause: handlePause,
     onResume: handleResume,
@@ -553,35 +546,37 @@ function App() {
       // Clear temporary test data using hooks
       const allNodes = nodesHook.nodes;
       const allChains = chainsHook.chains;
-      
+
       const temporaryNodes = allNodes.filter(n => n.isTemporary);
       const temporaryChains = allChains.filter(c => c.isTemporary);
-      
+
       temporaryNodes.forEach(n => nodesHook.removeNode(n.id));
       temporaryChains.forEach(c => chainsHook.removeChain(c.id));
-      
+
       console.log(`[SIMULATION] 🗑️ Cleared ${temporaryNodes.length} temporary nodes and ${temporaryChains.length} temporary chains`);
     },
   }), [
-    activityState, 
-    chainAttempt.currentAttempt, 
-    handleStart, 
-    handlePause, 
-    handleResume, 
+    activityState,
+    chainAttempt.currentAttempt,
+    handleStart,
+    handlePause,
+    handleResume,
     handleStop,
-    simulation
+    simulation,
+    nodesHook,
+    chainsHook
   ]);
 
   const { mapStyleTheme } = useUIStore();
 
-  const rightSidebarProps = useMemo(() => ({ 
+  const rightSidebarProps = useMemo(() => ({
     onMyLocationClick: handleMyLocationClick,
     onZoomIn: zoomIn,
     onZoomOut: zoomOut,
     onLayers: () => openOverlay('layers'),
     mapStyleTheme,
   }), [handleMyLocationClick, zoomIn, zoomOut, openOverlay, mapStyleTheme]);
-  
+
   const leftSidebarProps = useMemo(() => ({
     onProfileClick: () => openOverlay('profile'),
     onHistoryClick: () => openOverlay('history'),
@@ -593,9 +588,9 @@ function App() {
     mapStyleTheme,
   }), [
     openOverlay,
-    geolocationState, 
-    handleMyLocationClick, 
-    simulation.isSimulationMode, 
+    geolocationState,
+    handleMyLocationClick,
+    simulation.isSimulationMode,
     handleSimulateClick,
     isDeveloper,
     mapStyleTheme
@@ -605,7 +600,7 @@ function App() {
   return (
     <div className="app-container">
       <Map {...mapProps} />
-      
+
       <LeftSidebar {...leftSidebarProps} />
       <TrackingControls {...trackingControlsProps} />
       <RightSidebar {...rightSidebarProps} />
@@ -624,13 +619,13 @@ function App() {
           <span>Симуляция движения активна</span>
         </div>
       )}
-      
+
       {chainAttempt.currentAttempt && !simulation.isSimulationMode && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg z-20">
           Поход активен: {chainAttempt.currentAttempt.path.length} точек
         </div>
       )}
-      
+
       {territory && (
         <div className="absolute top-28 left-1/2 -translate-x-1/2 bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg z-20">
           Территория: {nodes.filter(n => n.status === 'established').length} узлов

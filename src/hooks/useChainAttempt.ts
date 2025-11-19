@@ -20,7 +20,7 @@ export const useChainAttempt = () => {
   const [currentAttempt, setCurrentAttempt] = useState<ChainAttempt | null>(null);
 
   // Функция логирования
-  const log = useCallback((message: string, data?: any) => {
+  const log = useCallback((message: string, data?: unknown) => {
     const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
     if (data) {
       console.log(`[${timestamp}][useChainAttempt] ${message}`, data);
@@ -35,11 +35,11 @@ export const useChainAttempt = () => {
       const savedAttempt = localStorage.getItem(STORAGE_KEY);
       if (savedAttempt) {
         const parsed = JSON.parse(savedAttempt);
-        
+
         // Проверяем срок действия (3 дня)
         const expirationTime = 3 * 24 * 60 * 60 * 1000;
         const now = Date.now();
-        
+
         if (parsed.nodeA && (now - parsed.nodeA.createdAt) < expirationTime) {
           setCurrentAttempt(parsed);
           log('Restored unfinished chain attempt from localStorage', {
@@ -66,14 +66,14 @@ export const useChainAttempt = () => {
       createdAt: Date.now(),
       status: 'pending',
     };
-    
+
     const newAttempt: ChainAttempt = {
       nodeA,
       path: [startCoords], // Начинаем путь с первой точки
     };
 
     setCurrentAttempt(newAttempt);
-    
+
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newAttempt));
       log('Started new attempt', {
@@ -92,7 +92,7 @@ export const useChainAttempt = () => {
         console.warn('[useChainAttempt] Cannot add point - no active attempt');
         return null;
       }
-      
+
       const updatedPath = [...prev.path, point];
       const updatedAttempt = { ...prev, path: updatedPath };
 
@@ -104,7 +104,7 @@ export const useChainAttempt = () => {
       } catch (error) {
         console.error('[useChainAttempt] Failed to save path update', error);
       }
-      
+
       return updatedAttempt;
     });
   }, []);
@@ -117,9 +117,9 @@ export const useChainAttempt = () => {
         finalPathLength: currentAttempt.path.length
       });
     }
-    
+
     setCurrentAttempt(null);
-    
+
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch (error) {
@@ -130,11 +130,11 @@ export const useChainAttempt = () => {
   // 5. Функция для получения информации о текущей попытке
   const getAttemptInfo = useCallback(() => {
     if (!currentAttempt) return null;
-    
+
     const now = Date.now();
     const durationMs = now - currentAttempt.nodeA.createdAt;
     const durationMinutes = Math.round(durationMs / 1000 / 60);
-    
+
     return {
       nodeA_id: currentAttempt.nodeA.id,
       startCoords: currentAttempt.nodeA.coordinates,
@@ -152,3 +152,5 @@ export const useChainAttempt = () => {
     getAttemptInfo,
   };
 };
+
+export type UseChainAttemptReturn = ReturnType<typeof useChainAttempt>;

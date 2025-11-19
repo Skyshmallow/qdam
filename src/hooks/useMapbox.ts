@@ -50,14 +50,14 @@ export const useMapbox = (
       // ✅ ПРАВИЛЬНЫЙ ПОРЯДОК СЛОЁВ:
       // 1. Добавляем 2D слои (paths, waypoints, territory)
       addMapLayers(map);
-      
+
       // 2. Добавляем 3D слой (замки, трава)
       console.log('[useMapbox] Adding ThreeLayer for 3D castles');
       const threeLayer = new ThreeLayer('castles-3d');
       threeLayerRef.current = threeLayer;
-      map.addLayer(threeLayer as any);
+      map.addLayer(threeLayer as unknown as mapboxgl.CustomLayerInterface);
       console.log('[useMapbox] ThreeLayer added');
-      
+
       // 3. ✅ КЛЮЧЕВОЕ! Добавляем сферы ПОСЛЕ 3D-слоя с beforeId
       //    Это помещает сферы ПОД 3D-слой в стеке рендеринга
       console.log('[useMapbox] Re-adding spheres layer BEFORE 3D layer');
@@ -74,13 +74,13 @@ export const useMapbox = (
         }
       }, 'castles-3d'); // ← beforeId: сферы рендерятся ПЕРЕД 3D-слоем
       console.log('[useMapbox] Spheres layer repositioned under 3D layer');
-      
+
       // Notify parent that 3D layer is ready
       if (onThreeLayerReadyRef.current) {
         console.log('[useMapbox] Calling onThreeLayerReady callback');
         onThreeLayerReadyRef.current(threeLayer);
       }
-      
+
       setIsMapLoaded(true);
 
       // Notify parent that map is ready
@@ -101,7 +101,7 @@ export const useMapbox = (
       threeLayerRef.current = null;
       setIsMapLoaded(false);
     };
-  }, []);
+  }, [mapContainer]);
 
   return { map: mapRef, threeLayer: threeLayerRef, isMapLoaded };
 };

@@ -104,9 +104,9 @@ export const addMapLayers = (map: mapboxgl.Map) => {
   // ========================================
   // ✅ SPHERES - Только базовая заливка
   // ========================================
-  
+
   map.addSource('spheres', { type: 'geojson', data: featureCollection([]) });
-  
+
   // Базовая заливка (фон сферы)
   map.addLayer({
     id: 'spheres-fill',
@@ -119,7 +119,7 @@ export const addMapLayers = (map: mapboxgl.Map) => {
   });
 };
 
-export const updateGeoJSONSource = (map: mapboxgl.Map, sourceId: string, data: any) => {
+export const updateGeoJSONSource = (map: mapboxgl.Map, sourceId: string, data: GeoJSON.FeatureCollection | GeoJSON.Feature | GeoJSON.Geometry) => {
   const source = map.getSource(sourceId) as mapboxgl.GeoJSONSource;
   if (source) source.setData(data);
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useMapStore } from '../../store/mapStore';
 import { useUIStore } from '../../store/uiStore';
 
@@ -64,37 +64,8 @@ const LIGHT_STYLES = ['light', 'streets', 'satellite', 'standard'];
 
 export const LayersOverlay = ({ isOpen, onClose }: LayersOverlayProps) => {
   const { map } = useMapStore();
-  const { setMapStyleTheme } = useUIStore();
-  const [activeStyle, setActiveStyle] = useState<string>('dark');
+  const { setMapStyleTheme, activeStyleId, setActiveStyleId } = useUIStore();
   const overlayRef = useRef<HTMLDivElement>(null);
-
-  // Detect current style on mount
-  useEffect(() => {
-    if (!map) return;
-    
-    const sprite = map.getStyle()?.sprite || '';
-    
-    // Match style by checking sprite URL (more precise order matters!)
-    if (sprite.includes('satellite-streets') || sprite.includes('satellite')) {
-      setActiveStyle('satellite');
-    } else if (sprite.includes('navigation-night')) {
-      setActiveStyle('navigation-night');
-    } else if (sprite.includes('standard')) {
-      // Check lightPreset to distinguish standard vs standard-dark
-      const lightPreset = map.getConfigProperty('basemap', 'lightPreset');
-      if (lightPreset === 'night') {
-        setActiveStyle('standard-dark');
-      } else {
-        setActiveStyle('standard');
-      }
-    } else if (sprite.includes('streets')) {
-      setActiveStyle('streets');
-    } else if (sprite.includes('dark')) {
-      setActiveStyle('dark');
-    } else if (sprite.includes('light')) {
-      setActiveStyle('light');
-    }
-  }, [map]);
 
   // Close on click outside
   useEffect(() => {
@@ -118,7 +89,10 @@ export const LayersOverlay = ({ isOpen, onClose }: LayersOverlayProps) => {
 
   const handleStyleChange = (style: MapStyle) => {
     if (!map) return;
-    
+
+    // Update UI immediately
+    setActiveStyleId(style.id);
+
     // Add fade effect
     const container = map.getContainer();
     container.style.transition = 'opacity 0.3s';
@@ -127,8 +101,8 @@ export const LayersOverlay = ({ isOpen, onClose }: LayersOverlayProps) => {
     // Change style (suppress console warnings)
     const originalWarn = console.warn;
     const originalError = console.error;
-    console.warn = () => {};
-    console.error = () => {};
+    console.warn = () => { };
+    console.error = () => { };
 
     map.setStyle(style.url);
 
@@ -140,18 +114,17 @@ export const LayersOverlay = ({ isOpen, onClose }: LayersOverlayProps) => {
       } else if (style.id === 'standard') {
         map.setConfigProperty('basemap', 'lightPreset', 'day');
       }
-      
+
       // Update theme for sidebar buttons
       const isLightStyle = LIGHT_STYLES.includes(style.id);
       setMapStyleTheme(isLightStyle ? 'light' : 'dark');
-      
+
       container.style.opacity = '1';
-      setActiveStyle(style.id);
-      
+
       // Restore console
       console.warn = originalWarn;
       console.error = originalError;
-      
+
       // Auto-close after style change
       setTimeout(() => {
         onClose();
@@ -162,7 +135,7 @@ export const LayersOverlay = ({ isOpen, onClose }: LayersOverlayProps) => {
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       ref={overlayRef}
       className="layers-overlay-mini"
       onClick={(e) => e.stopPropagation()}
@@ -176,11 +149,11 @@ export const LayersOverlay = ({ isOpen, onClose }: LayersOverlayProps) => {
           <button
             key={style.id}
             onClick={() => handleStyleChange(style)}
-            className={`layer-option ${activeStyle === style.id ? 'active' : ''}`}
+            className={`layer-option ${activeStyleId === style.id ? 'active' : ''}`}
           >
             <span className="layer-icon">{style.icon}</span>
             <span className="layer-name">{style.name}</span>
-            {activeStyle === style.id && (
+            {activeStyleId === style.id && (
               <span className="layer-check">✓</span>
             )}
           </button>

@@ -32,7 +32,7 @@ export interface QualitySettings {
 export function detectGPU(): GPUInfo {
   const canvas = document.createElement('canvas');
   const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-  
+
   if (!gl || !(gl instanceof WebGLRenderingContext)) {
     console.warn('[GPUDetector] WebGL not supported, defaulting to low tier');
     return {
@@ -45,14 +45,15 @@ export function detectGPU(): GPUInfo {
   }
 
   const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-  const renderer = debugInfo 
-    ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) 
+  gl.getExtension('WEBGL_lose_context');
+  const renderer = debugInfo
+    ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
     : 'Unknown';
-  const vendor = debugInfo 
-    ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) 
+  const vendor = debugInfo
+    ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL)
     : 'Unknown';
 
-  // @ts-ignore - DeviceMemory API (experimental)
+  // @ts-expect-error - WebGL debug info extension - DeviceMemory API (experimental)
   const deviceMemory = navigator.deviceMemory;
   const hardwareConcurrency = navigator.hardwareConcurrency || 4;
   const isMobile = isMobileDevice();
@@ -76,7 +77,7 @@ export function detectGPU(): GPUInfo {
   };
 
   console.log('[GPUDetector] Detected GPU:', info);
-  
+
   return info;
 }
 
@@ -100,9 +101,9 @@ function calculateGPUTier(info: {
   hardwareConcurrency: number;
 }): GPUTier {
   const { renderer, isMobile, deviceMemory, hardwareConcurrency } = info;
-  
+
   const rendererLower = renderer.toLowerCase();
-  
+
   // High-end GPUs
   const highEndPatterns = [
     'nvidia',
@@ -117,7 +118,7 @@ function calculateGPUTier(info: {
     'apple m2',
     'apple m3',
   ];
-  
+
   // Low-end indicators
   const lowEndPatterns = [
     'intel hd',
@@ -126,29 +127,29 @@ function calculateGPUTier(info: {
     'mesa',
     'software',
   ];
-  
+
   // Проверка на high-end
   if (highEndPatterns.some(pattern => rendererLower.includes(pattern))) {
     // Но если мобильное устройство - макс medium
     return isMobile ? 'medium' : 'high';
   }
-  
+
   // Проверка на low-end
   if (lowEndPatterns.some(pattern => rendererLower.includes(pattern))) {
     return 'low';
   }
-  
+
   // Проверка по памяти устройства
   if (deviceMemory !== undefined) {
     if (deviceMemory >= 8) return isMobile ? 'medium' : 'high';
     if (deviceMemory >= 4) return 'medium';
     return 'low';
   }
-  
+
   // Проверка по количеству ядер
   if (hardwareConcurrency >= 8) return isMobile ? 'medium' : 'high';
   if (hardwareConcurrency >= 4) return 'medium';
-  
+
   // Default: mobile = low, desktop = medium
   return isMobile ? 'low' : 'medium';
 }
@@ -168,7 +169,7 @@ export function getOptimalSettings(tier: GPUTier): QualitySettings {
         antialias: true,
         maxLights: 4,
       };
-    
+
     case 'medium':
       return {
         grassInstanceCount: 5000,
@@ -179,7 +180,7 @@ export function getOptimalSettings(tier: GPUTier): QualitySettings {
         antialias: true,
         maxLights: 2,
       };
-    
+
     case 'low':
       return {
         grassInstanceCount: 2000,
@@ -200,7 +201,7 @@ export function useGPUDetection() {
   // Мемоизируем результат (определяем только один раз)
   const gpuInfo = detectGPU();
   const settings = getOptimalSettings(gpuInfo.tier);
-  
+
   return {
     gpuInfo,
     settings,
@@ -214,14 +215,14 @@ class GPUDetectorSingleton {
   private static instance: GPUDetectorSingleton;
   private _gpuInfo: GPUInfo | null = null;
   private _settings: QualitySettings | null = null;
-  
+
   static getInstance(): GPUDetectorSingleton {
     if (!this.instance) {
       this.instance = new GPUDetectorSingleton();
     }
     return this.instance;
   }
-  
+
   get gpuInfo(): GPUInfo {
     if (!this._gpuInfo) {
       this._gpuInfo = detectGPU();
@@ -229,10 +230,10 @@ class GPUDetectorSingleton {
     }
     return this._gpuInfo;
   }
-  
+
   get settings(): QualitySettings {
     if (!this._settings) {
-      this.gpuInfo; // Trigger detection
+      void this.gpuInfo; // Trigger detection
     }
     return this._settings!;
   }

@@ -2,15 +2,19 @@
 import { useCallback } from 'react';
 import { canStartChain } from '@utils/gameRules';
 
+import type { Node, Chain, ActivityState } from '../../types';
+import type { UseSimulationModeReturn } from '../../simulation/useSimulationMode';
+import type { UseMapPlannerReturn } from '../../hooks/useMapPlanner';
+
 interface MapControlsHandlerProps {
-  activityState: string;
-  simulation: any;
-  planner: any;
-  nodes: any[];
-  chains: any[];
+  activityState: ActivityState;
+  simulation: UseSimulationModeReturn;
+  planner: UseMapPlannerReturn;
+  nodes: Node[];
+  chains: Chain[];
   locateUser: () => Promise<[number, number] | null>;
   setAvatarPosition: (pos: [number, number]) => void;
-  setActivityState: (state: any) => void;
+  setActivityState: (state: ActivityState) => void;
   flyToAvatar: () => void;
   onSuccess: (message: string) => void;
   onInfo: (message: string) => void;
@@ -37,7 +41,7 @@ export const useMapControlsHandler = ({
   onError,
   log,
 }: MapControlsHandlerProps) => {
-  
+
   /**
    * Обработчик клика "Моё местоположение"
    */
@@ -53,8 +57,8 @@ export const useMapControlsHandler = ({
    * Обработчик кликов по карте (для планирования маршрута)
    */
   const handleMapClick = useCallback(async (coordinates: [number, number]) => {
-    log('Map clicked', { 
-      coordinates, 
+    log('Map clicked', {
+      coordinates,
       activityState,
       isDrawingMode: activityState === 'planning_start' || activityState === 'planning_end'
     });
@@ -67,7 +71,7 @@ export const useMapControlsHandler = ({
         chains,
         simulation.isSimulationMode
       );
-      
+
       if (!sphereCheck.allowed) {
         onError(sphereCheck.reason || 'Cannot plan route outside sphere of influence');
         return;
@@ -83,11 +87,11 @@ export const useMapControlsHandler = ({
       onSuccess('Маршрут построен. Нажмите Play для запуска симуляции.');
     }
   }, [
-    activityState, 
-    planner, 
-    chains, 
-    nodes, 
-    simulation.isSimulationMode, 
+    activityState,
+    planner,
+    chains,
+    nodes,
+    simulation.isSimulationMode,
     setActivityState,
     onSuccess,
     onInfo,

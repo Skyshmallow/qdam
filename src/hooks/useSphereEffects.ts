@@ -2,12 +2,13 @@
 import { useState, useEffect } from 'react';
 import { featureCollection, point } from '@turf/helpers';
 import buffer from '@turf/buffer';
-import type { Feature, Polygon, MultiPolygon, GeoJsonProperties } from 'geojson';
+import type { Feature, Polygon, MultiPolygon, GeoJsonProperties, FeatureCollection } from 'geojson';
+import type { Chain, Node } from '../types';
 
 interface UseSphereEffectsProps {
-  chains: any[];
-  nodes: any[];
-  map: any;
+  chains: Chain[];
+  nodes: Node[];
+  map: mapboxgl.Map | null;
 }
 
 /**
@@ -15,24 +16,24 @@ interface UseSphereEffectsProps {
  * Извлечен из App.tsx для уменьшения размера компонента
  */
 export const useSphereEffects = ({ chains, nodes, map }: UseSphereEffectsProps) => {
-  const [spheres, setSpheres] = useState<any>(featureCollection([]));
+  const [spheres, setSpheres] = useState<FeatureCollection<Polygon | MultiPolygon, GeoJsonProperties>>(featureCollection([]));
 
   // === SPHERE GENERATION (Enhanced with rings) ===
   useEffect(() => {
     if (chains.length > 0) {
       const radius = parseFloat(import.meta.env.VITE_SPHERE_RADIUS_KM || '0.5');
       const sphereFeatures: Feature<Polygon | MultiPolygon, GeoJsonProperties>[] = [];
-      
+
       chains.forEach((chain, chainIndex) => {
-        const nodeA = nodes.find((n: any) => n.id === chain.nodeA_id);
-        const nodeB = nodes.find((n: any) => n.id === chain.nodeB_id);
-        
+        const nodeA = nodes.find((n) => n.id === chain.nodeA_id);
+        const nodeB = nodes.find((n) => n.id === chain.nodeB_id);
+
         if (!nodeA || !nodeB) return;
-        
+
         [nodeA.coordinates, nodeB.coordinates].forEach((coords, pointIndex) => {
           const centerPt = point(coords);
           const baseId = `${chain.id}-${pointIndex === 0 ? 'start' : 'end'}`;
-          
+
           // Outer ring
           const outerRing = buffer(centerPt, radius * 1.2, { units: 'kilometers', steps: 64 });
           if (outerRing) {
@@ -48,7 +49,7 @@ export const useSphereEffects = ({ chains, nodes, map }: UseSphereEffectsProps) 
             };
             sphereFeatures.push(outerRing);
           }
-          
+
           // Middle ring
           const middleRing = buffer(centerPt, radius * 0.8, { units: 'kilometers', steps: 64 });
           if (middleRing) {
@@ -64,7 +65,7 @@ export const useSphereEffects = ({ chains, nodes, map }: UseSphereEffectsProps) 
             };
             sphereFeatures.push(middleRing);
           }
-          
+
           // Inner ring
           const innerRing = buffer(centerPt, radius * 0.5, { units: 'kilometers', steps: 64 });
           if (innerRing) {
@@ -82,7 +83,7 @@ export const useSphereEffects = ({ chains, nodes, map }: UseSphereEffectsProps) 
           }
         });
       });
-      
+
       setSpheres(featureCollection(sphereFeatures));
     } else {
       setSpheres(featureCollection([]));
@@ -99,24 +100,27 @@ export const useSphereEffects = ({ chains, nodes, map }: UseSphereEffectsProps) 
     const animate = (timestamp: number) => {
       const time = timestamp / 1000;
 
-      const updatedFeatures = spheres.features.map((feature: any) => {
-        const ring = feature.properties.ring;
-        const chainIndex = feature.properties.chainIndex || 0;
-        const pointIndex = feature.properties.pointIndex || 0;
-        
+      const updatedFeatures = spheres.features.map((feature) => {
+        const ring = feature.properties?.ring;
+        const chainIndex = feature.properties?.chainIndex || 0;
+        const pointIndex = feature.properties?.pointIndex || 0;
+
         let phaseOffset = 0;
         if (ring === 'outer') phaseOffset = 0;
         if (ring === 'middle') phaseOffset = Math.PI * 0.66;
         if (ring === 'inner') phaseOffset = Math.PI * 1.33;
-        
+
         const totalOffset = phaseOffset + (chainIndex * 0.5) + (pointIndex * 0.25);
         const pulseValue = Math.sin(time * 2 + totalOffset);
         const normalizedPulse = (pulseValue + 1) / 2;
 
-        let minWidth = 1, maxWidth = 3;
-        let minOpacity = 0.2, maxOpacity = 0.8;
-        let minFillOpacity = 0.05, maxFillOpacity = 0.2;
-        
+        const minWidth = 1;
+        let maxWidth = 3;
+        const minOpacity = 0.2;
+        let maxOpacity = 0.8;
+        const minFillOpacity = 0.05;
+        let maxFillOpacity = 0.2;
+
         if (ring === 'outer') {
           maxWidth = 2;
           maxOpacity = 0.4;

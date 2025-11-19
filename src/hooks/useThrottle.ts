@@ -1,7 +1,7 @@
 // src/hooks/useThrottle.ts
 import { useRef, useCallback, useEffect } from 'react';
 
-export const useThrottle = <T extends (...args: any[]) => void>(
+export const useThrottle = <T extends (...args: unknown[]) => void>(
   callback: T,
   delay: number
 ) => {
@@ -20,7 +20,7 @@ export const useThrottle = <T extends (...args: any[]) => void>(
     },
     [callback, delay]
   );
-  
+
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {

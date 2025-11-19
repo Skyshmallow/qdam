@@ -78,9 +78,10 @@ export class NodesService {
 
       console.log('[NodesService] Successfully synced', newNodes.length, 'nodes');
       return { success: true, synced: newNodes.length };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[NodesService] Sync failed:', error);
-      return { success: false, synced: 0, error: error.message || 'Sync failed' };
+      const message = error instanceof Error ? error.message : 'Sync failed';
+      return { success: false, synced: 0, error: message };
     }
   }
 

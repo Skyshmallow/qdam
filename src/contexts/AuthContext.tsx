@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * AuthContext - Authentication Provider
  * 
@@ -8,7 +9,7 @@
  * - Profile data
  */
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useEffect, useState, useRef, useCallback } from 'react';
 import { supabase, isSupabaseEnabled } from '../lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
 import type { Database } from '../types/supabase';
@@ -26,16 +27,23 @@ interface AuthContextType {
   refreshProfile: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+export const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Keep profile in ref to avoid dependency cycles in loadProfile
+  const profileRef = useRef(profile);
+  useEffect(() => {
+    profileRef.current = profile;
+  }, [profile]);
+
   // Загрузка профиля пользователя из user_profiles
-  const loadProfile = async (userId: string, skipLoading = false) => {
+  const loadProfile = useCallback(async (userId: string, skipLoading = false) => {
     if (!supabase) {
       console.warn('[Auth] Supabase not available for profile load');
       if (!skipLoading) setIsLoading(false);
@@ -49,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     // ✅ проверка на уже загруженный профиль
-    if (profile && profile.user_id === userId && !skipLoading) {
+    if (profileRef.current && profileRef.current.user_id === userId && !skipLoading) {
       console.log('[Auth] Profile already loaded, skipping');
       return;
     }
@@ -89,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('[Auth] Profile refresh complete');
       }
     }
-  };
+  }, []);
 
   // Инициализация: проверка текущей сессии
   useEffect(() => {
@@ -111,10 +119,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase!.auth.getSession()
       .then(({ data: { session: currentSession } }) => {
         console.log('[Auth] getSession() returned:', currentSession?.user?.id);
-        
+
         // ✅ Помечаем, что инициализация завершена
         isInitialized = true;
-        
+
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
@@ -137,10 +145,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       data: { subscription },
     } = supabase!.auth.onAuthStateChange(async (_event, currentSession) => {
       console.log('[Auth] State changed:', _event, 'isInitialized:', isInitialized);
-      
+
       // ✅ УБИРАЕМ проверку на INITIAL_SESSION
       // Вместо этого проверяем флаг isInitialized
-      
+
       // Если getSession() уже отработал, пропускаем первое событие
       if (!isInitialized) {
         console.log('[Auth] Skipping auth event - not yet initialized');
@@ -163,7 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
-  }, []);
+  }, [loadProfile]);
 
 
   // Sign in with Google
@@ -232,13 +240,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-// Custom hook для использования auth context
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
-  return context;
 }

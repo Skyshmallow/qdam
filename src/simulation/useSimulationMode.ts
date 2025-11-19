@@ -50,13 +50,13 @@ export const useSimulationMode = () => {
     setChains: React.Dispatch<React.SetStateAction<Chain[]>>
   ) => {
     console.log('[SIMULATION] 🗑️ Clearing all temporary test data');
-    
+
     setNodes(prev => {
       const permanentNodes = prev.filter(n => !n.isTemporary);
       console.log(`[SIMULATION] Removed ${prev.length - permanentNodes.length} temporary nodes`);
       return permanentNodes;
     });
-    
+
     setChains(prev => {
       const permanentChains = prev.filter(c => !c.isTemporary);
       console.log(`[SIMULATION] Removed ${prev.length - permanentChains.length} temporary chains`);
@@ -72,3 +72,5 @@ export const useSimulationMode = () => {
     clearTestData,
   };
 };
+
+export type UseSimulationModeReturn = ReturnType<typeof useSimulationMode>;

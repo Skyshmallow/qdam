@@ -13,6 +13,7 @@ import { supabase } from '../lib/supabase';
 import type { Database, Json } from '../types/supabase';
 import type { Chain } from '../types';
 
+
 type ChainRow = Database['public']['Tables']['chains']['Row'];
 type ChainInsert = Database['public']['Tables']['chains']['Insert'];
 
@@ -28,7 +29,7 @@ export class ChainsService {
 
     const toRad = (deg: number) => (deg * Math.PI) / 180;
     const R = 6371; // Earth radius in km
-    
+
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
 
@@ -87,10 +88,10 @@ export class ChainsService {
       // Prepare data for insert
       const chainsToInsert: ChainInsert[] = newChains.map((chain) => {
         // Ensure path has exactly 2 points [start, end]
-        const reducedPath = chain.path.length === 2 
-          ? chain.path 
+        const reducedPath = chain.path.length === 2
+          ? chain.path
           : [chain.path[0], chain.path[chain.path.length - 1]];
-        
+
         const distance = this.calculateDistance(reducedPath);
 
         return {
@@ -115,9 +116,10 @@ export class ChainsService {
 
       console.log('[ChainsService] Successfully synced', newChains.length, 'chains');
       return { success: true, synced: newChains.length };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[ChainsService] Sync failed:', error);
-      return { success: false, synced: 0, error: error.message || 'Sync failed' };
+      const message = error instanceof Error ? error.message : 'Sync failed';
+      return { success: false, synced: 0, error: message };
     }
   }
 
@@ -179,7 +181,7 @@ export class ChainsService {
       // Group by user_id
       const chainsByUser = new Map<string, Chain[]>();
 
-      (data || []).forEach((row: any) => {
+      (data || []).forEach((row: Database['public']['Tables']['chains']['Row']) => {
         const userId = row.user_id;
         const chain: Chain = {
           id: row.id,

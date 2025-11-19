@@ -8,7 +8,7 @@
 export class AbortableRequest<T> {
   private abortController: AbortController | null = null;
   private requestCount = 0;
-  
+
   /**
    * Выполнить запрос с автоматической отменой предыдущего
    */
@@ -19,15 +19,15 @@ export class AbortableRequest<T> {
     if (this.abortController) {
       this.abortController.abort();
     }
-    
+
     this.abortController = new AbortController();
     this.requestCount++;
-    
+
     try {
       const result = await fetcher(this.abortController.signal);
       return result;
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === 'AbortError') {
         // Запрос был отменен - это нормально
         return null;
       }
@@ -35,7 +35,7 @@ export class AbortableRequest<T> {
       throw error;
     }
   }
-  
+
   /**
    * Отменить текущий запрос
    */
@@ -45,21 +45,21 @@ export class AbortableRequest<T> {
       this.abortController = null;
     }
   }
-  
+
   /**
    * Проверить, выполняется ли запрос
    */
   isPending(): boolean {
     return this.abortController !== null;
   }
-  
+
   /**
    * Получить количество выполненных запросов
    */
   getRequestCount(): number {
     return this.requestCount;
   }
-  
+
   /**
    * Сбросить счетчик
    */

@@ -22,7 +22,7 @@ export function usePlayerStats(): PlayerStats {
     const localChains = JSON.parse(
       localStorage.getItem('qdam_chains') || '[]'
     );
-    
+
     setStats({
       chainsCreatedToday: 0,
       totalChains: localChains.length,
@@ -45,3 +45,5 @@ export function usePlayerStats(): PlayerStats {
     incrementChainsCreated,
   };
 }
+
+export type UsePlayerStatsReturn = ReturnType<typeof usePlayerStats>;

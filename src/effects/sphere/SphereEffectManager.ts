@@ -11,11 +11,11 @@ import { SparksEffect } from './SparksEffect';
 import { SPHERE_COLORS, DEFAULT_SPHERE_CONFIG, EFFECT_SIZES } from './constants';
 import { geometryCache } from '@shared/utils/geometryCache';
 
-import type { 
-  SphereEffectConfig, 
-  SphereEffectInstance, 
+import type {
+  SphereEffectConfig,
+  SphereEffectInstance,
   SphereType,
-  SphereEffectManagerOptions, 
+  SphereEffectManagerOptions,
   EffectColor
 } from './types';
 
@@ -63,7 +63,7 @@ export class SphereEffectManager {
       translateX: mercatorCoords.x,
       translateY: mercatorCoords.y,
       translateZ: 0,
-      rotateX: 0, 
+      rotateX: 0,
       rotateY: 0,
       rotateZ: 0,
       scale: mercatorCoords.meterInMercatorCoordinateUnits(),
@@ -73,16 +73,16 @@ export class SphereEffectManager {
     const outlineGroup = this.createOutline(color);
 
     // Создаём группы для эффектов
-    const radarGroup = this.options.enableRadar 
-      ? new RadarEffect(color).getGroup() 
+    const radarGroup = this.options.enableRadar
+      ? new RadarEffect(color).getGroup()
       : new THREE.Group();
-    
-    const plasmaGroup = this.options.enablePlasma 
-      ? new PlasmaEffect(color).getGroup() 
+
+    const plasmaGroup = this.options.enablePlasma
+      ? new PlasmaEffect(color).getGroup()
       : new THREE.Group();
-    
-    const sparksGroup = this.options.enableSparks 
-      ? new SparksEffect(color).getGroup() 
+
+    const sparksGroup = this.options.enableSparks
+      ? new SparksEffect(color).getGroup()
       : new THREE.Group();
 
     // Add outline to scene FIRST
@@ -108,8 +108,8 @@ export class SphereEffectManager {
       hasPositionAttr: !!sparkPoints?.geometry?.attributes?.position,
       hasStartPositionAttr: !!sparkPoints?.geometry?.attributes?.aStartPosition,
       hasRandomAttr: !!sparkPoints?.geometry?.attributes?.aRandom,
-      materialType: (sparkPoints?.material as any)?.type,
-      uniformsKeys: (sparkPoints?.material as THREE.ShaderMaterial)?.uniforms ? 
+      materialType: (sparkPoints?.material as THREE.Material)?.type,
+      uniformsKeys: (sparkPoints?.material as THREE.ShaderMaterial)?.uniforms ?
         Object.keys((sparkPoints.material as THREE.ShaderMaterial).uniforms) : [],
       positionZ: sparkPoints?.position?.z,
       visible: sparkPoints?.visible,
@@ -147,8 +147,8 @@ export class SphereEffectManager {
     // Create glowing material
     const material = new THREE.ShaderMaterial({
       uniforms: {
-        uColor: { 
-          value: new THREE.Color(color.r / 255, color.g / 255, color.b / 255) 
+        uColor: {
+          value: new THREE.Color(color.r / 255, color.g / 255, color.b / 255)
         },
         uTime: { value: 0 },
         uGlowIntensity: { value: 0.8 },
@@ -241,21 +241,21 @@ export class SphereEffectManager {
 
     // Clean radar
     if (sphere.radar.children.length > 0) {
-      const radarEffect = sphere.radar.children[0] as any;
+      const radarEffect = sphere.radar.children[0] as { dispose?: () => void };
       radarEffect?.dispose?.();
       this.scene.remove(sphere.radar);
     }
 
     // Clean plasma
     if (sphere.plasma.children.length > 0) {
-      const plasmaEffect = sphere.plasma.children[0] as any;
+      const plasmaEffect = sphere.plasma.children[0] as { dispose?: () => void };
       plasmaEffect?.dispose?.();
       this.scene.remove(sphere.plasma);
     }
 
     // Clean sparks
     if (sphere.sparks.children.length > 0) {
-      const sparksEffect = sphere.sparks.children[0] as any;
+      const sparksEffect = sphere.sparks.children[0] as { dispose?: () => void };
       sparksEffect?.dispose?.();
       this.scene.remove(sphere.sparks);
     }
@@ -376,7 +376,7 @@ export class SphereEffectManager {
       tempScene.add(sphere.outline);
     }
 
-     // Add effects
+    // Add effects
     if (this.options.enableRadar && sphere.radar.parent === this.scene) {
       this.scene.remove(sphere.radar);
       tempScene.add(sphere.radar);
@@ -458,11 +458,11 @@ export class SphereEffectManager {
       if (this.options.enableSparks && sphere.sparks.children.length > 0) {
         // ✅ Проверяем тип объекта
         const child = sphere.sparks.children[0];
-        
+
         if (child instanceof THREE.Points) {
           const sparkPoints = child as THREE.Points;
           const material = sparkPoints.material;
-          
+
           if (material instanceof THREE.ShaderMaterial && material.uniforms?.uTime) {
             material.uniforms.uTime.value = sphere.time;
           } else {

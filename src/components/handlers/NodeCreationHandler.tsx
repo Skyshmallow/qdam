@@ -4,6 +4,7 @@ import type { UseNodesReturn } from '@features/nodes';
 import type { UseChainsReturn } from '@features/chains';
 import { createChainFromPath } from '@utils/chainFactory';
 import { isValidPath } from '@utils/gameRules';
+import type { Node } from '../../types';
 
 interface NodeCreationHandlerProps {
   nodesHook: UseNodesReturn;
@@ -24,7 +25,7 @@ export const useNodeCreationHandler = ({
   onSuccess,
   onWarning,
 }: NodeCreationHandlerProps) => {
-  
+
   /**
    * Создать цепь из пути (для симуляции или реального трекинга)
    */
@@ -39,11 +40,11 @@ export const useNodeCreationHandler = ({
       path,
       isSimulationMode
     );
-    
+
     nodesHook.addNode(nodeA);
     nodesHook.addNode(nodeB);
     chainsHook.addChain(chain);
-    
+
     onSuccess(
       isSimulationMode
         ? 'Симуляция завершена! Замки созданы (временные).'
@@ -54,8 +55,11 @@ export const useNodeCreationHandler = ({
   /**
    * Завершить создание цепи из активной попытки
    */
+
+  // ...
+
   const finishChainCreation = useCallback((
-    nodeA: any,
+    nodeA: Node,
     endCoords: [number, number],
     path: number[][],
   ) => {
@@ -75,7 +79,7 @@ export const useNodeCreationHandler = ({
       path,
       isSimulationMode
     );
-    
+
     // Update state
     nodesHook.removeNode(nodeA.id);
     nodesHook.addNode(finalNodeA);
@@ -83,13 +87,13 @@ export const useNodeCreationHandler = ({
     chainsHook.addChain(newChain);
 
     onSuccess(
-      isSimulationMode 
-        ? 'Цепочка создана (тестовая, не сохранится)!' 
+      isSimulationMode
+        ? 'Цепочка создана (тестовая, не сохранится)!'
         : 'Цепочка успешно создана!'
     );
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       chain: newChain,
       nodeA: finalNodeA,
       nodeB,

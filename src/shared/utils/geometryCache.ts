@@ -17,25 +17,25 @@ class GeometryCache {
     misses: 0,
     size: 0,
   };
-  
+
   private constructor() {
     console.log('[GeometryCache] Initialized');
   }
-  
+
   static getInstance(): GeometryCache {
     if (!this.instance) {
       this.instance = new GeometryCache();
     }
     return this.instance;
   }
-  
+
   /**
    * Генерирует ключ для кэша
    */
-  private generateKey(type: GeometryType, params: any[]): string {
+  private generateKey(type: GeometryType, params: unknown[]): string {
     return `${type}:${JSON.stringify(params)}`;
   }
-  
+
   /**
    * Получить геометрию из кэша или создать новую
    */
@@ -48,15 +48,15 @@ class GeometryCache {
       const cached = this.cache.get(key)!;
       return cached.clone();
     }
-    
+
     this.stats.misses++;
     const geometry = creator();
     this.cache.set(key, geometry);
     this.stats.size = this.cache.size;
-    
+
     return geometry.clone();
   }
-  
+
   /**
    * Получить сферу (для замков, сфер влияния)
    */
@@ -67,14 +67,14 @@ class GeometryCache {
       () => new THREE.SphereGeometry(radius, widthSegments, heightSegments)
     ) as THREE.SphereGeometry;
   }
-  
+
   /**
    * Получить плоскость (для травы, земли)
    */
   getPlane(
-    width: number, 
-    height: number, 
-    widthSegments: number = 1, 
+    width: number,
+    height: number,
+    widthSegments: number = 1,
     heightSegments: number = 1
   ): THREE.PlaneGeometry {
     const key = this.generateKey('plane', [width, height, widthSegments, heightSegments]);
@@ -83,7 +83,7 @@ class GeometryCache {
       () => new THREE.PlaneGeometry(width, height, widthSegments, heightSegments)
     ) as THREE.PlaneGeometry;
   }
-  
+
   /**
    * Получить куб (для зданий, препятствий)
    */
@@ -94,7 +94,7 @@ class GeometryCache {
       () => new THREE.BoxGeometry(width, height, depth)
     ) as THREE.BoxGeometry;
   }
-  
+
   /**
    * Получить цилиндр (для столбов, колонн)
    */
@@ -110,7 +110,7 @@ class GeometryCache {
       () => new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radialSegments)
     ) as THREE.CylinderGeometry;
   }
-  
+
   /**
    * Получить кольцо (для эффектов сфер, плазмы)
    */
@@ -126,7 +126,7 @@ class GeometryCache {
       () => new THREE.RingGeometry(innerRadius, outerRadius, thetaSegments, phiSegments)
     ) as THREE.RingGeometry;
   }
-  
+
   /**
    * Очистить весь кэш (вызывать при unmount или смене сцены)
    */
@@ -136,11 +136,11 @@ class GeometryCache {
     this.stats = { hits: 0, misses: 0, size: 0 };
     console.log('[GeometryCache] Cleared');
   }
-  
+
   /**
    * Удалить конкретную геометрию из кэша
    */
-  remove(type: GeometryType, params: any[]): void {
+  remove(type: GeometryType, params: unknown[]): void {
     const key = this.generateKey(type, params);
     const geometry = this.cache.get(key);
     if (geometry) {
@@ -149,7 +149,7 @@ class GeometryCache {
       this.stats.size = this.cache.size;
     }
   }
-  
+
   /**
    * Получить статистику кэша
    */
@@ -157,13 +157,13 @@ class GeometryCache {
     const hitRate = this.stats.hits + this.stats.misses > 0
       ? (this.stats.hits / (this.stats.hits + this.stats.misses) * 100).toFixed(1)
       : '0.0';
-    
+
     return {
       ...this.stats,
       hitRate: `${hitRate}%`,
     };
   }
-  
+
   /**
    * Логировать статистику
    */

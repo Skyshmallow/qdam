@@ -4,17 +4,23 @@ import type { UseNodesReturn } from '@features/nodes';
 import type { UseChainsReturn } from '@features/chains';
 import { canCreateChainToday, canStartChain } from '@utils/gameRules';
 
+import type { ActivityState } from '../../types';
+import type { UseChainAttemptReturn } from '../../hooks/useChainAttempt';
+import type { UsePlayerStatsReturn } from '../../hooks/usePlayerStats';
+import type { UseSimulatorReturn } from '../../hooks/useSimulator';
+import type { UseMapPlannerReturn } from '../../hooks/useMapPlanner';
+
 interface TrackingHandlerProps {
   nodesHook: UseNodesReturn;
   chainsHook: UseChainsReturn;
   isSimulationMode: boolean;
-  activityState: string;
+  activityState: ActivityState;
   avatarPosition: [number, number] | null;
-  chainAttempt: any;
-  playerStats: any;
-  simulator: any;
-  planner: any;
-  setActivityState: (state: any) => void;
+  chainAttempt: UseChainAttemptReturn;
+  playerStats: UsePlayerStatsReturn;
+  simulator: UseSimulatorReturn;
+  planner: UseMapPlannerReturn;
+  setActivityState: (state: ActivityState) => void;
   setAvatarPosition: (pos: [number, number]) => void;
   setBearing: (bearing: number) => void;
   flyToAvatar: () => void;
@@ -49,7 +55,7 @@ export const useTrackingHandler = ({
   onWarning,
   log,
 }: TrackingHandlerProps) => {
-  
+
   const { nodes } = nodesHook;
   const { chains } = chainsHook;
 
@@ -63,7 +69,7 @@ export const useTrackingHandler = ({
     }
     log('Starting simulation', { routeLength: planner.simulatableRoute.length });
     setActivityState('simulating');
-    
+
     simulator.startSimulation(
       planner.simulatableRoute,
       (newCoords: [number, number], newBearing: number) => {
@@ -81,17 +87,17 @@ export const useTrackingHandler = ({
    * Начать новый поход (реальный или симуляция)
    */
   const handleStart = useCallback(() => {
-    log('handleStart called', { 
+    log('handleStart called', {
       currentState: activityState,
       isSimulation: isSimulationMode
     });
-    
+
     // If ready to simulate, start simulation
     if (activityState === 'ready_to_simulate') {
       handleStartSimulation();
       return;
     }
-    
+
     // Only start from idle
     if (activityState !== 'idle') {
       log('Cannot start - not in idle state');
@@ -132,7 +138,7 @@ export const useTrackingHandler = ({
       chains,
       isSimulationMode
     );
-    
+
     if (!sphereCheck.allowed) {
       log('Sphere check failed', { reason: sphereCheck.reason });
       onError(sphereCheck.reason || 'Cannot start chain outside sphere of influence');
@@ -144,20 +150,20 @@ export const useTrackingHandler = ({
     flyToAvatar();
     setActivityState('tracking');
     onSuccess(
-      isSimulationMode 
-        ? 'Начат тестовый поход!' 
+      isSimulationMode
+        ? 'Начат тестовый поход!'
         : 'Начат новый поход!'
     );
 
   }, [
-    activityState, 
-    avatarPosition, 
+    activityState,
+    avatarPosition,
     chainAttempt,
     chains,
     nodes,
     playerStats,
     isSimulationMode,
-    flyToAvatar, 
+    flyToAvatar,
     handleStartSimulation,
     setActivityState,
     onSuccess,

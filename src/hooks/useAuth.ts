@@ -1,31 +1,10 @@
-import { useState } from 'react';
+import { useContext } from 'react';
+import { AuthContext } from '../contexts/AuthContext';
 
-export interface AuthState {
-  user: null;
-  loading: boolean;
-  error: Error | null;
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
 }
-
-export const useAuth = () => {
-  const [state] = useState<AuthState>({
-    user: null,
-    loading: false,
-    error: null,
-  });
-
-  const signInWithGoogle = async () => {
-    console.warn('Authentication disabled - Supabase not configured');
-  };
-
-  const signOut = async () => {
-    console.warn('Authentication disabled - Supabase not configured');
-  };
-
-  return {
-    user: state.user,
-    loading: state.loading,
-    error: state.error,
-    signInWithGoogle,
-    signOut,
-  };
-};

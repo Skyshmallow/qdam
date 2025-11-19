@@ -89,9 +89,10 @@ export class ProfileService {
 
       console.log('[ProfileService] Profile updated:', updates);
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[ProfileService] Failed to update profile:', error);
-      return { success: false, error: error.message || 'Update failed' };
+      const message = error instanceof Error ? error.message : 'Update failed';
+      return { success: false, error: message };
     }
   }
 
@@ -117,9 +118,10 @@ export class ProfileService {
 
       console.log('[ProfileService] Territory stats updated:', territoryKm2, 'km²');
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[ProfileService] Failed to update territory stats:', error);
-      return { success: false, error: error.message || 'Update failed' };
+      const message = error instanceof Error ? error.message : 'Update failed';
+      return { success: false, error: message };
     }
   }
 
@@ -145,9 +147,10 @@ export class ProfileService {
 
       console.log('[ProfileService] Avatar updated');
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[ProfileService] Failed to update avatar:', error);
-      return { success: false, error: error.message || 'Update failed' };
+      const message = error instanceof Error ? error.message : 'Update failed';
+      return { success: false, error: message };
     }
   }
 
@@ -191,7 +194,7 @@ export class ProfileService {
 
       const { data } = await query.single();
       return !data; // Available if no data found
-    } catch (error) {
+    } catch {
       // If error is "no rows", username is available
       return true;
     }

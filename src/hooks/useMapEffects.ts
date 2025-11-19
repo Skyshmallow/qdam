@@ -1,19 +1,25 @@
 // src/hooks/useMapEffects.ts
 import { useCallback, useEffect } from 'react';
-import type { ThreeLayer } from '../utils/ThreeLayer';
+import type { ThreeLayer, ChainData } from '../utils/ThreeLayer';
+
+import type { FeatureCollection } from 'geojson';
+
+import type { Chain, Node, ActivityState } from '../types';
+import type { UseNodesReturn } from '@features/nodes';
+import type { UseChainsReturn } from '@features/chains';
 
 interface UseMapEffectsProps {
-  map: any;
-  setMap: (map: any) => void;
+  map: mapboxgl.Map | null;
+  setMap: (map: mapboxgl.Map | null) => void;
   threeLayerRef: React.MutableRefObject<ThreeLayer | null>;
   isThreeLayerReady: boolean;
   setIsThreeLayerReady: (ready: boolean) => void;
-  chains: any[];
-  nodes: any[];
-  spheres: any;
-  activityState: string;
-  nodesHook: any;
-  chainsHook: any;
+  chains: Chain[];
+  nodes: Node[];
+  spheres: FeatureCollection;
+  activityState: ActivityState;
+  nodesHook: UseNodesReturn;
+  chainsHook: UseChainsReturn;
   log: (step: string, details?: Record<string, unknown>) => void;
 }
 
@@ -35,9 +41,9 @@ export const useMapEffects = ({
   chainsHook,
   log,
 }: UseMapEffectsProps) => {
-  
+
   // === MAP LOAD HANDLER ===
-  const handleMapLoad = useCallback((loadedMap: any) => {
+  const handleMapLoad = useCallback((loadedMap: mapboxgl.Map) => {
     setMap(loadedMap);
     log('Map loaded');
     loadedMap.setPitch(60);
@@ -61,22 +67,22 @@ export const useMapEffects = ({
       });
       return;
     }
-    
+
     if (chains.length === 0) {
       log('No chains to display');
       threeLayerRef.current.setChains([]);
       return;
     }
-    
+
     const chainsData = chains.map(chain => {
-      const nodeA = nodes.find((n: any) => n.id === chain.nodeA_id);
-      const nodeB = nodes.find((n: any) => n.id === chain.nodeB_id);
-      
+      const nodeA = nodes.find((n) => n.id === chain.nodeA_id);
+      const nodeB = nodes.find((n) => n.id === chain.nodeB_id);
+
       if (!nodeA || !nodeB) {
         console.warn('[App] Chain has missing nodes', { chainId: chain.id });
         return null;
       }
-      
+
       return {
         id: parseInt(chain.id.slice(0, 8), 36),
         start: nodeA.coordinates,
@@ -85,9 +91,9 @@ export const useMapEffects = ({
         endCoords: nodeB.coordinates
       };
     }).filter(Boolean);
-    
+
     log('Updating 3D layer with chains', { count: chainsData.length });
-    threeLayerRef.current.setChains(chainsData as any);
+    threeLayerRef.current.setChains(chainsData as ChainData[]);
   }, [chains, nodes, isThreeLayerReady, threeLayerRef, nodesHook.isLoading, chainsHook.isLoading, log]);
 
   // === SYNC 3D SPHERES WHEN SPHERES CHANGE ===

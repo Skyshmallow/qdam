@@ -78,7 +78,7 @@ export class TerritoriesService {
 
     // Simple convex hull using gift wrapping algorithm
     const hull = this.convexHull(nodes);
-    
+
     if (hull.length < 3) return null;
 
     // Close the polygon
@@ -180,19 +180,19 @@ export class TerritoriesService {
 
       (profiles || []).forEach((profile: UserProfile) => {
         const userId = profile.user_id;
-        
+
         // Skip current user (rendered separately)
         if (userId === currentUserId) return;
 
         // Get user's nodes
         const userNodes = (nodesData || [])
-          .filter((n: any) => n.user_id === userId)
-          .map((n: any) => n.coordinates as [number, number]);
+          .filter((n: { user_id: string; coordinates: unknown }) => n.user_id === userId)
+          .map((n: { coordinates: unknown }) => n.coordinates as [number, number]);
 
         // Get user's chains
         const userChains = (chainsData || [])
-          .filter((c: any) => c.user_id === userId)
-          .map((c: any) => ({
+          .filter((c: { user_id: string }) => c.user_id === userId)
+          .map((c: { id: string; path: unknown }) => ({
             id: c.id,
             path: (c.path || []) as number[][], // 2 points: [start, end]
           }));
@@ -245,7 +245,7 @@ export class TerritoriesService {
           console.log('[TerritoriesService] Node update:', payload);
           callback({
             type: payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE',
-            userId: (payload.new as any)?.user_id || (payload.old as any)?.user_id,
+            userId: (payload.new as { user_id: string })?.user_id || (payload.old as { user_id: string })?.user_id,
             timestamp: Date.now(),
           });
         }
@@ -261,7 +261,7 @@ export class TerritoriesService {
           console.log('[TerritoriesService] Chain update:', payload);
           callback({
             type: payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE',
-            userId: (payload.new as any)?.user_id || (payload.old as any)?.user_id,
+            userId: (payload.new as { user_id: string })?.user_id || (payload.old as { user_id: string })?.user_id,
             timestamp: Date.now(),
           });
         }

@@ -1,5 +1,5 @@
 // src/components/Map.tsx
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -28,18 +28,19 @@ export const Map = ({
 }: MapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null!);
   const { map, isMapLoaded } = useMapbox(
-    mapContainer, 
+    mapContainer,
     onMapLoad,
     onThreeLayerReady
   );
   const avatarMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const avatar3DRef = useRef<Avatar3D | null>(null);
   const isInitialLoadRef = useRef(true); // Track if this is the first load
+  const [styleVersion, setStyleVersion] = useState(0);
 
   // === Mobile optimization ===
   useEffect(() => {
     if (!map.current || !isMapLoaded) return;
-    
+
     // Disable map rotation on mobile
     if (window.innerWidth <= 768) {
       map.current.dragRotate.disable();
@@ -49,21 +50,21 @@ export const Map = ({
   }, [map, isMapLoaded]);
 
   // === Helper: Create avatar marker ===
-  const createAvatarMarker = () => {
+  const createAvatarMarker = useCallback(() => {
     if (!map.current || !avatarPosition) return;
-    
+
     console.log('[Map.tsx] Creating NEW 3D avatar marker');
     const el = document.createElement('div');
     el.style.width = '100px';
     el.style.height = '100px';
-    
+
     // Создаём 3D аватар (класс, не React компонент)
     const avatar3D = new Avatar3D(el);
     avatar3D.setBearing(bearing);
     avatar3DRef.current = avatar3D;
-    
-    const newMarker = new mapboxgl.Marker({ 
-      element: el, 
+
+    const newMarker = new mapboxgl.Marker({
+      element: el,
       anchor: 'center',
       pitchAlignment: 'map',
       rotationAlignment: 'map',
@@ -72,7 +73,7 @@ export const Map = ({
       .addTo(map.current);
 
     avatarMarkerRef.current = newMarker;
-  };
+  }, [map, avatarPosition, bearing]);
 
   // === Avatar creation (3D) ===
   useEffect(() => {
@@ -94,7 +95,7 @@ export const Map = ({
         avatar3DRef.current = null;
       }
     }
-  }, [avatarPosition, isMapLoaded, map, bearing]);
+  }, [avatarPosition, isMapLoaded, map, bearing, createAvatarMarker]);
 
   // === Recreate layers and avatar on style change (skip initial load) ===
   useEffect(() => {
@@ -107,25 +108,25 @@ export const Map = ({
         isInitialLoadRef.current = false;
         return;
       }
-      
+
       console.log('[Map.tsx] Style changed, recreating layers and avatar');
-      
+
       // Re-add all map layers (sources were removed by setStyle)
       import('../utils/mapUtils').then(({ addMapLayers }) => {
         addMapLayers(map.current!);
         console.log('[Map.tsx] Map layers re-added after style change');
-        
+
         // Re-add ThreeLayer for 3D effects (castles, grass)
         console.log('[Map.tsx] Re-adding ThreeLayer after style change');
         const newThreeLayer = new ThreeLayer('castles-3d');
-        
+
         // Update the ref so App.tsx can use it
         if (threeLayerRef) {
           threeLayerRef.current = newThreeLayer;
         }
-        
-        map.current!.addLayer(newThreeLayer as any);
-        
+
+        map.current!.addLayer(newThreeLayer as unknown as mapboxgl.CustomLayerInterface);
+
         // Re-position spheres layer under ThreeLayer
         if (map.current!.getLayer('spheres-fill')) {
           map.current!.removeLayer('spheres-fill');
@@ -139,15 +140,18 @@ export const Map = ({
             }
           }, 'castles-3d');
         }
-        
+
         console.log('[Map.tsx] ThreeLayer re-added');
-        
+
         // Notify parent that ThreeLayer is ready
         if (onThreeLayerReady) {
           onThreeLayerReady(newThreeLayer);
         }
+
+        // Trigger re-sync of multiplayer layers
+        setStyleVersion(v => v + 1);
       });
-      
+
       // Remove old avatar marker if exists
       if (avatarMarkerRef.current) {
         avatarMarkerRef.current.remove();
@@ -157,19 +161,20 @@ export const Map = ({
         avatar3DRef.current.dispose();
         avatar3DRef.current = null;
       }
-      
+
       // Recreate avatar if we have position
       if (avatarPosition) {
         createAvatarMarker();
       }
     };
 
-    map.current.on('style.load', handleStyleLoad);
+    const mapInstance = map.current;
+    mapInstance.on('style.load', handleStyleLoad);
 
     return () => {
-      map.current?.off('style.load', handleStyleLoad);
+      mapInstance?.off('style.load', handleStyleLoad);
     };
-  }, [map, avatarPosition, bearing]);
+  }, [map, avatarPosition, bearing, createAvatarMarker, onThreeLayerReady, threeLayerRef]);
 
   // === Update avatar bearing ===
   useEffect(() => {
@@ -183,17 +188,18 @@ export const Map = ({
     if (!map.current || !isDrawingMode) return;
 
     const handleMapClick = (e: mapboxgl.MapLayerMouseEvent) => {
-      console.log('[Map.tsx] Map clicked', { 
-        lng: e.lngLat.lng, 
+      console.log('[Map.tsx] Map clicked', {
+        lng: e.lngLat.lng,
         lat: e.lngLat.lat,
-        isDrawingMode 
+        isDrawingMode
       });
       onMapClick?.([e.lngLat.lng, e.lngLat.lat]);
     };
 
-    map.current.on('click', handleMapClick);
+    const mapInstance = map.current;
+    mapInstance.on('click', handleMapClick);
     return () => {
-      map.current?.off('click', handleMapClick);
+      mapInstance?.off('click', handleMapClick);
     };
   }, [map, isDrawingMode, onMapClick]);
 
@@ -201,6 +207,7 @@ export const Map = ({
   // === Sync map data ===
   useEffect(() => {
     if (!map.current || !isMapLoaded) return;
+    if (!map.current.isStyleLoaded()) return;
 
     const emptyLineFeature = {
       type: 'Feature' as const,
@@ -234,7 +241,7 @@ export const Map = ({
     // ✅ 3D Grass/Territory Effect (own territory)
     if (threeLayerRef?.current) {
       threeLayerRef.current.updateTerritory(territory);
-      
+
       // Update other players' territories with colored grass
       threeLayerRef.current.updateOtherTerritories(
         otherTerritories.map(player => ({
@@ -316,7 +323,7 @@ export const Map = ({
 
     // ✅ Use ThreeLayer ref instead of getLayer
     const threeLayer = threeLayerRef?.current;
-    
+
     if (threeLayer) {
       if (threeLayer.updateSpheres) {
         threeLayer.updateSpheres(spheres);
@@ -333,6 +340,8 @@ export const Map = ({
     spheres,
     otherTerritories,
     territoryConflicts,
+    threeLayerRef,
+    styleVersion
   ]);
 
   return <div ref={mapContainer} className="map-container w-full h-full" />;

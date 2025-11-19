@@ -1,4 +1,5 @@
-import type { Feature, Polygon } from 'geojson';
+import type { Feature, Polygon, FeatureCollection } from 'geojson';
+import type { ThreeLayer } from '../utils/ThreeLayer';
 
 /**
  * Представляет узел (точку) в игровой сети
@@ -57,12 +58,12 @@ export interface MapProps {
   routeWaypoints: number[][];
   nodes: Node[];
   territory: Feature<Polygon> | null;
-  spheres: any;
+  spheres: FeatureCollection;
   isDrawingMode: boolean;
   onMapClick: (coordinates: [number, number]) => void;
-  onMapLoad?: (map: any) => void;
-  onThreeLayerReady?: (threeLayer: any) => void;
-  threeLayerRef?: React.RefObject<any>;
+  onMapLoad?: (map: mapboxgl.Map) => void;
+  onThreeLayerReady?: (threeLayer: ThreeLayer) => void;
+  threeLayerRef?: React.RefObject<ThreeLayer | null>;
   // Multiplayer
   otherTerritories?: PlayerTerritory[];
   territoryConflicts?: string[];
@@ -74,3 +75,12 @@ export interface Base {
   coordinates: number[];
   status: 'new' | 'established';
 }
+
+export type ActivityState =
+  | 'idle'
+  | 'tracking'
+  | 'tracking_paused'
+  | 'planning_start'
+  | 'planning_end'
+  | 'ready_to_simulate'
+  | 'simulating';

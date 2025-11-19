@@ -16,7 +16,7 @@ export const useMapPlanner = () => {
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [routeWaypoints, setRouteWaypoints] = useState<number[][]>([]);
   const [simulatableRoute, setSimulatableRoute] = useState<number[][] | null>(null);
-  
+
   // ✅ AbortableRequest для отмены предыдущих запросов
   const routeRequestRef = useRef(new AbortableRequest<number[][] | null>());
 
@@ -24,13 +24,13 @@ export const useMapPlanner = () => {
     const updatedWaypoints = [...routeWaypoints, newPoint];
     log('Adding waypoint', { waypoint: newPoint, totalWaypoints: updatedWaypoints.length });
     setRouteWaypoints(updatedWaypoints);
-    
+
     log('Fetching route from API (cancelling previous)');
     // ✅ Автоматически отменяет предыдущий запрос
     const route = await routeRequestRef.current.execute(
       (signal) => fetchRoute(updatedWaypoints, signal)
     );
-    
+
     if (route) {
       log('Route fetched successfully', { routePoints: route.length });
       setSimulatableRoute(route);
@@ -50,11 +50,12 @@ export const useMapPlanner = () => {
     log('Updating waypoints', { count: newWaypoints.length });
     setRouteWaypoints(newWaypoints);
   }, []);
-  
+
   // ✅ Cleanup on unmount
   useEffect(() => {
+    const request = routeRequestRef.current;
     return () => {
-      routeRequestRef.current.abort();
+      request.abort();
     };
   }, []);
 
@@ -68,3 +69,5 @@ export const useMapPlanner = () => {
     updateWaypoints,
   };
 };
+
+export type UseMapPlannerReturn = ReturnType<typeof useMapPlanner>;

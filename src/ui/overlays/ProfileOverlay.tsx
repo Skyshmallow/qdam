@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { OverlayBase } from './OverlayBase';
-import { useAuth as useAuthHook } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { usePlayerStats } from '../../hooks/usePlayerStats';
 import { isSupabaseEnabled } from '../../lib/supabase';
 import { ProfileService } from '../../services/ProfileService';
@@ -14,15 +14,15 @@ interface ProfileOverlayProps {
 }
 
 export function ProfileOverlay({ isOpen, onClose }: ProfileOverlayProps) {
-  const { 
-    user, 
-    profile, 
-    isLoading, 
-    isAuthenticated, 
-    signInWithGoogle, 
+  const {
+    user,
+    profile,
+    isLoading,
+    isAuthenticated,
+    signInWithGoogle,
     signOut,
     refreshProfile
-  } = useAuthHook();
+  } = useAuth();
   const stats = usePlayerStats();
 
   // Edit mode state
@@ -55,7 +55,7 @@ export function ProfileOverlay({ isOpen, onClose }: ProfileOverlayProps) {
 
     try {
       console.log('[ProfileOverlay] Saving profile changes...');
-      
+
       // Timeout protection: 10 seconds max
       const savePromise = ProfileService.updateProfile(user.id, {
         display_name: editDisplayName.trim() || undefined,
@@ -77,7 +77,7 @@ export function ProfileOverlay({ isOpen, onClose }: ProfileOverlayProps) {
       }
 
       console.log('[ProfileOverlay] Profile saved, refreshing...');
-      
+
       // Refresh profile data with timeout
       const refreshPromise = refreshProfile();
       const refreshTimeout = new Promise<void>((resolve) => {
@@ -88,7 +88,7 @@ export function ProfileOverlay({ isOpen, onClose }: ProfileOverlayProps) {
       });
 
       await Promise.race([refreshPromise, refreshTimeout]);
-      
+
       setIsEditMode(false);
       console.log('[ProfileOverlay] Profile updated successfully');
     } catch (err) {
@@ -177,39 +177,39 @@ export function ProfileOverlay({ isOpen, onClose }: ProfileOverlayProps) {
 
           {/* Show local stats while not authenticated */}
           <div className="grid grid-cols-2 gap-4 mt-8 max-w-md mx-auto">
-          <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
-            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">
-              Chains Today
-            </p>
-            <p className="text-2xl font-bold text-cyan-400">
-              {stats.chainsCreatedToday} / {MAX_CHAINS_PER_DAY}
-            </p>
+            <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+              <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">
+                Chains Today
+              </p>
+              <p className="text-2xl font-bold text-cyan-400">
+                {stats.chainsCreatedToday} / {MAX_CHAINS_PER_DAY}
+              </p>
+            </div>
+            <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+              <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">
+                Total Chains
+              </p>
+              <p className="text-2xl font-bold text-white">
+                {stats.totalChains}
+              </p>
+            </div>
+            <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+              <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">
+                Territory
+              </p>
+              <p className="text-2xl font-bold text-white">
+                {stats.territoryKm2.toFixed(2)} km²
+              </p>
+            </div>
+            <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+              <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">
+                Distance
+              </p>
+              <p className="text-2xl font-bold text-white">
+                {stats.totalDistanceKm.toFixed(1)} km
+              </p>
+            </div>
           </div>
-          <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
-            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">
-              Total Chains
-            </p>
-            <p className="text-2xl font-bold text-white">
-              {stats.totalChains}
-            </p>
-          </div>
-          <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
-            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">
-              Territory
-            </p>
-            <p className="text-2xl font-bold text-white">
-              {stats.territoryKm2.toFixed(2)} km²
-            </p>
-          </div>
-          <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
-            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">
-              Distance
-            </p>
-            <p className="text-2xl font-bold text-white">
-              {stats.totalDistanceKm.toFixed(1)} km
-            </p>
-          </div>
-        </div>
         </div>
       ) : (
         // Authenticated - show profile

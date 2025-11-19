@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from './useAuth';
 import { ProfileService } from '../services/ProfileService';
 
 interface UseSyncTerritoryOptions {
@@ -14,8 +14,8 @@ interface UseSyncTerritoryOptions {
   debounceMs?: number;
 }
 
-export function useSyncTerritory({ 
-  territoryKm2, 
+export function useSyncTerritory({
+  territoryKm2,
   enabled = true,
   debounceMs = 5000 // 5 seconds debounce
 }: UseSyncTerritoryOptions) {
@@ -42,9 +42,9 @@ export function useSyncTerritory({
     // Debounce: wait for territory to stabilize before syncing
     timeoutRef.current = setTimeout(async () => {
       console.log('[useSyncTerritory] Syncing territory:', territoryKm2, 'km²');
-      
+
       const result = await ProfileService.updateTerritoryStats(user.id, territoryKm2);
-      
+
       if (result.success) {
         lastSyncedValue.current = territoryKm2;
         console.log('[useSyncTerritory] Territory synced successfully');

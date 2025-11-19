@@ -3,11 +3,29 @@
 import mapboxgl from 'mapbox-gl';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { SphereEffectManager } from '../effects/sphere'; 
+import { SphereEffectManager } from '../effects/sphere';
 import { TerritoryEffect, type TerritoryConfig } from '../effects/territory';
 import { gpuDetector } from '@shared/utils/gpuDetector';
 
 const MODEL_SCALE = 25;
+
+export interface Transform {
+  translateX: number;
+  translateY: number;
+  translateZ: number;
+  rotateX: number;
+  rotateY: number;
+  rotateZ: number;
+  scale: number;
+}
+
+export interface ChainData {
+  id: number;
+  start: [number, number];
+  end: [number, number];
+  startCoords: [number, number];
+  endCoords: [number, number];
+}
 
 export class ThreeLayer implements mapboxgl.CustomLayerInterface {
   id: string;
@@ -21,21 +39,15 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
   private castleModel?: THREE.Group;
 
   // Castles
-  private castleObjects = new Map<string, { mesh: THREE.Group; transform: any }>();
-  
+  private castleObjects = new Map<string, { mesh: THREE.Group; transform: Transform }>();
+
   // Sphere Effect Manager
   private sphereManager?: SphereEffectManager;
   private lastFrameTime: number = 0;
   private territoryEffect?: TerritoryEffect;
   private otherTerritoryEffects: Map<string, TerritoryEffect> = new Map();
 
-  private pendingChainsData: Array<{ 
-    id: number; 
-    start: [number, number]; 
-    end: [number, number]; 
-    startCoords: [number, number]; 
-    endCoords: [number, number] 
-  }> | null = null;
+  private pendingChainsData: ChainData[] | null = null;
 
   private log(step: string, details?: Record<string, unknown>): void {
     // Log only in development mode with debug flag
@@ -58,16 +70,16 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
 
   onAdd(map: mapboxgl.Map, gl: WebGLRenderingContext): void {
     this.map = map;
-    
+
     // ✅ GPU Detection for adaptive quality
     const gpuInfo = gpuDetector.gpuInfo;
     const settings = gpuDetector.settings;
-    this.log('GPU Detection', { 
-      tier: gpuInfo.tier, 
+    this.log('GPU Detection', {
+      tier: gpuInfo.tier,
       renderer: gpuInfo.renderer,
-      grassCount: settings.grassInstanceCount 
+      grassCount: settings.grassInstanceCount
     });
-    
+
     this.renderer = new THREE.WebGLRenderer({
       canvas: map.getCanvas(),
       context: gl,
@@ -78,7 +90,7 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
     // Add lighting (adjust count based on GPU tier)
     const ambient = new THREE.AmbientLight(0xffffff, 0.75);
     this.scene.add(ambient);
-    
+
     if (settings.maxLights >= 2) {
       const sunlight = new THREE.DirectionalLight(0xffffff, 0.75);
       sunlight.position.set(0, -70, 100).normalize();
@@ -102,7 +114,7 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
       (gltf) => {
         this.castleModel = gltf.scene;
         this.log('Model loaded successfully');
-        
+
         if (this.pendingChainsData) {
           this.log('Processing pending data after model load');
           this.setChains(this.pendingChainsData);
@@ -135,9 +147,9 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
 
     // ✅ Определяем цвет по владельцу территории
     const owner = territoryGeoJSON.properties?.owner || 'player';
-    
+
     let color: { r: number; g: number; b: number; a: number };
-    
+
     if (owner === 'player') {
       color = { r: 16, g: 185, b: 129, a: 1.0 }; // Зелёный
     } else if (owner === 'enemy') {
@@ -192,7 +204,7 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
       // Create new territory if exists
       if (territory && territory.geometry.type === 'Polygon') {
         const coordinates = territory.geometry.coordinates[0] as [number, number][];
-        
+
         // Parse hex color to RGB
         const hexColor = color.replace('#', '');
         const colorRGB = {
@@ -291,7 +303,7 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
 
     // Создаём временную сцену
     const tempScene = new THREE.Scene();
-    
+
     // Добавляем освещение
     this.scene.children
       .filter(child => child instanceof THREE.Light)
@@ -341,7 +353,7 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
 
     // Создаём временную сцену
     const tempScene = new THREE.Scene();
-    
+
     // Добавляем освещение
     this.scene.children
       .filter(child => child instanceof THREE.Light)
@@ -367,7 +379,7 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
   }
 
   // Render a single castle with its own transform
-  private renderCastle(baseMatrix: THREE.Matrix4, mesh: THREE.Group, transform: any): void {
+  private renderCastle(baseMatrix: THREE.Matrix4, mesh: THREE.Group, transform: Transform): void {
     const { translateX, translateY, translateZ, rotateX, rotateY, rotateZ, scale } = transform;
 
     const rotationX = new THREE.Matrix4().makeRotationX(rotateX);
@@ -383,11 +395,11 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
       .multiply(rotationZ);
 
     this.camera.projectionMatrix = baseMatrix.clone().multiply(localTransformMatrix);
-    
+
     // Create temp scene with ONLY this castle
     const tempScene = new THREE.Scene();
     tempScene.add(mesh);
-    
+
     // Add lights to temp scene
     this.scene.children
       .filter(child => child instanceof THREE.Light)
@@ -397,7 +409,7 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
     this.renderer!.resetState();
     this.renderer!.render(tempScene, this.camera);
   }
-  
+
   onRemove(): void {
     // Cleanup castles
     this.castleObjects.forEach(castle => {
@@ -425,14 +437,8 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
     this.sphereManager.syncWithGeoJSON(spheresGeoJSON);
     this.log('Spheres updated', { count: this.sphereManager.getSphereCount() });
   }
-  
-  public setChains(chains: Array<{
-    id: number; 
-    start: [number, number]; 
-    end: [number, number];
-    startCoords: [number, number];
-    endCoords: [number, number];
-  }>): void {
+
+  public setChains(chains: ChainData[]): void {
     if (!this.castleModel) {
       this.log('Model not ready, queuing data');
       this.pendingChainsData = chains;
@@ -459,7 +465,7 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
       this.addOrUpdateCastle(`${chain.id}-end`, chain.endCoords);
     });
   }
-  
+
   //  Create castle with ABSOLUTE coordinates
   private addOrUpdateCastle(id: string, coords: [number, number]): void {
     if (this.castleObjects.has(id) || !this.castleModel) {
@@ -480,7 +486,7 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
     };
 
     const castleMesh = this.castleModel.clone();
-    castleMesh.position.set(0, 0, 0); 
+    castleMesh.position.set(0, 0, 0);
     castleMesh.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
 
     this.castleObjects.set(id, { mesh: castleMesh, transform });

@@ -12,10 +12,10 @@ export function useZoom() {
   // Zoom In
   const zoomIn = useCallback(() => {
     if (!map) return;
-    
+
     const currentZoom = map.getZoom();
     const newZoom = Math.min(currentZoom + ZOOM_STEP, MAX_ZOOM);
-    
+
     map.easeTo({
       zoom: newZoom,
       duration: ZOOM_DURATION,
@@ -25,10 +25,10 @@ export function useZoom() {
   // Zoom Out
   const zoomOut = useCallback(() => {
     if (!map) return;
-    
+
     const currentZoom = map.getZoom();
     const newZoom = Math.max(currentZoom - ZOOM_STEP, MIN_ZOOM);
-    
+
     map.easeTo({
       zoom: newZoom,
       duration: ZOOM_DURATION,
@@ -38,9 +38,9 @@ export function useZoom() {
   // Set specific zoom level
   const setZoom = useCallback((zoom: number) => {
     if (!map) return;
-    
+
     const clampedZoom = Math.max(MIN_ZOOM, Math.min(zoom, MAX_ZOOM));
-    
+
     map.easeTo({
       zoom: clampedZoom,
       duration: ZOOM_DURATION,
@@ -74,12 +74,12 @@ export function useZoom() {
   useEffect(() => {
     if (!map) return;
 
-    const handleDblClick = (e: any) => {
+    const handleDblClick = (e: mapboxgl.MapMouseEvent) => {
       e.preventDefault();
-      
+
       const currentZoom = map.getZoom();
       const newZoom = Math.min(currentZoom + ZOOM_STEP * 2, MAX_ZOOM);
-      
+
       map.easeTo({
         zoom: newZoom,
         center: e.lngLat,
