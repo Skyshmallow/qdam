@@ -4,7 +4,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { useMapbox } from '../hooks/useMapbox';
-import { updateGeoJSONSource } from '../utils/mapUtils';
+import { updateGeoJSONSource, addMapLayers } from '../utils/mapUtils';
 import type { MapProps } from '../types';
 import { featureCollection, point, lineString } from '@turf/helpers';
 import { Avatar3D } from './Avatar3D.ts';
@@ -112,45 +112,43 @@ export const Map = ({
       console.log('[Map.tsx] Style changed, recreating layers and avatar');
 
       // Re-add all map layers (sources were removed by setStyle)
-      import('../utils/mapUtils').then(({ addMapLayers }) => {
-        addMapLayers(map.current!);
-        console.log('[Map.tsx] Map layers re-added after style change');
+      addMapLayers(map.current!);
+      console.log('[Map.tsx] Map layers re-added after style change');
 
-        // Re-add ThreeLayer for 3D effects (castles, grass)
-        console.log('[Map.tsx] Re-adding ThreeLayer after style change');
-        const newThreeLayer = new ThreeLayer('castles-3d');
+      // Re-add ThreeLayer for 3D effects (castles, grass)
+      console.log('[Map.tsx] Re-adding ThreeLayer after style change');
+      const newThreeLayer = new ThreeLayer('castles-3d');
 
-        // Update the ref so App.tsx can use it
-        if (threeLayerRef) {
-          threeLayerRef.current = newThreeLayer;
-        }
+      // Update the ref so App.tsx can use it
+      if (threeLayerRef) {
+        threeLayerRef.current = newThreeLayer;
+      }
 
-        map.current!.addLayer(newThreeLayer as unknown as mapboxgl.CustomLayerInterface);
+      map.current!.addLayer(newThreeLayer as unknown as mapboxgl.CustomLayerInterface);
 
-        // Re-position spheres layer under ThreeLayer
-        if (map.current!.getLayer('spheres-fill')) {
-          map.current!.removeLayer('spheres-fill');
-          map.current!.addLayer({
-            id: 'spheres-fill',
-            type: 'fill',
-            source: 'spheres',
-            paint: {
-              'fill-color': 'rgba(251, 191, 36, 0.1)',
-              'fill-opacity': 0.15
-            }
-          }, 'castles-3d');
-        }
+      // Re-position spheres layer under ThreeLayer
+      if (map.current!.getLayer('spheres-fill')) {
+        map.current!.removeLayer('spheres-fill');
+        map.current!.addLayer({
+          id: 'spheres-fill',
+          type: 'fill',
+          source: 'spheres',
+          paint: {
+            'fill-color': 'rgba(251, 191, 36, 0.1)',
+            'fill-opacity': 0.15
+          }
+        }, 'castles-3d');
+      }
 
-        console.log('[Map.tsx] ThreeLayer re-added');
+      console.log('[Map.tsx] ThreeLayer re-added');
 
-        // Notify parent that ThreeLayer is ready
-        if (onThreeLayerReady) {
-          onThreeLayerReady(newThreeLayer);
-        }
+      // Notify parent that ThreeLayer is ready
+      if (onThreeLayerReady) {
+        onThreeLayerReady(newThreeLayer);
+      }
 
-        // Trigger re-sync of multiplayer layers
-        setStyleVersion(v => v + 1);
-      });
+      // Trigger re-sync of multiplayer layers
+      setStyleVersion(v => v + 1);
 
       // Remove old avatar marker if exists
       if (avatarMarkerRef.current) {

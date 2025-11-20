@@ -1,7 +1,8 @@
 // src/hooks/useThrottle.ts
 import { useRef, useCallback, useEffect } from 'react';
 
-export const useThrottle = <T extends (...args: unknown[]) => void>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const useThrottle = <T extends (...args: any[]) => void>(
   callback: T,
   delay: number
 ) => {
