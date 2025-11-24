@@ -58,6 +58,10 @@ export function OverlayBase({
       <div 
         className={`overlay-content ${maxWidthClass}`}
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        data-testid="overlay-content"
       >
         {/* Header */}
         <div className="overlay-header">
@@ -66,6 +70,7 @@ export function OverlayBase({
             onClick={onClose}
             className="overlay-close-btn"
             aria-label="Close"
+            data-testid="overlay-close"
           >
             <X size={24} />
           </button>
