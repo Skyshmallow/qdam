@@ -1,7 +1,6 @@
 /* Оставляем ТОЛЬКО специфичные стили */
 .game-button {
   font-family: 'Exo 2', sans-serif;
-  /* keep label casing natural for better UX (was uppercase) */
   text-transform: none;
   letter-spacing: 0.2px;
   display: inline-flex;
@@ -15,11 +14,26 @@
 .ripple-effect {
   position: absolute;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
+  /* use CSS variable to allow variant-specific ripple colors */
+  background: var(--ripple-color, rgba(255, 255, 255, 0.5));
   transform: scale(0);
   animation: ripple 0.6s ease-out;
   pointer-events: none;
 }
+
+/* hover / focus elevation for better affordance */
+.game-button:hover:not(.game-button--disabled),
+.game-button:focus:not(.game-button--disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+/* variant-aware ripple colors (light examples) */
+.game-button--primary { --ripple-color: rgba(255,255,255,0.5); }
+.game-button--secondary { --ripple-color: rgba(0,0,0,0.06); }
+.game-button--success { --ripple-color: rgba(255,255,255,0.4); }
+.game-button--danger { --ripple-color: rgba(255,255,255,0.5); }
+.game-button--warning { --ripple-color: rgba(0,0,0,0.08); }
 
 @keyframes ripple {
   to {
