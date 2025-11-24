@@ -1,8 +1,15 @@
 /* Оставляем ТОЛЬКО специфичные стили */
 .game-button {
   font-family: 'Exo 2', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  /* keep label casing natural for better UX (was uppercase) */
+  text-transform: none;
+  letter-spacing: 0.2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .ripple-effect {
