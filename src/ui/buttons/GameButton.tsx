@@ -46,6 +46,9 @@ export const GameButton = ({
     .filter(Boolean)
     .join(' ');
 
+  // expose a short test id for QA and easier selection in e2e tests
+  const dataTestId = `game-button-${variant}-${size}`;
+
   return (
     <button
       className={classes}
@@ -54,6 +57,7 @@ export const GameButton = ({
       aria-label={ariaLabel}
       title={title ?? (typeof children === 'string' ? children : undefined)}
       data-variant={variant}
+      data-testid={dataTestId}
     >
       {icon && <span className="game-button__icon" aria-hidden="true">{icon}</span>}
       <span className="game-button__text">{children}</span>
