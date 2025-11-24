@@ -153,6 +153,8 @@ export function ProfileOverlay({ isOpen, onClose }: ProfileOverlayProps) {
           <button
             onClick={signInWithGoogle}
             className="inline-flex items-center gap-3 px-6 py-3 bg-white text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
+            aria-label="Sign in with Google"
+            data-testid="profile-signin"
           >
             <svg className="w-6 h-6" viewBox="0 0 24 24">
               <path
@@ -335,8 +337,10 @@ export function ProfileOverlay({ isOpen, onClose }: ProfileOverlayProps) {
           <button
             onClick={signOut}
             className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            aria-label="Sign out"
+            data-testid="profile-signout"
           >
-          Sign out
+            Sign out
           </button>
         </div>
       )}
