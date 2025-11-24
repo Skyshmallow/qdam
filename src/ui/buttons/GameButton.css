@@ -14,21 +14,20 @@
 .ripple-effect {
   position: absolute;
   border-radius: 50%;
-  /* use CSS variable to allow variant-specific ripple colors */
   background: var(--ripple-color, rgba(255, 255, 255, 0.5));
   transform: scale(0);
   animation: ripple 0.6s ease-out;
   pointer-events: none;
 }
-
-/* hover / focus elevation for better affordance */
+  /* modern rounded buttons */
+  border-radius: 10px;
+  padding: 10px 18px;
 .game-button:hover:not(.game-button--disabled),
 .game-button:focus:not(.game-button--disabled) {
   transform: translateY(-2px);
   box-shadow: 0 6px 18px rgba(0,0,0,0.12);
 }
 
-/* variant-aware ripple colors (light examples) */
 .game-button--primary { --ripple-color: rgba(255,255,255,0.5); }
 .game-button--secondary { --ripple-color: rgba(0,0,0,0.06); }
 .game-button--success { --ripple-color: rgba(255,255,255,0.4); }
@@ -36,6 +35,11 @@
 .game-button--warning { --ripple-color: rgba(0,0,0,0.08); }
 
 @keyframes ripple {
+}
+
+/* pressed state: quick scale for tactile response */
+.game-button:active:not(.game-button--disabled) {
+  transform: translateY(0) scale(0.99);
   to {
     transform: scale(4);
     opacity: 0;
