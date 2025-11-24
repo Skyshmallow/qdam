@@ -19,6 +19,16 @@ export function HistoryOverlay({ isOpen, onClose }: HistoryOverlayProps) {
         <p className="text-gray-400">
           Start your first trip to see it here — begin exploring the map!
         </p>
+        <div className="mt-6">
+          <button
+            onClick={() => { onClose(); }}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-400 text-black font-semibold rounded-lg hover:brightness-95 transition-colors"
+            data-testid="history-cta"
+            title="Start exploring"
+          >
+            🚀 Start exploring
+          </button>
+        </div>
       </div>
     </OverlayBase>
   );
