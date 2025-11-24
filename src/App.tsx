@@ -81,8 +81,10 @@ function App() {
 
   // Check if user is developer (from environment variable)
   const isDeveloper = useMemo(() => {
-    const devEmail = import.meta.env.VITE_DEV_EMAIL;
-    return user?.email === devEmail;
+    const devEmails = import.meta.env.VITE_DEV_EMAILS
+      .split(",")
+      .map((e: string) => e.trim());
+    return devEmails.includes(user?.email ?? "");
   }, [user?.email]);
 
   // Sync territory to Supabase
