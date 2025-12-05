@@ -27,7 +27,7 @@ interface NotificationState {
   showInfo: (message: string, duration?: number) => void;
 }
 
-const MAX_NOTIFICATIONS = 3; // Максимум 3 уведомления одновременно
+const MAX_NOTIFICATIONS = 1; // Только одно уведомление
 
 export const useNotificationStore = create<NotificationState>((set, get) => ({
   notifications: [],

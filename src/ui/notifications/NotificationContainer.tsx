@@ -5,15 +5,16 @@ import './NotificationContainer.css';
 export const NotificationContainer = () => {
   const { notifications } = useNotificationStore();
 
-  if (notifications.length === 0) {
+  // Show only the latest notification
+  const latestNotification = notifications[notifications.length - 1];
+
+  if (!latestNotification) {
     return null;
   }
 
   return (
     <div className="notification-container">
-      {notifications.map((notification) => (
-        <NotificationItem key={notification.id} notification={notification} />
-      ))}
+      <NotificationItem key={latestNotification.id} notification={latestNotification} />
     </div>
   );
 };
