@@ -64,7 +64,7 @@ const LIGHT_STYLES = ['light', 'streets', 'satellite', 'standard'];
 
 export const LayersOverlay = ({ isOpen, onClose }: LayersOverlayProps) => {
   const { map } = useMapStore();
-  const { setMapStyleTheme, activeStyleId, setActiveStyleId, isMapStyleLoading, setMapStyleLoading } = useUIStore();
+  const { setMapStyleTheme, activeStyleId, setActiveStyleId, setMapStyleLoading } = useUIStore();
   const overlayRef = useRef<HTMLDivElement>(null);
   const [loadingStyleId, setLoadingStyleId] = useState<string | null>(null);
 
