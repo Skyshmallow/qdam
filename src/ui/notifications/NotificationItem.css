@@ -113,22 +113,23 @@
   color: rgba(15, 23, 42, 0.9);
 }
 
-/* Mobile - more compact */
+/* Mobile - much more compact */
 @media (max-width: 640px) {
   .notification-toast {
-    padding: 10px 14px;
+    padding: 8px 12px;
     border-radius: 8px;
-    gap: 8px;
-    min-width: 160px;
-    max-width: 280px;
+    gap: 6px;
+    min-width: auto;
+    max-width: 220px;
   }
   
   .notification-text {
-    font-size: 12px;
+    font-size: 11px;
+    line-height: 1.2;
   }
   
   .notification-indicator {
     width: 2px;
-    height: 14px;
+    height: 12px;
   }
 }

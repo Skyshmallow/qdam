@@ -15,6 +15,14 @@
   animation: overlayFadeIn 0.2s ease-out;
 }
 
+/* Mobile - align to bottom */
+@media (max-width: 640px) {
+  .overlay-backdrop {
+    padding: 0;
+    align-items: flex-end;
+  }
+}
+
 @keyframes overlayFadeIn {
   from {
     opacity: 0;
@@ -39,6 +47,27 @@
   font-family: 'Poppins', sans-serif;
 }
 
+/* Mobile - bottom sheet style */
+@media (max-width: 640px) {
+  .overlay-content {
+    border-radius: 20px 20px 0 0;
+    max-height: 70vh;
+    max-width: 100%;
+    animation: bottomSheetSlideUp 0.3s ease-out;
+  }
+}
+
+@keyframes bottomSheetSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes overlaySlideUp {
   from {
     opacity: 0;
@@ -55,31 +84,50 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (min-width: 640px) {
+  .overlay-header {
+    padding: 1.5rem;
+  }
 }
 
 .overlay-title {
   font-family: 'Exo 2', sans-serif;
-  font-size: 1.5rem;
+  font-size: 1.125rem;
   font-weight: 700;
   color: #fff;
   margin: 0;
   letter-spacing: 0.5px;
 }
 
+@media (min-width: 640px) {
+  .overlay-title {
+    font-size: 1.5rem;
+  }
+}
+
 .overlay-close-btn {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
   color: #fff;
+}
+
+@media (min-width: 640px) {
+  .overlay-close-btn {
+    width: 40px;
+    height: 40px;
+  }
 }
 
 .overlay-close-btn:hover {
@@ -94,10 +142,16 @@
 
 /* Body */
 .overlay-body {
-  padding: 1.5rem;
+  padding: 1rem 1.25rem;
   overflow-y: auto;
   overflow-x: hidden;
   flex: 1;
+}
+
+@media (min-width: 640px) {
+  .overlay-body {
+    padding: 1.5rem;
+  }
 }
 
 /* Custom scrollbar for overlay body */

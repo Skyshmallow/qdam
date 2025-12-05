@@ -17,7 +17,7 @@ export const RightSidebar = ({
   const themeClass = mapStyleTheme === 'light' ? 'theme-light' : '';
 
   return (
-    <div className="absolute right-4 top-4 flex flex-col gap-3 z-10">
+    <div className="absolute right-3 top-3 flex flex-col gap-2 z-10 sm:right-4 sm:top-4 sm:gap-3">
       {/* Zoom In */}
       <button
         onClick={onZoomIn}
@@ -25,7 +25,7 @@ export const RightSidebar = ({
         title="Приблизить"
         aria-label="Zoom in"
       >
-        <ZoomIn size={20} strokeWidth={2} />
+        <ZoomIn size={18} strokeWidth={2} className="sm:w-5 sm:h-5" />
       </button>
 
       {/* Zoom Out */}
@@ -35,7 +35,7 @@ export const RightSidebar = ({
         title="Отдалить"
         aria-label="Zoom out"
       >
-        <ZoomOut size={20} strokeWidth={2} />
+        <ZoomOut size={18} strokeWidth={2} className="sm:w-5 sm:h-5" />
       </button>
 
       {/* Layers */}
@@ -45,7 +45,7 @@ export const RightSidebar = ({
         title="Слои карты"
         aria-label="Map layers"
       >
-        <Layers size={20} strokeWidth={2} />
+        <Layers size={18} strokeWidth={2} className="sm:w-5 sm:h-5" />
       </button>
     </div>
   );

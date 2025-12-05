@@ -3,9 +3,9 @@
 /* Base button structure */
 .scifi-button {
   position: relative;
-  width: 44px;
-  height: 44px;
-  border-radius: 24px;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -33,6 +33,15 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   overflow: hidden;
+}
+
+/* Desktop - larger buttons */
+@media (min-width: 640px) {
+  .scifi-button {
+    width: 44px;
+    height: 44px;
+    border-radius: 24px;
+  }
 }
 
 /* Icon styling */

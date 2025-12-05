@@ -37,7 +37,7 @@ export const LeftSidebar = ({
   const themeClass = mapStyleTheme === 'light' ? 'theme-light' : '';
 
   return (
-    <div className="absolute left-4 top-4 flex flex-col gap-3 z-10">
+    <div className="absolute left-3 top-3 flex flex-col gap-2 z-10 sm:left-4 sm:top-4 sm:gap-3">
       {/* Profile */}
       <button
         onClick={onProfileClick}
@@ -45,7 +45,7 @@ export const LeftSidebar = ({
         title="Профиль"
         aria-label="Profile"
       >
-        <User size={20} strokeWidth={2} />
+        <User size={18} strokeWidth={2} className="sm:w-5 sm:h-5" />
       </button>
 
       {/* History */}
@@ -55,7 +55,7 @@ export const LeftSidebar = ({
         title="История"
         aria-label="History"
       >
-        <History size={20} strokeWidth={2} />
+        <History size={18} strokeWidth={2} className="sm:w-5 sm:h-5" />
       </button>
 
       {/* Find Me */}
@@ -67,9 +67,9 @@ export const LeftSidebar = ({
         disabled={isGeolocationBusy}
       >
         {isGeolocationBusy ? (
-          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full spinner" />
+          <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full spinner" />
         ) : (
-          <MapPin size={20} strokeWidth={2} />
+          <MapPin size={18} strokeWidth={2} className="sm:w-5 sm:h-5" />
         )}
       </button>
 
@@ -81,7 +81,7 @@ export const LeftSidebar = ({
           title={isSimulating ? "Остановить симуляцию" : "Режим симуляции"}
           aria-label={isSimulating ? "Stop Simulation" : "Start Simulation"}
         >
-          <FlaskConical size={20} strokeWidth={2} />
+          <FlaskConical size={18} strokeWidth={2} className="sm:w-5 sm:h-5" />
         </button>
       )}
     </div>
