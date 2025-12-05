@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { Notification } from '../../types/ui.types';
 import { useNotificationStore } from '../../store/notificationStore';
 import { useUIStore } from '../../store/uiStore';
