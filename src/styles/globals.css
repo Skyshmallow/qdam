@@ -80,6 +80,74 @@ body {
 }
 
 /* ========================================
+   LOADING OVERLAY
+   ======================================== */
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0a0f1e 0%, #1a1f3e 50%, #0a0f1e 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: opacity 0.3s ease-out;
+}
+
+.loading-overlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loader {
+  width: 60px;
+  aspect-ratio: 1;
+  display: grid;
+}
+
+.loader::before,
+.loader::after {
+  content: "";
+  grid-area: 1/1;
+  border-radius: 50%;
+  background: repeating-radial-gradient(farthest-side, #0000 0%, #00d4ff 1% 10%, #0000 11% 30%);
+  -webkit-mask: repeating-conic-gradient(#000 0 36deg, #0000 0 72deg);
+  mask: repeating-conic-gradient(#000 0 36deg, #0000 0 72deg);
+  animation: loader-spin 4s infinite linear;
+}
+
+.loader::after {
+  -webkit-mask: repeating-conic-gradient(#0000 0 36deg, #000 0 72deg);
+  mask: repeating-conic-gradient(#0000 0 36deg, #000 0 72deg);
+  animation-direction: reverse;
+}
+
+@keyframes loader-spin {
+  100% { transform: rotate(1turn); }
+}
+
+.loading-text {
+  margin-top: 1.5rem;
+  color: #00d4ff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: loading-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes loading-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ========================================
    GAME BUTTONS
    ======================================== */
 
@@ -204,6 +272,52 @@ body {
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.3));
   border-color: rgba(245, 158, 11, 0.7);
   box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+
+/* ============================================
+   GAME BUTTON LIGHT THEME
+   ============================================ */
+
+.game-button.theme-light {
+  background: linear-gradient(135deg, #0f1318 0%, #0a0d12 100%);
+  border: 2px solid rgba(0, 0, 0, 0.7);
+  box-shadow: 
+    0 4px 24px rgba(0, 0, 0, 0.8),
+    0 2px 8px rgba(0, 0, 0, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.game-button--primary.theme-light {
+  background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+  border-color: rgba(59, 130, 246, 0.9);
+  box-shadow: 
+    0 4px 24px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(59, 130, 246, 0.4);
+}
+
+.game-button--success.theme-light {
+  background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+  border-color: rgba(16, 185, 129, 0.9);
+  box-shadow: 
+    0 4px 24px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(16, 185, 129, 0.4);
+}
+
+.game-button--danger.theme-light {
+  background: linear-gradient(135deg, #991b1b 0%, #b91c1c 100%);
+  border-color: rgba(239, 68, 68, 0.9);
+  box-shadow: 
+    0 4px 24px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(239, 68, 68, 0.4);
+}
+
+.game-button--warning.theme-light {
+  background: linear-gradient(135deg, #92400e 0%, #b45309 100%);
+  border-color: rgba(245, 158, 11, 0.9);
+  box-shadow: 
+    0 4px 24px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(245, 158, 11, 0.4);
 }
 
 .game-button--ghost {
@@ -564,6 +678,31 @@ body {
   color: #10b981;
   font-weight: bold;
   flex-shrink: 0;
+}
+
+/* Layer loading state */
+.layer-option.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.layer-option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.layer-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #00d4ff;
+  border-radius: 50%;
+  animation: layer-spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes layer-spin {
+  to { transform: rotate(360deg); }
 }
 
 /* ========================================

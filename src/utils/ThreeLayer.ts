@@ -20,7 +20,7 @@ export interface Transform {
 }
 
 export interface ChainData {
-  id: number;
+  id: string;
   start: [number, number];
   end: [number, number];
   startCoords: [number, number];

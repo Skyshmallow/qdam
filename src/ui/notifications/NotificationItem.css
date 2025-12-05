@@ -167,3 +167,31 @@
     font-size: 13px;
   }
 }
+
+/* ============================================
+   NOTIFICATION LIGHT THEME
+   ============================================ */
+
+.notification-item.theme-light {
+  background: rgba(15, 23, 42, 0.95);
+  border: 2px solid rgba(0, 0, 0, 0.5);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.notification-item.theme-light:hover {
+  background: rgba(15, 23, 42, 0.98);
+}
+
+.notification-item.theme-light .notification-message {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.notification-item.theme-light .notification-close {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.notification-item.theme-light .notification-close:hover {
+  color: rgba(255, 255, 255, 1);
+}

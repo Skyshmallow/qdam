@@ -1,6 +1,17 @@
 import { featureCollection, point } from '@turf/helpers';
+import { useUIStore } from '../store/uiStore';
+
+// Sphere color based on theme
+export const getSphereColors = (theme: 'light' | 'dark') => ({
+  fillColor: theme === 'light' ? 'rgba(180, 83, 9, 0.25)' : 'rgba(251, 191, 36, 0.1)',
+  fillOpacity: theme === 'light' ? 0.3 : 0.15,
+});
 
 export const addMapLayers = (map: mapboxgl.Map) => {
+  // Get current theme
+  const currentTheme = useUIStore.getState().mapStyleTheme;
+  const sphereColors = getSphereColors(currentTheme);
+  
   const emptyLine = {
     type: 'Feature' as const,
     geometry: { type: 'LineString' as const, coordinates: [] },
@@ -113,13 +124,26 @@ export const addMapLayers = (map: mapboxgl.Map) => {
     type: 'fill',
     source: 'spheres',
     paint: {
-      'fill-color': 'rgba(251, 191, 36, 0.1)', // Жёлтый полупрозрачный
-      'fill-opacity': 0.15
+      'fill-color': sphereColors.fillColor,
+      'fill-opacity': sphereColors.fillOpacity
     }
   });
 };
 
 export const updateGeoJSONSource = (map: mapboxgl.Map, sourceId: string, data: GeoJSON.FeatureCollection | GeoJSON.Feature | GeoJSON.Geometry) => {
   const source = map.getSource(sourceId) as mapboxgl.GeoJSONSource;
-  if (source) source.setData(data);
+  
+  // 🔍 DEBUG: Log source updates
+  console.log(`[mapUtils] updateGeoJSONSource`, {
+    sourceId,
+    sourceExists: !!source,
+    dataType: (data as any)?.type,
+    hasCoordinates: !!(data as any)?.geometry?.coordinates?.length || (data as any)?.features?.length,
+  });
+  
+  if (source) {
+    source.setData(data);
+  } else {
+    console.warn(`[mapUtils] ⚠️ Source "${sourceId}" not found!`);
+  }
 };

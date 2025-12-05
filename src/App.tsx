@@ -77,7 +77,7 @@ function App() {
   const simulation = useSimulationMode();
 
   // Auth context for user ID
-  const { user } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
 
   // Check if user is developer (from environment variable)
   const isDeveloper = useMemo(() => {
@@ -200,6 +200,19 @@ function App() {
 
   const [isFollowingAvatar, setIsFollowingAvatar] = useState(false);
   const [isThreeLayerReady, setIsThreeLayerReady] = useState(false);
+  const [showLoader, setShowLoader] = useState(true);
+
+  // ✅ App ready state - all critical resources loaded
+  const isAppReady = !isAuthLoading && isThreeLayerReady && !nodesHook.isLoading;
+
+  // Hide loader with fade-out transition when app is ready
+  useEffect(() => {
+    if (isAppReady && showLoader) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => setShowLoader(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isAppReady, showLoader]);
 
   // ✅ Sphere effects (generation + animation)
   const spheres = useSphereEffects({ chains, nodes, map });
@@ -489,6 +502,13 @@ function App() {
 
   // === PROPS ===
   const mapProps = useMemo(() => {
+    // 🔍 DEBUG: Log mapProps recalculation
+    console.log('[App.tsx] mapProps recalculating', {
+      simulatableRoutePoints: planner.simulatableRoute?.length || 0,
+      routeWaypointsCount: planner.routeWaypoints?.length || 0,
+      hasTerritory: !!territory,
+    });
+
     // Combine established nodes + pending node from current attempt
     const allNodesForMap = [...nodes];
     if (chainAttempt.currentAttempt) {
@@ -534,6 +554,8 @@ function App() {
     multiplayer.conflicts,
   ]);
 
+  const { mapStyleTheme } = useUIStore();
+
   const trackingControlsProps = useMemo(() => ({
     activityState,
     trackingState: chainAttempt.currentAttempt
@@ -557,6 +579,7 @@ function App() {
 
       console.log(`[SIMULATION] 🗑️ Cleared ${temporaryNodes.length} temporary nodes and ${temporaryChains.length} temporary chains`);
     },
+    mapStyleTheme,
   }), [
     activityState,
     chainAttempt.currentAttempt,
@@ -566,10 +589,9 @@ function App() {
     handleStop,
     simulation,
     nodesHook,
-    chainsHook
+    chainsHook,
+    mapStyleTheme
   ]);
-
-  const { mapStyleTheme } = useUIStore();
 
   const rightSidebarProps = useMemo(() => ({
     onMyLocationClick: handleMyLocationClick,
@@ -645,6 +667,14 @@ function App() {
         {activeOverlay === 'history' && <HistoryOverlay isOpen={true} onClose={closeOverlay} />}
         {activeOverlay === 'layers' && <LayersOverlay isOpen={true} onClose={closeOverlay} />}
       </Suspense>
+
+      {/* Loading Overlay */}
+      {showLoader && (
+        <div className={`loading-overlay ${isAppReady ? 'fade-out' : ''}`}>
+          <div className="loader" />
+          <span className="loading-text">Загрузка...</span>
+        </div>
+      )}
     </div>
   );
 }

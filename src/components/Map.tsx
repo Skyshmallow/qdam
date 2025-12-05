@@ -5,6 +5,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { useMapbox } from '../hooks/useMapbox';
 import { updateGeoJSONSource, addMapLayers } from '../utils/mapUtils';
+import { useUIStore } from '../store/uiStore';
 import type { MapProps } from '../types';
 import { featureCollection, point, lineString } from '@turf/helpers';
 import { Avatar3D } from './Avatar3D.ts';
@@ -30,12 +31,17 @@ export const Map = ({
   const { map, isMapLoaded } = useMapbox(
     mapContainer,
     onMapLoad,
-    onThreeLayerReady
+    // ✅ Wrap onThreeLayerReady to also set local state
+    useCallback((threeLayer: ThreeLayer) => {
+      setIsThreeLayerReady(true);
+      onThreeLayerReady?.(threeLayer);
+    }, [onThreeLayerReady])
   );
   const avatarMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const avatar3DRef = useRef<Avatar3D | null>(null);
   const isInitialLoadRef = useRef(true); // Track if this is the first load
   const [styleVersion, setStyleVersion] = useState(0);
+  const [isThreeLayerReady, setIsThreeLayerReady] = useState(false); // ✅ Track ThreeLayer readiness
 
   // === Mobile optimization ===
   useEffect(() => {
@@ -129,13 +135,20 @@ export const Map = ({
       // Re-position spheres layer under ThreeLayer
       if (map.current!.getLayer('spheres-fill')) {
         map.current!.removeLayer('spheres-fill');
+        
+        // Get current theme for sphere color
+        const currentTheme = useUIStore.getState().mapStyleTheme;
+        const sphereFillColor = currentTheme === 'light' 
+          ? 'rgba(180, 83, 9, 0.25)'  // Dark amber for light maps
+          : 'rgba(251, 191, 36, 0.1)'; // Light yellow for dark maps
+        
         map.current!.addLayer({
           id: 'spheres-fill',
           type: 'fill',
           source: 'spheres',
           paint: {
-            'fill-color': 'rgba(251, 191, 36, 0.1)',
-            'fill-opacity': 0.15
+            'fill-color': sphereFillColor,
+            'fill-opacity': currentTheme === 'light' ? 0.3 : 0.15
           }
         }, 'castles-3d');
       }
@@ -204,8 +217,27 @@ export const Map = ({
 
   // === Sync map data ===
   useEffect(() => {
-    if (!map.current || !isMapLoaded) return;
-    if (!map.current.isStyleLoaded()) return;
+    // 🔍 DEBUG: Log at the START of useEffect to see if it runs
+    console.log('[Map.tsx] useEffect TRIGGERED', {
+      hasMap: !!map.current,
+      isMapLoaded,
+      isStyleLoaded: map.current?.isStyleLoaded?.() ?? 'no map',
+      simulatableRoutePoints: simulatableRoute?.length || 0,
+      routeWaypointsCount: routeWaypoints?.length || 0,
+    });
+
+    if (!map.current || !isMapLoaded) {
+      console.log('[Map.tsx] Early return: no map or not loaded');
+      return;
+    }
+    
+    // ✅ FIX: Don't check isStyleLoaded() - it returns false during repaint
+    // The sources are already created when isMapLoaded is true
+    // Instead, check if the source exists before updating
+    if (!map.current.getSource('route')) {
+      console.log('[Map.tsx] Early return: sources not ready yet');
+      return;
+    }
 
     const emptyLineFeature = {
       type: 'Feature' as const,
@@ -223,6 +255,18 @@ export const Map = ({
         ? lineString(currentPath)
         : emptyLineFeature;
 
+    // 🔍 DEBUG: Log what we're updating
+    console.log('[Map.tsx] Syncing map data', {
+      hasRoute: simulatableRoute && simulatableRoute.length > 1,
+      routePoints: simulatableRoute?.length || 0,
+      waypointsCount: routeWaypoints?.length || 0,
+      hasTerritory: !!territory,
+      territoryCoords: territory?.geometry?.coordinates?.[0]?.length || 0,
+      hasRouteSource: !!map.current.getSource('route'),
+      hasWaypointsSource: !!map.current.getSource('waypoints'),
+      hasTerritorySource: !!map.current.getSource('territory'),
+    });
+
     updateGeoJSONSource(map.current, 'recordedPath', recordedPathGeoJSON);
     updateGeoJSONSource(map.current, 'route', routeGeoJSON);
 
@@ -237,7 +281,8 @@ export const Map = ({
     updateGeoJSONSource(map.current, 'territory', territoryGeoJSON);
 
     // ✅ 3D Grass/Territory Effect (own territory)
-    if (threeLayerRef?.current) {
+    // Only update when ThreeLayer is ready (fixes race condition)
+    if (threeLayerRef?.current && isThreeLayerReady) {
       threeLayerRef.current.updateTerritory(territory);
 
       // Update other players' territories with colored grass
@@ -339,7 +384,8 @@ export const Map = ({
     otherTerritories,
     territoryConflicts,
     threeLayerRef,
-    styleVersion
+    styleVersion,
+    isThreeLayerReady // ✅ Re-run when ThreeLayer becomes ready
   ]);
 
   return <div ref={mapContainer} className="map-container w-full h-full" />;

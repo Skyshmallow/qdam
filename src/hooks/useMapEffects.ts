@@ -84,7 +84,7 @@ export const useMapEffects = ({
       }
 
       return {
-        id: parseInt(chain.id.slice(0, 8), 36),
+        id: chain.id, // ✅ Use original string ID (no parseInt - avoids NaN for nanoid with '-' or '_')
         start: nodeA.coordinates,
         end: nodeB.coordinates,
         startCoords: nodeA.coordinates,

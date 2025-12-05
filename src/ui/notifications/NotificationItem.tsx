@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Notification } from '../../types/ui.types';
 import { useNotificationStore } from '../../store/notificationStore';
+import { useUIStore } from '../../store/uiStore';
 import './NotificationItem.css';
 
 interface NotificationItemProps {
@@ -9,7 +10,10 @@ interface NotificationItemProps {
 
 export const NotificationItem = ({ notification }: NotificationItemProps) => {
   const { removeNotification } = useNotificationStore();
+  const { mapStyleTheme } = useUIStore();
   const [isExiting, setIsExiting] = useState(false);
+  
+  const themeClass = mapStyleTheme === 'light' ? 'theme-light' : '';
 
   const handleClose = () => {
     setIsExiting(true);
@@ -55,7 +59,7 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
 
   return (
     <div 
-      className={`notification-item notification-${notification.type} ${isExiting ? 'notification-exit' : ''}`}
+      className={`notification-item notification-${notification.type} ${isExiting ? 'notification-exit' : ''} ${themeClass}`}
       role="alert"
     >
       <div className="notification-icon-wrapper">

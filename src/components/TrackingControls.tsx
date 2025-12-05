@@ -22,6 +22,7 @@ interface TrackingControlsProps {
   onStop: () => void;
   isSimulationMode: boolean;
   onClearTestData: () => void;
+  mapStyleTheme?: 'light' | 'dark';
 }
 
 export function TrackingControls({
@@ -32,7 +33,10 @@ export function TrackingControls({
   onStop,
   isSimulationMode,
   onClearTestData,
+  mapStyleTheme = 'dark',
 }: TrackingControlsProps) {
+
+  const themeClass = mapStyleTheme === 'light' ? 'theme-light' : '';
 
 
   const renderControls = () => {
@@ -46,6 +50,7 @@ export function TrackingControls({
               onClick={onClearTestData}
               variant="danger"
               icon={<Trash2 size={20} />}
+              className={themeClass}
             >
               Clear Test Data
             </GameButton>
@@ -61,6 +66,7 @@ export function TrackingControls({
             variant="success"
             size="lg"
             icon={<Play size={20} />}
+            className={themeClass}
           >
             Start Journey
           </GameButton>
@@ -76,6 +82,7 @@ export function TrackingControls({
             onClick={onPause}
             variant="warning"
             icon={<Pause size={20} />}
+            className={themeClass}
           >
             Pause
           </GameButton>
@@ -83,6 +90,7 @@ export function TrackingControls({
             onClick={onStop}
             variant="danger"
             icon={<Square size={20} />}
+            className={themeClass}
           >
             Finish Journey
           </GameButton>
@@ -98,6 +106,7 @@ export function TrackingControls({
             onClick={onResume}
             variant="success"
             icon={<Play size={20} />}
+            className={themeClass}
           >
             Resume
           </GameButton>
@@ -105,6 +114,7 @@ export function TrackingControls({
             onClick={onStop}
             variant="danger"
             icon={<Square size={20} />}
+            className={themeClass}
           >
             Finish
           </GameButton>
@@ -116,7 +126,7 @@ export function TrackingControls({
     if (activityState === 'planning_start') {
       return (
         <div className="flex flex-col gap-2">
-          <div className="bg-blue-100 text-blue-900 px-4 py-2 rounded-lg font-medium">
+          <div className={`px-4 py-2 rounded-lg font-medium ${themeClass ? 'bg-slate-800 text-blue-300' : 'bg-blue-100 text-blue-900'}`}>
             📍 Select start point on map
           </div>
           <GameButton
@@ -124,6 +134,7 @@ export function TrackingControls({
             variant="danger"
             size="sm"
             icon={<Trash2 size={16} />}
+            className={themeClass}
           >
             Clear Test Data
           </GameButton>
@@ -134,7 +145,7 @@ export function TrackingControls({
     if (activityState === 'planning_end') {
       return (
         <div className="flex flex-col gap-2">
-          <div className="bg-blue-100 text-blue-900 px-4 py-2 rounded-lg font-medium">
+          <div className={`px-4 py-2 rounded-lg font-medium ${themeClass ? 'bg-slate-800 text-blue-300' : 'bg-blue-100 text-blue-900'}`}>
             📍 Select end point on map
           </div>
           <GameButton
@@ -142,6 +153,7 @@ export function TrackingControls({
             variant="danger"
             size="sm"
             icon={<Trash2 size={16} />}
+            className={themeClass}
           >
             Clear Test Data
           </GameButton>
@@ -157,6 +169,7 @@ export function TrackingControls({
             onClick={onStart}
             variant="primary"
             icon={<Play size={20} />}
+            className={themeClass}
           >
             Play Simulation
           </GameButton>
@@ -165,6 +178,7 @@ export function TrackingControls({
             variant="danger"
             size="sm"
             icon={<Trash2 size={16} />}
+            className={themeClass}
           >
             Clear Test Data
           </GameButton>
@@ -180,12 +194,13 @@ export function TrackingControls({
             onClick={onStop}
             variant="danger"
             icon={<Square size={20} />}
+            className={themeClass}
           >
             Stop & Create Castles
           </GameButton>
           
           {isSimulationMode && (
-            <div className="text-center text-xs text-yellow-300 bg-black/30 px-2 py-1 rounded">
+            <div className={`text-center text-xs px-2 py-1 rounded ${themeClass ? 'text-yellow-400 bg-slate-800/80' : 'text-yellow-300 bg-black/30'}`}>
               ⚠️ Castles will be temporary (won't be saved)
             </div>
           )}

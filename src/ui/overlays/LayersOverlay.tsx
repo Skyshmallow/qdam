@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMapStore } from '../../store/mapStore';
 import { useUIStore } from '../../store/uiStore';
 
@@ -64,8 +64,9 @@ const LIGHT_STYLES = ['light', 'streets', 'satellite', 'standard'];
 
 export const LayersOverlay = ({ isOpen, onClose }: LayersOverlayProps) => {
   const { map } = useMapStore();
-  const { setMapStyleTheme, activeStyleId, setActiveStyleId } = useUIStore();
+  const { setMapStyleTheme, activeStyleId, setActiveStyleId, isMapStyleLoading, setMapStyleLoading } = useUIStore();
   const overlayRef = useRef<HTMLDivElement>(null);
+  const [loadingStyleId, setLoadingStyleId] = useState<string | null>(null);
 
   // Close on click outside
   useEffect(() => {
@@ -88,7 +89,11 @@ export const LayersOverlay = ({ isOpen, onClose }: LayersOverlayProps) => {
   }, [isOpen, onClose]);
 
   const handleStyleChange = (style: MapStyle) => {
-    if (!map) return;
+    if (!map || loadingStyleId) return; // Prevent changing while loading
+
+    // Set loading state
+    setLoadingStyleId(style.id);
+    setMapStyleLoading(true);
 
     // Update UI immediately
     setActiveStyleId(style.id);
@@ -121,6 +126,10 @@ export const LayersOverlay = ({ isOpen, onClose }: LayersOverlayProps) => {
 
       container.style.opacity = '1';
 
+      // Clear loading state
+      setLoadingStyleId(null);
+      setMapStyleLoading(false);
+
       // Restore console
       console.warn = originalWarn;
       console.error = originalError;
@@ -149,11 +158,16 @@ export const LayersOverlay = ({ isOpen, onClose }: LayersOverlayProps) => {
           <button
             key={style.id}
             onClick={() => handleStyleChange(style)}
-            className={`layer-option ${activeStyleId === style.id ? 'active' : ''}`}
+            className={`layer-option ${activeStyleId === style.id ? 'active' : ''} ${loadingStyleId === style.id ? 'loading' : ''}`}
+            disabled={!!loadingStyleId}
           >
-            <span className="layer-icon">{style.icon}</span>
+            {loadingStyleId === style.id ? (
+              <span className="layer-spinner" />
+            ) : (
+              <span className="layer-icon">{style.icon}</span>
+            )}
             <span className="layer-name">{style.name}</span>
-            {activeStyleId === style.id && (
+            {activeStyleId === style.id && !loadingStyleId && (
               <span className="layer-check">✓</span>
             )}
           </button>
