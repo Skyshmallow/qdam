@@ -7,7 +7,7 @@ import { SphereEffectManager } from '../effects/sphere';
 import { TerritoryEffect, type TerritoryConfig } from '../effects/territory';
 import { gpuDetector } from '@shared/utils/gpuDetector';
 
-const MODEL_SCALE = 25;
+const MODEL_SCALE = 15;
 
 export interface Transform {
   translateX: number;
@@ -474,15 +474,20 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
 
     // Calculate ABSOLUTE transform for this castle
     const mercatorCoords = mapboxgl.MercatorCoordinate.fromLngLat(coords, 0);
+    const meterScale = mercatorCoords.meterInMercatorCoordinateUnits();
+
+    // ✅ Lift castle above ground (15 meters elevation)
+    const CASTLE_ELEVATION_METERS = 30;
+    const elevationOffset = CASTLE_ELEVATION_METERS * meterScale;
 
     const transform = {
       translateX: mercatorCoords.x,
       translateY: mercatorCoords.y,
-      translateZ: mercatorCoords.z,
+      translateZ: mercatorCoords.z + elevationOffset,
       rotateX: Math.PI / 2,
       rotateY: Math.random() * Math.PI * 2,
       rotateZ: 0,
-      scale: mercatorCoords.meterInMercatorCoordinateUnits(),
+      scale: meterScale,
     };
 
     const castleMesh = this.castleModel.clone();
@@ -491,5 +496,14 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
 
     this.castleObjects.set(id, { mesh: castleMesh, transform });
     this.log('Added new castle', { id, coords });
+  }
+
+  /**
+   * ✅ Установить тему карты (для корректного отображения сфер)
+   */
+  public setTheme(theme: 'light' | 'dark'): void {
+    if (this.sphereManager) {
+      this.sphereManager.setTheme(theme);
+    }
   }
 }

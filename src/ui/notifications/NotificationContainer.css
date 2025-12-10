@@ -19,8 +19,8 @@
 /* Mobile - smaller offset */
 @media (max-width: 640px) {
   .notification-container {
-    top: 0px;
-    right: 48px;
+    top: 5px;
+    right: 60px;
     left: auto;
     padding-top: 12px;
     gap: 6px;

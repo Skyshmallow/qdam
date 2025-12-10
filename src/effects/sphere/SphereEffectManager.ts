@@ -8,7 +8,7 @@ import mapboxgl from 'mapbox-gl';
 import { RadarEffect } from './RadarEffect';
 import { PlasmaEffect } from './PlasmaEffect';
 import { SparksEffect } from './SparksEffect';
-import { SPHERE_COLORS, DEFAULT_SPHERE_CONFIG, EFFECT_SIZES } from './constants';
+import { SPHERE_COLORS, SPHERE_COLORS_LIGHT, DEFAULT_SPHERE_CONFIG, EFFECT_SIZES } from './constants';
 import { geometryCache } from '@shared/utils/geometryCache';
 
 import type {
@@ -23,6 +23,7 @@ export class SphereEffectManager {
   private scene: THREE.Scene;
   private spheres = new Map<string, SphereEffectInstance>();
   private options: Required<SphereEffectManagerOptions>;
+  private currentTheme: 'light' | 'dark' = 'dark';
 
   constructor(
     scene: THREE.Scene,
@@ -49,8 +50,9 @@ export class SphereEffectManager {
       return;
     }
 
-    // Определяем цвет
-    const color = config.customColor || SPHERE_COLORS[config.type];
+    // ✅ Определяем цвет на основе текущей темы
+    const colors = this.currentTheme === 'light' ? SPHERE_COLORS_LIGHT : SPHERE_COLORS;
+    const color = config.customColor || colors[config.type];
 
     // Вычисляем Mercator координаты
     const mercatorCoords = mapboxgl.MercatorCoordinate.fromLngLat(
@@ -496,5 +498,66 @@ export class SphereEffectManager {
     this.removeAllSpheres();
     this.spheres.clear();
     console.log('[SphereEffectManager] Disposed');
+  }
+
+  /**
+   * ✅ Установить тему карты (меняет цвета сфер)
+   */
+  setTheme(theme: 'light' | 'dark'): void {
+    if (this.currentTheme === theme) return;
+    
+    this.currentTheme = theme;
+    const colors = theme === 'light' ? SPHERE_COLORS_LIGHT : SPHERE_COLORS;
+    
+    // Обновляем цвета всех сфер
+    this.spheres.forEach(sphere => {
+      const color = colors[sphere.type];
+      const colorVec = new THREE.Vector3(color.r / 255, color.g / 255, color.b / 255);
+      
+      // Update outline color
+      if (sphere.outline.children.length > 0) {
+        const outlineMesh = sphere.outline.children[0] as THREE.Mesh;
+        const material = outlineMesh.material as THREE.ShaderMaterial;
+        if (material.uniforms?.uColor) {
+          material.uniforms.uColor.value = new THREE.Color(color.r / 255, color.g / 255, color.b / 255);
+        }
+      }
+      
+      // Update radar color
+      if (sphere.radar.children.length > 0) {
+        const radarMesh = sphere.radar.children[0] as THREE.Mesh;
+        const material = radarMesh.material as THREE.ShaderMaterial;
+        if (material.uniforms?.uColor) {
+          material.uniforms.uColor.value = colorVec.clone();
+        }
+      }
+      
+      // Update plasma colors
+      sphere.plasma.children.forEach(child => {
+        const mesh = child as THREE.Mesh;
+        const material = mesh.material as THREE.ShaderMaterial;
+        if (material.uniforms?.uColor) {
+          material.uniforms.uColor.value = colorVec.clone();
+        }
+      });
+      
+      // Update sparks color
+      if (sphere.sparks.children.length > 0) {
+        const sparkPoints = sphere.sparks.children[0] as THREE.Points;
+        const material = sparkPoints.material as THREE.ShaderMaterial;
+        if (material.uniforms?.uColor) {
+          material.uniforms.uColor.value = colorVec.clone();
+        }
+      }
+    });
+    
+    console.log(`[SphereEffectManager] Theme changed to ${theme}`);
+  }
+
+  /**
+   * Получить текущую тему
+   */
+  getTheme(): 'light' | 'dark' {
+    return this.currentTheme;
   }
 }

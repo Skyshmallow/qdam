@@ -1,10 +1,42 @@
-/* Оставляем ТОЛЬКО специфичные стили */
+/* ========================================
+   GAME BUTTON - Sci-Fi Gaming Style
+   ======================================== */
+
 .game-button {
+  position: relative;
   font-family: 'Exo 2', sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  overflow: hidden;
 }
 
+/* Top accent line - gaming style */
+.game-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--btn-accent, rgba(255, 255, 255, 0.5)) 50%, 
+    transparent 100%);
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.game-button:hover::before {
+  opacity: 1;
+}
+
+/* Accent colors per variant */
+.game-button--primary { --btn-accent: #3b82f6; }
+.game-button--success { --btn-accent: #10b981; }
+.game-button--danger { --btn-accent: #ef4444; }
+.game-button--warning { --btn-accent: #f59e0b; }
+
+/* Ripple effect */
 .ripple-effect {
   position: absolute;
   border-radius: 50%;
@@ -21,8 +53,66 @@
   }
 }
 
+/* ========================================
+   MOBILE - Compact Central Buttons
+   ======================================== */
+
 @media (max-width: 640px) {
-  .game-button--lg { padding: 14px 28px; font-size: 15px; }
-  .game-button--md { padding: 10px 20px; font-size: 13px; }
-  .game-button--sm { padding: 6px 14px; font-size: 11px; }
+  .game-button {
+    padding: 10px 16px;
+    font-size: 12px;
+    min-height: 40px;
+    min-width: 40px;
+    border-radius: 10px;
+    gap: 6px;
+  }
+
+  .game-button--lg {
+    padding: 12px 20px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+
+  .game-button--md {
+    padding: 10px 16px;
+    font-size: 12px;
+    min-height: 40px;
+  }
+
+  .game-button--sm {
+    padding: 8px 12px;
+    font-size: 11px;
+    min-height: 36px;
+  }
+
+  .game-button__icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .game-button__icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Hide text on very small screens, keep icons */
+  .game-button__text {
+    font-size: 11px;
+    letter-spacing: 0.3px;
+  }
+}
+
+/* Very small screens - icon only mode */
+@media (max-width: 400px) {
+  .game-button {
+    padding: 10px 12px;
+  }
+
+  .game-button__text {
+    display: none;
+  }
+
+  .game-button__icon {
+    margin: 0;
+  }
 }

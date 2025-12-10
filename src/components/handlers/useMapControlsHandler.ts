@@ -73,18 +73,18 @@ export const useMapControlsHandler = ({
       );
 
       if (!sphereCheck.allowed) {
-        onError(sphereCheck.reason || 'Cannot plan route outside sphere of influence');
+        onError('Вне зоны');
         return;
       }
 
       await planner.addWaypoint(coordinates);
       setActivityState('planning_end');
-      onInfo('Выберите конечную точку на карте');
+      onInfo('Выбери финиш');
 
     } else if (activityState === 'planning_end') {
       await planner.addWaypoint(coordinates);
       setActivityState('ready_to_simulate');
-      onSuccess('Маршрут построен. Нажмите Play для запуска симуляции.');
+      onSuccess('Готово → Play');
     }
   }, [
     activityState,

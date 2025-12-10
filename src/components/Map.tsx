@@ -132,12 +132,15 @@ export const Map = ({
 
       map.current!.addLayer(newThreeLayer as unknown as mapboxgl.CustomLayerInterface);
 
+      // ✅ Set theme for 3D sphere effects
+      const currentTheme = useUIStore.getState().mapStyleTheme;
+      newThreeLayer.setTheme(currentTheme);
+
       // Re-position spheres layer under ThreeLayer
       if (map.current!.getLayer('spheres-fill')) {
         map.current!.removeLayer('spheres-fill');
         
         // Get current theme for sphere color
-        const currentTheme = useUIStore.getState().mapStyleTheme;
         const sphereFillColor = currentTheme === 'light' 
           ? 'rgba(180, 83, 9, 0.25)'  // Dark amber for light maps
           : 'rgba(251, 191, 36, 0.1)'; // Light yellow for dark maps

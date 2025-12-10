@@ -3,44 +3,84 @@
 /* Base button structure */
 .scifi-button {
   position: relative;
-  width: 36px;
-  height: 36px;
-  border-radius: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   
-  /* Metal base */
-  background: linear-gradient(135deg, #151921 0%, #0a0e14 100%);
+  /* Dark metallic base */
+  background: 
+    linear-gradient(135deg, rgba(13, 17, 23, 0.95) 0%, rgba(22, 27, 34, 0.95) 100%);
   
-  /* Glass layer */
+  /* Glass effect */
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   
-  /* Brushed metal texture */
-  background-image: 
-    linear-gradient(45deg, transparent 48%, rgba(255,255,255,0.03) 50%, transparent 52%);
-  background-size: 3px 3px;
+  /* Border with glow */
+  border: 1px solid var(--btn-color, rgba(255, 255, 255, 0.1));
   
-  /* Border */
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  
-  /* Base shadow */
+  /* Multi-layer shadow */
   box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 0 15px var(--btn-glow, rgba(0, 217, 255, 0.1)),
+    0 4px 20px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
   
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
+}
+
+/* Animated top accent line */
+.scifi-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--btn-color, rgba(0, 217, 255, 0.5)) 50%, 
+    transparent 100%);
+  border-radius: 1px;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+/* Corner accents */
+.scifi-button::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, 
+    var(--btn-color, rgba(0, 217, 255, 0.3)) 0%, 
+    transparent 30%, 
+    transparent 70%, 
+    var(--btn-color, rgba(0, 217, 255, 0.1)) 100%);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  padding: 1px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 /* Desktop - larger buttons */
 @media (min-width: 640px) {
   .scifi-button {
-    width: 44px;
-    height: 44px;
-    border-radius: 24px;
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+  }
+  
+  .scifi-button::after {
+    border-radius: 12px;
   }
 }
 
@@ -48,385 +88,175 @@
 .scifi-button svg {
   position: relative;
   z-index: 2;
-  color: white;
+  color: var(--btn-icon-color, white);
+  filter: drop-shadow(0 0 6px var(--btn-glow, rgba(0, 217, 255, 0.4)));
   transition: all 0.3s ease;
 }
 
 /* Hover state */
 .scifi-button:hover {
-  transform: scale(1.05);
+  transform: translateY(-2px) scale(1.05);
+  border-color: var(--btn-color, rgba(0, 217, 255, 0.5));
+  box-shadow: 
+    0 0 25px var(--btn-glow, rgba(0, 217, 255, 0.25)),
+    0 8px 30px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.scifi-button:hover::before {
+  width: 80%;
+  opacity: 1;
+}
+
+.scifi-button:hover::after {
+  opacity: 1;
+}
+
+.scifi-button:hover svg {
+  filter: drop-shadow(0 0 10px var(--btn-glow, rgba(0, 217, 255, 0.6)));
+  transform: scale(1.1);
 }
 
 /* Active state */
 .scifi-button:active {
-  transform: scale(0.95);
+  transform: translateY(0) scale(0.95);
+  box-shadow: 
+    0 0 20px var(--btn-glow, rgba(0, 217, 255, 0.3)),
+    0 2px 10px rgba(0, 0, 0, 0.5),
+    inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Disabled state */
 .scifi-button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
   transform: none !important;
+  filter: grayscale(0.5);
 }
 
-/* === Individual Button Styles === */
+/* === Individual Button Colors === */
 
-/* Profile - Cyan ID Chip */
+/* Profile - Cyan */
 .scifi-button-profile {
-  border-color: rgba(0, 217, 255, 0.3);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 20px rgba(0, 217, 255, 0.15),
-    inset 0 1px 0 rgba(0, 217, 255, 0.2);
+  --btn-color: rgba(0, 217, 255, 0.4);
+  --btn-glow: rgba(0, 217, 255, 0.3);
+  --btn-icon-color: #00d9ff;
 }
 
-.scifi-button-profile:hover {
-  border-color: rgba(0, 217, 255, 0.5);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 30px rgba(0, 217, 255, 0.3),
-    inset 0 1px 0 rgba(0, 217, 255, 0.3);
-  background: linear-gradient(135deg, #151921 0%, #0a0e14 100%),
-              radial-gradient(circle at center, rgba(0, 217, 255, 0.1), transparent);
-}
-
-.scifi-button-profile svg {
-  filter: drop-shadow(0 0 8px rgba(0, 217, 255, 0.5));
-}
-
-.scifi-button-profile:active {
-  animation: ring-pulse-cyan 0.6s ease-out;
-}
-
-@keyframes ring-pulse-cyan {
-  0% { box-shadow: 0 0 0 0 rgba(0, 217, 255, 0.7); }
-  100% { box-shadow: 0 0 0 12px rgba(0, 217, 255, 0); }
-}
-
-/* History - Purple Timeline */
+/* History - Purple */
 .scifi-button-history {
-  border-color: rgba(124, 58, 237, 0.3);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 20px rgba(124, 58, 237, 0.15),
-    inset 0 1px 0 rgba(124, 58, 237, 0.2);
+  --btn-color: rgba(167, 139, 250, 0.4);
+  --btn-glow: rgba(167, 139, 250, 0.3);
+  --btn-icon-color: #a78bfa;
 }
 
-.scifi-button-history:hover {
-  border-color: rgba(124, 58, 237, 0.5);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 30px rgba(124, 58, 237, 0.3),
-    inset 0 1px 0 rgba(124, 58, 237, 0.3);
-  background: linear-gradient(135deg, #151921 0%, #0a0e14 100%),
-              radial-gradient(circle at center, rgba(124, 58, 237, 0.1), transparent);
-}
-
-.scifi-button-history svg {
-  filter: drop-shadow(0 0 8px rgba(124, 58, 237, 0.5));
-}
-
-.scifi-button-history:active {
-  animation: ring-pulse-purple 0.6s ease-out;
-}
-
-@keyframes ring-pulse-purple {
-  0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.7); }
-  100% { box-shadow: 0 0 0 12px rgba(124, 58, 237, 0); }
-}
-
-/* Location - Emerald GPS */
+/* Location - Emerald */
 .scifi-button-location {
-  border-color: rgba(16, 185, 129, 0.3);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 20px rgba(16, 185, 129, 0.15),
-    inset 0 1px 0 rgba(16, 185, 129, 0.2);
+  --btn-color: rgba(52, 211, 153, 0.4);
+  --btn-glow: rgba(52, 211, 153, 0.3);
+  --btn-icon-color: #34d399;
 }
 
-.scifi-button-location:hover {
-  border-color: rgba(16, 185, 129, 0.5);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 30px rgba(16, 185, 129, 0.3),
-    inset 0 1px 0 rgba(16, 185, 129, 0.3);
-  background: linear-gradient(135deg, #151921 0%, #0a0e14 100%),
-              radial-gradient(circle at center, rgba(16, 185, 129, 0.1), transparent);
+/* Simulate - Amber */
+.scifi-button-simulate {
+  --btn-color: rgba(251, 191, 36, 0.4);
+  --btn-glow: rgba(251, 191, 36, 0.3);
+  --btn-icon-color: #fbbf24;
 }
 
-.scifi-button-location svg {
-  filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));
+/* Zoom In - Blue */
+.scifi-button-zoom-in {
+  --btn-color: rgba(96, 165, 250, 0.4);
+  --btn-glow: rgba(96, 165, 250, 0.3);
+  --btn-icon-color: #60a5fa;
 }
 
-.scifi-button-location:active {
-  animation: ring-pulse-emerald 0.6s ease-out;
+/* Zoom Out - Indigo */
+.scifi-button-zoom-out {
+  --btn-color: rgba(129, 140, 248, 0.4);
+  --btn-glow: rgba(129, 140, 248, 0.3);
+  --btn-icon-color: #818cf8;
 }
 
-@keyframes ring-pulse-emerald {
-  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-  100% { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); }
+/* Layers - Violet */
+.scifi-button-layers {
+  --btn-color: rgba(196, 181, 253, 0.4);
+  --btn-glow: rgba(196, 181, 253, 0.3);
+  --btn-icon-color: #c4b5fd;
 }
 
-/* Location States */
+/* === Special States === */
+
+/* Location Success */
 .scifi-button-location.success {
-  border-color: rgba(16, 185, 129, 0.6);
-  background: linear-gradient(135deg, #10b98180 0%, #059669 100%);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 30px rgba(16, 185, 129, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  --btn-color: rgba(34, 197, 94, 0.6);
+  --btn-glow: rgba(34, 197, 94, 0.4);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.2) 100%);
+  animation: pulse-success 2s ease-in-out infinite;
 }
 
+@keyframes pulse-success {
+  0%, 100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.3), 0 4px 20px rgba(0, 0, 0, 0.5); }
+  50% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.5), 0 4px 20px rgba(0, 0, 0, 0.5); }
+}
+
+/* Location Error */
 .scifi-button-location.error {
-  border-color: rgba(239, 68, 68, 0.6);
-  background: linear-gradient(135deg, #ef444480 0%, #dc2626 100%);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 30px rgba(239, 68, 68, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  --btn-color: rgba(248, 113, 113, 0.6);
+  --btn-glow: rgba(248, 113, 113, 0.4);
+  --btn-icon-color: #f87171;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%);
 }
 
+/* Location Loading */
 .scifi-button-location.loading {
-  border-color: rgba(59, 130, 246, 0.6);
-  opacity: 0.7;
+  opacity: 0.8;
   pointer-events: none;
 }
 
 .scifi-button-location .spinner {
-  animation: rotate-ring 1s linear infinite;
+  animation: spin-ring 1s linear infinite;
 }
 
-@keyframes rotate-ring {
+@keyframes spin-ring {
   to { transform: rotate(360deg); }
 }
 
-/* Simulate - Amber Quantum */
-.scifi-button-simulate {
-  border-color: rgba(245, 158, 11, 0.3);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 20px rgba(245, 158, 11, 0.15),
-    inset 0 1px 0 rgba(245, 158, 11, 0.2);
-}
-
-.scifi-button-simulate:hover {
-  border-color: rgba(245, 158, 11, 0.5);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 30px rgba(245, 158, 11, 0.3),
-    inset 0 1px 0 rgba(245, 158, 11, 0.3);
-  background: linear-gradient(135deg, #151921 0%, #0a0e14 100%),
-              radial-gradient(circle at center, rgba(245, 158, 11, 0.1), transparent);
-}
-
-.scifi-button-simulate svg {
-  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5));
-}
-
-.scifi-button-simulate:active {
-  animation: ring-pulse-amber 0.6s ease-out;
-}
-
+/* Simulate Active */
 .scifi-button-simulate.active {
-  border-color: rgba(245, 158, 11, 0.7);
-  background: linear-gradient(135deg, #f59e0b80 0%, #d97706 100%);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 30px rgba(245, 158, 11, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  animation: pulse-glow-amber 2s ease-in-out infinite;
+  --btn-color: rgba(251, 191, 36, 0.7);
+  --btn-glow: rgba(251, 191, 36, 0.5);
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.25) 0%, rgba(245, 158, 11, 0.25) 100%);
+  animation: pulse-active 1.5s ease-in-out infinite;
 }
 
-@keyframes ring-pulse-amber {
-  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
-  100% { box-shadow: 0 0 0 12px rgba(245, 158, 11, 0); }
-}
-
-@keyframes pulse-glow-amber {
+@keyframes pulse-active {
   0%, 100% { 
-    box-shadow: 
-      0 4px 16px rgba(0, 0, 0, 0.4),
-      0 0 30px rgba(245, 158, 11, 0.5);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.4), 0 4px 20px rgba(0, 0, 0, 0.5);
+    transform: scale(1);
   }
   50% { 
-    box-shadow: 
-      0 4px 16px rgba(0, 0, 0, 0.4),
-      0 0 40px rgba(245, 158, 11, 0.7);
+    box-shadow: 0 0 35px rgba(251, 191, 36, 0.6), 0 4px 20px rgba(0, 0, 0, 0.5);
+    transform: scale(1.02);
   }
 }
 
-/* Zoom In - Blue Focus */
-.scifi-button-zoom-in {
-  border-color: rgba(59, 130, 246, 0.3);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 20px rgba(59, 130, 246, 0.15),
-    inset 0 1px 0 rgba(59, 130, 246, 0.2);
-}
-
-.scifi-button-zoom-in:hover {
-  border-color: rgba(59, 130, 246, 0.5);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 30px rgba(59, 130, 246, 0.3),
-    inset 0 1px 0 rgba(59, 130, 246, 0.3);
-  background: linear-gradient(135deg, #151921 0%, #0a0e14 100%),
-              radial-gradient(circle at center, rgba(59, 130, 246, 0.1), transparent);
-}
-
-.scifi-button-zoom-in svg {
-  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
-}
-
-.scifi-button-zoom-in:active {
-  animation: ring-pulse-blue 0.6s ease-out;
-}
-
-@keyframes ring-pulse-blue {
-  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-  100% { box-shadow: 0 0 0 12px rgba(59, 130, 246, 0); }
-}
-
-/* Zoom Out - Indigo Expand */
-.scifi-button-zoom-out {
-  border-color: rgba(99, 102, 241, 0.3);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 20px rgba(99, 102, 241, 0.15),
-    inset 0 1px 0 rgba(99, 102, 241, 0.2);
-}
-
-.scifi-button-zoom-out:hover {
-  border-color: rgba(99, 102, 241, 0.5);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 30px rgba(99, 102, 241, 0.3),
-    inset 0 1px 0 rgba(99, 102, 241, 0.3);
-  background: linear-gradient(135deg, #151921 0%, #0a0e14 100%),
-              radial-gradient(circle at center, rgba(99, 102, 241, 0.1), transparent);
-}
-
-.scifi-button-zoom-out svg {
-  filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.5));
-}
-
-.scifi-button-zoom-out:active {
-  animation: ring-pulse-indigo 0.6s ease-out;
-}
-
-@keyframes ring-pulse-indigo {
-  0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
-  100% { box-shadow: 0 0 0 12px rgba(99, 102, 241, 0); }
-}
-
-/* Layers - Violet Hologram */
-.scifi-button-layers {
-  border-color: rgba(139, 92, 246, 0.3);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 20px rgba(139, 92, 246, 0.15),
-    inset 0 1px 0 rgba(139, 92, 246, 0.2);
-}
-
-.scifi-button-layers:hover {
-  border-color: rgba(139, 92, 246, 0.5);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 30px rgba(139, 92, 246, 0.3),
-    inset 0 1px 0 rgba(139, 92, 246, 0.3);
-  background: linear-gradient(135deg, #151921 0%, #0a0e14 100%),
-              radial-gradient(circle at center, rgba(139, 92, 246, 0.1), transparent);
-}
-
-.scifi-button-layers svg {
-  filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.5));
-}
-
-.scifi-button-layers:active {
-  animation: ring-pulse-violet 0.6s ease-out;
-}
-
-@keyframes ring-pulse-violet {
-  0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7); }
-  100% { box-shadow: 0 0 0 12px rgba(139, 92, 246, 0); }
-}
-
-/* === Light Theme Adaptations === */
+/* === Light Theme === */
 .scifi-button.theme-light {
-  /* Much darker background for light maps */
-  background: linear-gradient(135deg, #0f1318 0%, #0a0d12 100%);
-  
-  /* Stronger border with dark outline */
-  border: 2px solid rgba(0, 0, 0, 0.7);
-  
-  /* Strong dark shadow for contrast */
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%);
+  border-width: 2px;
   box-shadow: 
-    0 4px 24px rgba(0, 0, 0, 0.8),
-    0 2px 8px rgba(0, 0, 0, 0.9),
+    0 0 20px var(--btn-glow, rgba(0, 217, 255, 0.2)),
+    0 4px 25px rgba(0, 0, 0, 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .scifi-button.theme-light svg {
-  /* Brighter icons for visibility */
-  color: #ffffff;
-  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.8));
+  filter: drop-shadow(0 0 8px var(--btn-glow, rgba(0, 217, 255, 0.5)));
 }
 
-/* Light theme specific button colors */
-.scifi-button-profile.theme-light {
-  border-color: rgba(0, 180, 220, 0.9);
+.scifi-button.theme-light:hover {
   box-shadow: 
-    0 4px 24px rgba(0, 0, 0, 0.8),
-    0 0 20px rgba(0, 217, 255, 0.4),
-    inset 0 1px 0 rgba(0, 217, 255, 0.4);
-}
-
-.scifi-button-history.theme-light {
-  border-color: rgba(124, 58, 237, 0.9);
-  box-shadow: 
-    0 4px 24px rgba(0, 0, 0, 0.8),
-    0 0 20px rgba(124, 58, 237, 0.4),
-    inset 0 1px 0 rgba(124, 58, 237, 0.4);
-}
-
-.scifi-button-location.theme-light {
-  border-color: rgba(34, 197, 94, 0.9);
-  box-shadow: 
-    0 4px 24px rgba(0, 0, 0, 0.8),
-    0 0 20px rgba(34, 197, 94, 0.4),
-    inset 0 1px 0 rgba(34, 197, 94, 0.4);
-}
-
-.scifi-button-simulate.theme-light {
-  border-color: rgba(234, 179, 8, 0.9);
-  box-shadow: 
-    0 4px 24px rgba(0, 0, 0, 0.8),
-    0 0 20px rgba(234, 179, 8, 0.4),
-    inset 0 1px 0 rgba(234, 179, 8, 0.4);
-}
-
-.scifi-button-simulate.theme-light.active {
-  background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
-  border-color: rgba(245, 158, 11, 1);
-  box-shadow: 
-    0 4px 24px rgba(0, 0, 0, 0.8),
-    0 0 30px rgba(245, 158, 11, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.scifi-button-zoom-in.theme-light,
-.scifi-button-zoom-out.theme-light {
-  border-color: rgba(59, 130, 246, 0.9);
-  box-shadow: 
-    0 4px 24px rgba(0, 0, 0, 0.8),
-    0 0 20px rgba(59, 130, 246, 0.4),
-    inset 0 1px 0 rgba(59, 130, 246, 0.4);
-}
-
-.scifi-button-layers.theme-light {
-  border-color: rgba(139, 92, 246, 0.9);
-  box-shadow: 
-    0 4px 24px rgba(0, 0, 0, 0.8),
-    0 0 20px rgba(139, 92, 246, 0.4),
-    inset 0 1px 0 rgba(139, 92, 246, 0.4);
+    0 0 30px var(--btn-glow, rgba(0, 217, 255, 0.35)),
+    0 8px 35px rgba(0, 0, 0, 0.6);
 }

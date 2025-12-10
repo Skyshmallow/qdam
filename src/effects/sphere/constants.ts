@@ -46,6 +46,43 @@ export const SPHERE_COLORS: Record<SphereType, EffectColor> = {
 };
 
 /**
+ * ✅ Тёмные цвета для светлой темы карты (более контрастные)
+ */
+export const SPHERE_COLORS_LIGHT: Record<SphereType, EffectColor> = {
+  // Тёмно-оранжевый (виден на светлом)
+  default: {
+    r: 180,
+    g: 83,
+    b: 9,
+    a: 1.0
+  },
+  
+  // Тёмно-красный
+  enemy: {
+    r: 185,
+    g: 28,
+    b: 28,
+    a: 1.0
+  },
+  
+  // Тёмно-зелёный
+  ally: {
+    r: 5,
+    g: 122,
+    b: 85,
+    a: 1.0
+  },
+  
+  // Тёмно-синий
+  neutral: {
+    r: 30,
+    g: 64,
+    b: 175,
+    a: 1.0
+  }
+};
+
+/**
  * Размеры эффектов (в метрах)
  */
 export const EFFECT_SIZES = {

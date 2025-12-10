@@ -1,0 +1,367 @@
+/* ========================================
+   PROFILE OVERLAY - Sci-Fi Gaming Style
+   ======================================== */
+
+/* Avatar with glowing ring */
+.profile-avatar-container {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: linear-gradient(135deg, #0d1117, #161b22) padding-box,
+              linear-gradient(135deg, #00d9ff, #7c3aed, #10b981) border-box;
+  box-shadow: 
+    0 0 20px rgba(0, 217, 255, 0.3),
+    0 0 40px rgba(0, 217, 255, 0.1);
+  animation: avatarPulse 3s ease-in-out infinite;
+}
+
+@keyframes avatarPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(0, 217, 255, 0.3), 0 0 40px rgba(0, 217, 255, 0.1); }
+  50% { box-shadow: 0 0 25px rgba(0, 217, 255, 0.5), 0 0 50px rgba(0, 217, 255, 0.2); }
+}
+
+/* Level badge */
+.profile-level-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+  border: 2px solid #0d1117;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
+}
+
+/* Player info section */
+.profile-player-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-player-name {
+  font-family: 'Exo 2', 'Orbitron', sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.profile-player-tag {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.75rem;
+  color: #00d9ff;
+  margin-top: 2px;
+}
+
+/* Rank title */
+.profile-rank {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 2px 8px;
+  background: linear-gradient(90deg, rgba(124, 58, 237, 0.2) 0%, transparent 100%);
+  border-left: 2px solid #7c3aed;
+  font-size: 0.625rem;
+  color: #a78bfa;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Stats Grid - Gaming style */
+.profile-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.profile-stat-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(13, 17, 23, 0.9) 0%, rgba(22, 27, 34, 0.9) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 10px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.profile-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--stat-color, #00d9ff);
+  opacity: 0.8;
+}
+
+.profile-stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.profile-stat-card.stat-chains { --stat-color: #00d9ff; }
+.profile-stat-card.stat-total { --stat-color: #10b981; }
+.profile-stat-card.stat-territory { --stat-color: #f59e0b; }
+.profile-stat-card.stat-distance { --stat-color: #ec4899; }
+
+.profile-stat-icon {
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.profile-stat-value {
+  font-family: 'Orbitron', 'Exo 2', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 10px var(--stat-color);
+  line-height: 1.2;
+}
+
+.profile-stat-label {
+  font-size: 0.5rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+/* Progress bar for daily chains */
+.profile-progress-bar {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.profile-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00d9ff, #7c3aed);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+}
+
+/* Sign out button - Sci-fi style */
+.profile-signout-btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #f87171;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.profile-signout-btn:hover {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.1) 100%);
+  border-color: rgba(239, 68, 68, 0.5);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+}
+
+/* Google Sign In button - Gaming style */
+.profile-google-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
+  border: none;
+  border-radius: 12px;
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.2),
+    0 0 30px rgba(255, 255, 255, 0.1);
+}
+
+.profile-google-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.3),
+    0 0 40px rgba(255, 255, 255, 0.15);
+}
+
+.profile-google-btn:active {
+  transform: translateY(0);
+}
+
+/* Welcome screen */
+.profile-welcome {
+  text-align: center;
+  padding: 8px 0;
+}
+
+.profile-welcome-icon {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 0 20px rgba(0, 217, 255, 0.5));
+}
+
+.profile-welcome-title {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #00d9ff;
+  margin-bottom: 8px;
+  text-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+}
+
+.profile-welcome-text {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.profile-welcome-features {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.profile-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: linear-gradient(90deg, rgba(0, 217, 255, 0.1) 0%, transparent 100%);
+  border-left: 2px solid #00d9ff;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.profile-feature-icon {
+  font-size: 1rem;
+}
+
+/* Edit mode inputs */
+.profile-edit-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(13, 17, 23, 0.8);
+  border: 1px solid rgba(0, 217, 255, 0.3);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.profile-edit-input:focus {
+  outline: none;
+  border-color: #00d9ff;
+  box-shadow: 0 0 15px rgba(0, 217, 255, 0.2);
+}
+
+.profile-edit-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* Edit buttons */
+.profile-edit-btn {
+  padding: 6px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profile-edit-btn.edit {
+  background: rgba(0, 217, 255, 0.1);
+  border: 1px solid rgba(0, 217, 255, 0.3);
+}
+
+.profile-edit-btn.save {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.5);
+}
+
+.profile-edit-btn.cancel {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+}
+
+.profile-edit-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Loading spinner */
+.profile-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.profile-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(0, 217, 255, 0.2);
+  border-top-color: #00d9ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .profile-avatar {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .profile-level-badge {
+    width: 20px;
+    height: 20px;
+    font-size: 8px;
+  }
+  
+  .profile-player-name {
+    font-size: 1rem;
+  }
+  
+  .profile-stat-value {
+    font-size: 1rem;
+  }
+  
+  .profile-stat-card {
+    padding: 8px;
+  }
+}

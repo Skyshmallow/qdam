@@ -107,7 +107,7 @@ export const useTrackingHandler = ({
     // Check avatar position
     if (!avatarPosition) {
       log('Cannot start - no avatar position');
-      onInfo("Сначала определите ваше местоположение кнопкой 'Find Me'");
+      onInfo('Find Me');
       return;
     }
 
@@ -116,10 +116,10 @@ export const useTrackingHandler = ({
       const info = chainAttempt.getAttemptInfo();
       if (info) {
         log('Active attempt found', info);
-        onWarning(`У вас уже есть незавершенный поход (${info.durationMinutes} мин назад)`);
+        onWarning('Поход активен');
       } else {
         log('Active attempt found (no info available)');
-        onWarning('У вас уже есть незавершенный поход');
+        onWarning('Поход активен');
       }
       setActivityState('tracking');
       return;
@@ -127,7 +127,7 @@ export const useTrackingHandler = ({
 
     // Check daily limit (skip in simulation mode)
     if (!canCreateChainToday(playerStats.chainsCreatedToday, isSimulationMode)) {
-      onError(`Вы достигли дневного лимита (${playerStats.maxChainsPerDay} цепочек в день)`);
+      onError('Лимит дня');
       return;
     }
 
@@ -141,7 +141,7 @@ export const useTrackingHandler = ({
 
     if (!sphereCheck.allowed) {
       log('Sphere check failed', { reason: sphereCheck.reason });
-      onError(sphereCheck.reason || 'Cannot start chain outside sphere of influence');
+      onError('Вне зоны');
       return;
     }
 
@@ -149,11 +149,7 @@ export const useTrackingHandler = ({
     chainAttempt.startAttempt(avatarPosition as [number, number]);
     flyToAvatar();
     setActivityState('tracking');
-    onSuccess(
-      isSimulationMode
-        ? 'Начат тестовый поход!'
-        : 'Начат новый поход!'
-    );
+    onSuccess(isSimulationMode ? 'Тест старт' : 'Поход начат');
 
   }, [
     activityState,
@@ -179,7 +175,7 @@ export const useTrackingHandler = ({
   const handlePause = useCallback(() => {
     log('Pause clicked');
     setActivityState('tracking_paused');
-    onInfo('Поход приостановлен');
+    onInfo('Пауза');
   }, [setActivityState, onInfo, log]);
 
   /**
@@ -188,7 +184,7 @@ export const useTrackingHandler = ({
   const handleResume = useCallback(() => {
     log('Resume clicked');
     setActivityState('tracking');
-    onInfo('Поход возобновлен');
+    onInfo('Продолжить');
   }, [setActivityState, onInfo, log]);
 
   return {

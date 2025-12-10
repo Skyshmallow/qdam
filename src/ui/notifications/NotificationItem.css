@@ -1,135 +1,161 @@
-/* Minimal Toast Notification */
+/* ========================================
+   NOTIFICATION - Sci-Fi Gaming Style
+   ======================================== */
 
 .notification-toast {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  border-radius: 12px;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
   cursor: pointer;
   user-select: none;
-  min-width: 200px;
-  max-width: 320px;
+  min-width: 120px;
+  max-width: 200px;
   
-  /* Enhanced Glass effect */
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.05) 100%
-  );
+  /* Dark gaming background */
+  background: linear-gradient(135deg, 
+    rgba(13, 17, 23, 0.95) 0%, 
+    rgba(22, 27, 34, 0.95) 100%);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   
-  /* Glass border */
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  /* Glowing border */
+  border: 1px solid var(--accent-color, rgba(0, 217, 255, 0.3));
   
-  /* Soft glow shadow */
+  /* Multi-layer shadow with glow */
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 0 15px var(--accent-color, rgba(0, 217, 255, 0.15)),
+    0 4px 20px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   
-  /* Animation - slide from right */
-  animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+  /* Animation */
+  animation: notifSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+/* Top accent line */
+.notification-toast::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--accent-color, #00d9ff) 50%, 
+    transparent 100%);
+  opacity: 0.8;
 }
 
 .notification-toast:hover {
-  transform: translateX(-4px);
+  transform: translateX(-4px) scale(1.02);
+  border-color: var(--accent-color, rgba(0, 217, 255, 0.5));
   box-shadow: 
-    0 12px 40px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    0 0 25px var(--accent-color, rgba(0, 217, 255, 0.25)),
+    0 6px 25px rgba(0, 0, 0, 0.5);
 }
 
 .notification-toast:active {
   transform: translateX(-4px) scale(0.98);
 }
 
-/* Color indicator bar */
+/* Color indicator */
 .notification-indicator {
   width: 3px;
-  height: 16px;
+  height: 14px;
   border-radius: 2px;
-  background: var(--accent-color, #3b82f6);
+  background: var(--accent-color, #00d9ff);
   flex-shrink: 0;
+  box-shadow: 0 0 8px var(--accent-color, rgba(0, 217, 255, 0.5));
 }
 
-/* Message text */
+/* Message text - короткий и точный */
 .notification-text {
-  font-size: 13px;
-  font-weight: 500;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
   color: rgba(255, 255, 255, 0.95);
-  line-height: 1.3;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.2;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
-/* Slide-in from right animation */
-@keyframes slideInRight {
+/* Animations */
+@keyframes notifSlideIn {
   from {
-    transform: translateX(100%);
+    transform: translateX(100%) scale(0.9);
     opacity: 0;
   }
   to {
-    transform: translateX(0);
+    transform: translateX(0) scale(1);
     opacity: 1;
   }
 }
 
-/* Slide-out to right animation */
 .notification-exit {
-  animation: slideOutRight 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: notifSlideOut 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-@keyframes slideOutRight {
+@keyframes notifSlideOut {
   from {
-    transform: translateX(0);
+    transform: translateX(0) scale(1);
     opacity: 1;
   }
   to {
-    transform: translateX(100%);
+    transform: translateX(100%) scale(0.9);
     opacity: 0;
   }
 }
 
-/* Light theme - Glass effect */
+/* Type-specific colors */
+.notification-success {
+  --accent-color: #10b981;
+}
+
+.notification-error {
+  --accent-color: #ef4444;
+}
+
+.notification-warning {
+  --accent-color: #f59e0b;
+}
+
+.notification-info {
+  --accent-color: #00d9ff;
+}
+
+/* Light theme */
 .notification-toast.theme-light {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.85) 0%,
-    rgba(255, 255, 255, 0.7) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: linear-gradient(135deg, 
+    rgba(15, 23, 42, 0.95) 0%, 
+    rgba(30, 41, 59, 0.95) 100%);
+  border-width: 2px;
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    0 0 20px var(--accent-color, rgba(0, 217, 255, 0.2)),
+    0 4px 25px rgba(0, 0, 0, 0.6);
 }
 
-.notification-toast.theme-light:hover {
-  box-shadow: 
-    0 12px 40px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-.notification-toast.theme-light .notification-text {
-  color: rgba(15, 23, 42, 0.9);
-}
-
-/* Mobile - much more compact */
+/* Mobile - компактный */
 @media (max-width: 640px) {
   .notification-toast {
-    padding: 8px 12px;
-    border-radius: 8px;
+    padding: 6px 10px;
     gap: 6px;
-    min-width: auto;
-    max-width: 220px;
+    min-width: 100px;
+    max-width: 160px;
+    border-radius: 6px;
   }
   
   .notification-text {
-    font-size: 11px;
-    line-height: 1.2;
+    font-size: 10px;
+    max-width: 120px;
   }
   
   .notification-indicator {
     width: 2px;
-    height: 12px;
+    height: 10px;
   }
 }

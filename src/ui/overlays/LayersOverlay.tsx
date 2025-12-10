@@ -1,6 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMapStore } from '../../store/mapStore';
 import { useUIStore } from '../../store/uiStore';
+import { 
+  Building2, 
+  Moon, 
+  Map as MapIcon, 
+  Eclipse, 
+  Navigation, 
+  Satellite, 
+  Sun,
+  Layers
+} from 'lucide-react';
+import './LayersOverlay.css';
 
 interface LayersOverlayProps {
   isOpen: boolean;
@@ -11,7 +22,7 @@ interface MapStyle {
   id: string;
   name: string;
   url: string;
-  icon: string;
+  icon: React.ReactNode;
 }
 
 const mapStyles: MapStyle[] = [
@@ -19,43 +30,43 @@ const mapStyles: MapStyle[] = [
     id: 'standard',
     name: '3D Standard',
     url: 'mapbox://styles/mapbox/standard',
-    icon: '🏙️'
+    icon: <Building2 size={14} />
   },
   {
     id: 'standard-dark',
     name: '3D Dark',
     url: 'mapbox://styles/mapbox/standard',
-    icon: '🌃'
+    icon: <Moon size={14} />
   },
   {
     id: 'streets',
     name: 'Streets',
     url: 'mapbox://styles/mapbox/streets-v12',
-    icon: '🗺️'
+    icon: <MapIcon size={14} />
   },
   {
     id: 'dark',
     name: 'Dark',
     url: 'mapbox://styles/mapbox/dark-v11',
-    icon: '🌙'
+    icon: <Eclipse size={14} />
   },
   {
     id: 'navigation-night',
     name: 'Streets Dark',
     url: 'mapbox://styles/mapbox/navigation-night-v1',
-    icon: '🌃'
+    icon: <Navigation size={14} />
   },
   {
     id: 'satellite',
     name: 'Satellite',
     url: 'mapbox://styles/mapbox/satellite-streets-v12',
-    icon: '🛰️'
+    icon: <Satellite size={14} />
   },
   {
     id: 'light',
     name: 'Light',
     url: 'mapbox://styles/mapbox/light-v11',
-    icon: '☀️'
+    icon: <Sun size={14} />
   }
 ];
 
@@ -150,7 +161,10 @@ export const LayersOverlay = ({ isOpen, onClose }: LayersOverlayProps) => {
       onClick={(e) => e.stopPropagation()}
     >
       <div className="layers-header">
-        <h3>🗺️ Map Theme</h3>
+        <h3>
+          <Layers size={14} className="layers-header-icon" />
+          Map Theme
+        </h3>
       </div>
 
       <div className="layers-grid">
@@ -160,6 +174,7 @@ export const LayersOverlay = ({ isOpen, onClose }: LayersOverlayProps) => {
             onClick={() => handleStyleChange(style)}
             className={`layer-option ${activeStyleId === style.id ? 'active' : ''} ${loadingStyleId === style.id ? 'loading' : ''}`}
             disabled={!!loadingStyleId}
+            data-style={style.id}
           >
             {loadingStyleId === style.id ? (
               <span className="layer-spinner" />

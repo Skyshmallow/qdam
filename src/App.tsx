@@ -236,7 +236,7 @@ function App() {
   // Anti-cheat handler
   const handleCheatDetected = useCallback(() => {
     log('Cheat detected - stopping chain attempt');
-    showError('Скорость превышает допустимую для ходьбы!');
+    showError('Слишком быстро!');
     chainAttempt.clearAttempt();
     setActivityState('idle');
   }, [chainAttempt, log, showError]);
@@ -469,13 +469,13 @@ function App() {
       }
 
       simulation.exitSimulationMode();
-      showInfo('Режим симуляции выключен');
+      showInfo('Симуляция OFF');
       return;
     }
 
     // Block if real walk is active
     if (chainAttempt.currentAttempt) {
-      showError('Сначала завершите текущий реальный поход!');
+      showError('Заверши поход');
       return;
     }
 
@@ -484,7 +484,7 @@ function App() {
     simulation.enterSimulationMode();
     planner.resetPlanner();
     setActivityState('planning_start');
-    showInfo('🧪 Режим симуляции активирован! Выберите начальную точку на карте');
+    showInfo('Симуляция ON');
 
   }, [
     simulation,
