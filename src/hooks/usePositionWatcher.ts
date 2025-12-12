@@ -71,7 +71,11 @@ export const usePositionWatcher = (
             message: error.message 
           });
         },
-        { enableHighAccuracy: true }
+        { 
+          enableHighAccuracy: true,
+          maximumAge: 5000, // Использовать кэш до 5 секунд для снижения нагрузки на API
+          timeout: 15000 // Таймаут 15 секунд
+        }
       );
       watchIdRef.current = watchId;
     }

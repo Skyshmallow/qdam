@@ -1,6 +1,5 @@
 // src/components/Map.tsx
 import { useRef, useEffect, useCallback, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { useMapbox } from '../hooks/useMapbox';
@@ -8,7 +7,6 @@ import { updateGeoJSONSource, addMapLayers } from '../utils/mapUtils';
 import { useUIStore } from '../store/uiStore';
 import type { MapProps } from '../types';
 import { featureCollection, point, lineString } from '@turf/helpers';
-import { Avatar3D } from './Avatar3D.ts';
 import { ThreeLayer } from '../utils/ThreeLayer';
 
 export const Map = ({
@@ -37,8 +35,6 @@ export const Map = ({
       onThreeLayerReady?.(threeLayer);
     }, [onThreeLayerReady])
   );
-  const avatarMarkerRef = useRef<mapboxgl.Marker | null>(null);
-  const avatar3DRef = useRef<Avatar3D | null>(null);
   const isInitialLoadRef = useRef(true); // Track if this is the first load
   const [styleVersion, setStyleVersion] = useState(0);
   const [isThreeLayerReady, setIsThreeLayerReady] = useState(false); // ✅ Track ThreeLayer readiness
@@ -55,55 +51,20 @@ export const Map = ({
 
   }, [map, isMapLoaded]);
 
-  // === Helper: Create avatar marker ===
-  const createAvatarMarker = useCallback(() => {
-    if (!map.current || !avatarPosition) return;
-
-    console.log('[Map.tsx] Creating NEW 3D avatar marker');
-    const el = document.createElement('div');
-    el.style.width = '100px';
-    el.style.height = '100px';
-
-    // Создаём 3D аватар (класс, не React компонент)
-    const avatar3D = new Avatar3D(el);
-    avatar3D.setBearing(bearing);
-    avatar3DRef.current = avatar3D;
-
-    const newMarker = new mapboxgl.Marker({
-      element: el,
-      anchor: 'center',
-      pitchAlignment: 'map',
-      rotationAlignment: 'map',
-    })
-      .setLngLat(avatarPosition as [number, number])
-      .addTo(map.current);
-
-    avatarMarkerRef.current = newMarker;
-  }, [map, avatarPosition, bearing]);
-
-  // === Avatar creation (3D) ===
+  // === Avatar position & bearing updates (via ThreeLayer) ===
   useEffect(() => {
-    if (!map.current || !isMapLoaded) return;
+    if (!threeLayerRef?.current || !isThreeLayerReady) return;
 
-    if (avatarPosition) {
-      if (!avatarMarkerRef.current) {
-        createAvatarMarker();
-      } else {
-        avatarMarkerRef.current.setLngLat(avatarPosition as [number, number]);
-      }
-    } else {
-      if (avatarMarkerRef.current) {
-        avatarMarkerRef.current.remove();
-        avatarMarkerRef.current = null;
-      }
-      if (avatar3DRef.current) {
-        avatar3DRef.current.dispose();
-        avatar3DRef.current = null;
-      }
-    }
-  }, [avatarPosition, isMapLoaded, map, bearing, createAvatarMarker]);
+    threeLayerRef.current.setAvatarPosition(avatarPosition as [number, number] | null);
+  }, [avatarPosition, isThreeLayerReady, threeLayerRef]);
 
-  // === Recreate layers and avatar on style change (skip initial load) ===
+  useEffect(() => {
+    if (!threeLayerRef?.current || !isThreeLayerReady) return;
+
+    threeLayerRef.current.setAvatarBearing(bearing);
+  }, [bearing, isThreeLayerReady, threeLayerRef]);
+
+  // === Recreate layers on style change (skip initial load) ===
   useEffect(() => {
     if (!map.current) return;
 
@@ -166,20 +127,7 @@ export const Map = ({
       // Trigger re-sync of multiplayer layers
       setStyleVersion(v => v + 1);
 
-      // Remove old avatar marker if exists
-      if (avatarMarkerRef.current) {
-        avatarMarkerRef.current.remove();
-        avatarMarkerRef.current = null;
-      }
-      if (avatar3DRef.current) {
-        avatar3DRef.current.dispose();
-        avatar3DRef.current = null;
-      }
-
-      // Recreate avatar if we have position
-      if (avatarPosition) {
-        createAvatarMarker();
-      }
+      // Avatar will be recreated automatically via ThreeLayer when avatarPosition updates
     };
 
     const mapInstance = map.current;
@@ -188,14 +136,7 @@ export const Map = ({
     return () => {
       mapInstance?.off('style.load', handleStyleLoad);
     };
-  }, [map, avatarPosition, bearing, createAvatarMarker, onThreeLayerReady, threeLayerRef]);
-
-  // === Update avatar bearing ===
-  useEffect(() => {
-    if (avatar3DRef.current) {
-      avatar3DRef.current.setBearing(bearing);
-    }
-  }, [bearing]);
+  }, [map, onThreeLayerReady, threeLayerRef]);
 
   // === Map clicks ===
   useEffect(() => {

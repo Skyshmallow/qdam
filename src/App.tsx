@@ -267,8 +267,8 @@ function App() {
     handleCheatDetected
   );
 
-  // ✅ Device orientation - only when tracking (real walk only)
-  useDeviceOrientation(!!chainAttempt.currentAttempt && !simulation.isSimulationMode);
+  // ✅ Device orientation - always active to rotate avatar with device compass
+  useDeviceOrientation(true);
 
   // Log activity state changes
   useEffect(() => {

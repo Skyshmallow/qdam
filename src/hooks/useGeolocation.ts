@@ -72,8 +72,8 @@ export const useGeolocation = (): GeolocationResult => {
         },
         {
           enableHighAccuracy: true,
-          timeout: 10000, // 10 секунд на поиск
-          maximumAge: 0, // Не использовать кэшированные данные
+          timeout: 15000, // 15 секунд на поиск
+          maximumAge: 30000, // Использовать кэш до 30 секунд (снижает нагрузку на Google API)
         }
       );
       // После вызова getCurrentPosition браузер показывает окно запроса.

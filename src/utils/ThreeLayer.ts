@@ -6,6 +6,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { SphereEffectManager } from '../effects/sphere';
 import { TerritoryEffect, type TerritoryConfig } from '../effects/territory';
 import { gpuDetector } from '@shared/utils/gpuDetector';
+import { createNavigationAvatar, updateAvatarAnimation } from '../components/Avatar3D';
 
 const MODEL_SCALE = 15;
 
@@ -40,6 +41,10 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
 
   // Castles
   private castleObjects = new Map<string, { mesh: THREE.Group; transform: Transform }>();
+
+  // Navigation Avatar (3D)
+  private navigationAvatar?: THREE.Group;
+  private avatarPosition?: [number, number];
 
   // Sphere Effect Manager
   private sphereManager?: SphereEffectManager;
@@ -228,8 +233,46 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
     });
   }
 
-  // Render castles + spheres + territory
-  // ✅ ПРАВИЛЬНЫЙ ПОРЯДОК: Сферы → Территория → Замки
+  /**
+   * Set navigation avatar position
+   */
+  public setAvatarPosition(lngLat: [number, number] | null): void {
+    if (!this.map) return;
+
+    if (!lngLat) {
+      // Remove avatar
+      if (this.navigationAvatar) {
+        this.scene.remove(this.navigationAvatar);
+        this.navigationAvatar = undefined;
+        this.avatarPosition = undefined;
+      }
+      return;
+    }
+
+    this.avatarPosition = lngLat;
+
+    // Create avatar if doesn't exist
+    if (!this.navigationAvatar) {
+      this.navigationAvatar = createNavigationAvatar();
+      this.scene.add(this.navigationAvatar);
+    }
+
+    // Update position (will be transformed in render loop)
+  }
+
+  /**
+   * Set navigation avatar bearing (compass direction)
+   */
+  public setAvatarBearing(bearing: number): void {
+    if (this.navigationAvatar) {
+      // Convert bearing to radians: 0° = north (up)
+      const radians = (bearing * Math.PI) / 180;
+      this.navigationAvatar.rotation.y = -radians;
+    }
+  }
+
+  // Render castles + spheres + territory + avatar
+  // ✅ ПРАВИЛЬНЫЙ ПОРЯДОК: Сферы → Территория → Замки → Аватар
   render(_gl: WebGLRenderingContext, matrix: number[]): void {
     if (!this.renderer || !this.map) return;
 
@@ -275,6 +318,30 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
     this.castleObjects.forEach((castle) => {
       this.renderCastle(baseMatrix, castle.mesh, castle.transform);
     });
+
+    // ✅ СЛОЙ 4: Рендерим аватар (самый верхний слой)
+    if (this.navigationAvatar && this.avatarPosition && this.map) {
+      // Update animation
+      updateAvatarAnimation(this.navigationAvatar, deltaTime * 1000);
+      
+      // Position avatar at player location
+      const mercatorCoord = mapboxgl.MercatorCoordinate.fromLngLat(this.avatarPosition, 0);
+      
+      // ✅ Используем базовый scale от координат, но увеличиваем его
+      const baseScale = mercatorCoord.meterInMercatorCoordinateUnits();
+      
+      const avatarTransform: Transform = {
+        translateX: mercatorCoord.x,
+        translateY: mercatorCoord.y,
+        translateZ: mercatorCoord.z || 0,
+        rotateX: Math.PI / 2,
+        rotateY: 0,
+        rotateZ: 0,
+        scale: baseScale * 5 // Увеличиваем в 5 раз для видимости
+      };
+      
+      this.renderAvatar(baseMatrix, this.navigationAvatar, avatarTransform);
+    }
 
     this.map.triggerRepaint();
   }
@@ -408,6 +475,43 @@ export class ThreeLayer implements mapboxgl.CustomLayerInterface {
     // Render ONLY this castle
     this.renderer!.resetState();
     this.renderer!.render(tempScene, this.camera);
+  }
+
+  // Render navigation avatar with transform
+  private renderAvatar(baseMatrix: THREE.Matrix4, mesh: THREE.Group, transform: Transform): void {
+    if (!this.renderer) return;
+    
+    const { translateX, translateY, translateZ, rotateX, rotateY, rotateZ, scale } = transform;
+
+    const rotationX = new THREE.Matrix4().makeRotationX(rotateX);
+    const rotationY = new THREE.Matrix4().makeRotationY(rotateY);
+    const rotationZ = new THREE.Matrix4().makeRotationZ(rotateZ);
+
+    // Build transform matrix for avatar
+    const localTransformMatrix = new THREE.Matrix4()
+      .makeTranslation(translateX, translateY, translateZ)
+      .scale(new THREE.Vector3(scale, -scale, scale))
+      .multiply(rotationX)
+      .multiply(rotationY)
+      .multiply(rotationZ);
+
+    this.camera.projectionMatrix = baseMatrix.clone().multiply(localTransformMatrix);
+
+    // Create temp scene with avatar
+    const tempScene = new THREE.Scene();
+    tempScene.add(mesh);
+
+    // Add lights to temp scene
+    this.scene.children
+      .filter(child => child instanceof THREE.Light)
+      .forEach(light => tempScene.add(light.clone()));
+
+    // Render avatar
+    this.renderer.resetState();
+    this.renderer.render(tempScene, this.camera);
+    
+    // Remove from temp scene (don't dispose, we're reusing it)
+    tempScene.remove(mesh);
   }
 
   onRemove(): void {
