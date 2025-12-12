@@ -49,6 +49,11 @@ import { LeftSidebar } from './ui/LeftSideBar';
 // NEW: Notification System & Overlays
 import { NotificationContainer } from './ui/notifications/NotificationContainer';
 
+// NEW: Tutorial System
+import { useTutorial } from './features/tutorial/useTutorial';
+import { TutorialOverlay } from './features/tutorial/TutorialOverlay';
+import { tutorialSteps } from './features/tutorial/tutorialSteps';
+
 // Lazy load оверлеев (загружаются только при открытии)
 const ProfileOverlay = lazy(() => import('./ui/overlays/ProfileOverlay').then(m => ({ default: m.ProfileOverlay })));
 const HistoryOverlay = lazy(() => import('./ui/overlays/HistoryOverlay').then(m => ({ default: m.HistoryOverlay })));
@@ -158,6 +163,13 @@ function App() {
 
   // === Local State ===
   const [activityState, setActivityState] = useState<ActivityState>('idle');
+  const [findMePulse, setFindMePulse] = useState(false);
+
+  // Callback to trigger Find Me pulse animation
+  const triggerFindMePulse = useCallback(() => {
+    setFindMePulse(true);
+    setTimeout(() => setFindMePulse(false), 2500); // 3 pulses × 0.8s = 2.4s
+  }, []);
 
   // ✅ Tracking handler (needs activityState, so defined after local state)
   const tracking = useTrackingHandler({
@@ -178,6 +190,7 @@ function App() {
     onInfo: showInfo,
     onError: showError,
     onWarning: showWarning,
+    onFindMePulse: triggerFindMePulse,
     log,
   });
 
@@ -204,6 +217,9 @@ function App() {
 
   // ✅ App ready state - all critical resources loaded
   const isAppReady = !isAuthLoading && isThreeLayerReady && !nodesHook.isLoading;
+
+  // Tutorial system (only show after app is ready)
+  const tutorial = useTutorial(tutorialSteps, { isAppReady });
 
   // Hide loader with fade-out transition when app is ready
   useEffect(() => {
@@ -236,7 +252,7 @@ function App() {
   // Anti-cheat handler
   const handleCheatDetected = useCallback(() => {
     log('Cheat detected - stopping chain attempt');
-    showError('Слишком быстро!');
+    showError('Too fast!');
     chainAttempt.clearAttempt();
     setActivityState('idle');
   }, [chainAttempt, log, showError]);
@@ -469,13 +485,13 @@ function App() {
       }
 
       simulation.exitSimulationMode();
-      showInfo('Симуляция OFF');
+      showInfo('Simulation OFF');
       return;
     }
 
     // Block if real walk is active
     if (chainAttempt.currentAttempt) {
-      showError('Заверши поход');
+      showError('Finish journey first');
       return;
     }
 
@@ -484,7 +500,7 @@ function App() {
     simulation.enterSimulationMode();
     planner.resetPlanner();
     setActivityState('planning_start');
-    showInfo('Симуляция ON');
+    showInfo('Simulation ON');
 
   }, [
     simulation,
@@ -610,6 +626,7 @@ function App() {
     onSimulateClick: handleSimulateClick,
     isDeveloper,
     mapStyleTheme,
+    findMePulse,
   }), [
     openOverlay,
     geolocationState,
@@ -617,7 +634,8 @@ function App() {
     simulation.isSimulationMode,
     handleSimulateClick,
     isDeveloper,
-    mapStyleTheme
+    mapStyleTheme,
+    findMePulse
   ]);
 
   // === UI ===
@@ -633,26 +651,26 @@ function App() {
       {simulation.isSimulationMode && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-yellow-500 text-black px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg z-20">
           <Lock size={16} />
-          <span>🧪 TEST MODE: Данные не сохраняются</span>
+          <span>🧪 TEST MODE: Data not saved</span>
         </div>
       )}
 
       {activityState === 'simulating' && (
         <div className="absolute top-16 left-1/2 -translate-x-1/2 bg-purple-500 text-white px-4 py-1 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg z-20">
           <Lock size={14} />
-          <span>Симуляция движения активна</span>
+          <span>Simulation active</span>
         </div>
       )}
 
       {chainAttempt.currentAttempt && !simulation.isSimulationMode && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg z-20">
-          Поход активен: {chainAttempt.currentAttempt.path.length} точек
+          Journey active: {chainAttempt.currentAttempt.path.length} pts
         </div>
       )}
 
       {territory && (
         <div className="absolute top-28 left-1/2 -translate-x-1/2 bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg z-20">
-          Территория: {nodes.filter(n => n.status === 'established').length} узлов
+          Territory: {nodes.filter(n => n.status === 'established').length} nodes
           {territory.properties?.isTemporary && (
             <span className="ml-2 text-yellow-300">🧪</span>
           )}
@@ -660,6 +678,18 @@ function App() {
       )}
 
       <NotificationContainer />
+
+      {/* Tutorial overlay */}
+      {tutorial.isActive && tutorial.currentStepData && (
+        <TutorialOverlay
+          step={tutorial.currentStepData}
+          currentStep={tutorial.currentStep}
+          totalSteps={tutorial.totalSteps}
+          onNext={tutorial.nextStep}
+          onSkip={tutorial.skipTutorial}
+          onPrev={tutorial.prevStep}
+        />
+      )}
 
       {/* Lazy loaded оверлеи */}
       <Suspense fallback={null}>
@@ -672,7 +702,7 @@ function App() {
       {showLoader && (
         <div className={`loading-overlay ${isAppReady ? 'fade-out' : ''}`}>
           <div className="loader" />
-          <span className="loading-text">Загрузка...</span>
+          <span className="loading-text">Loading...</span>
         </div>
       )}
     </div>

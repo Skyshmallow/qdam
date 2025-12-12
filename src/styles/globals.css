@@ -1,4 +1,8 @@
 /* src/styles/globals.css */
+
+/* Import pixel font - MUST be first */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 @import "tailwindcss";
 
 /* ========================================
@@ -10,10 +14,13 @@
   --sar: env(safe-area-inset-right);
   --sab: env(safe-area-inset-bottom);
   --sal: env(safe-area-inset-left);
+  
+  /* Pixel font */
+  --font-pixel: 'Press Start 2P', monospace;
 }
 
 /* ========================================
-   БАЗОВЫЕ СТИЛИ
+   BASE STYLES
    ======================================== */
 
 html {
@@ -40,7 +47,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-pixel), monospace;
   background-color: #0a0f1e;
   color: #ffffff;
   overscroll-behavior: none;
@@ -135,9 +142,10 @@ body {
 .loading-text {
   margin-top: 1.5rem;
   color: #00d4ff;
-  font-size: 0.875rem;
-  font-weight: 500;
-  letter-spacing: 0.1em;
+  font-family: var(--font-pixel), monospace;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   animation: loading-pulse 1.5s ease-in-out infinite;
 }

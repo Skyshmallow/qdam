@@ -28,6 +28,7 @@ interface TrackingHandlerProps {
   onInfo: (message: string) => void;
   onError: (message: string) => void;
   onWarning: (message: string) => void;
+  onFindMePulse: () => void;
   log: (step: string, details?: Record<string, unknown>) => void;
 }
 
@@ -53,6 +54,7 @@ export const useTrackingHandler = ({
   onInfo,
   onError,
   onWarning,
+  onFindMePulse,
   log,
 }: TrackingHandlerProps) => {
 
@@ -108,6 +110,7 @@ export const useTrackingHandler = ({
     if (!avatarPosition) {
       log('Cannot start - no avatar position');
       onInfo('Find Me');
+      onFindMePulse();
       return;
     }
 
@@ -166,6 +169,7 @@ export const useTrackingHandler = ({
     onInfo,
     onError,
     onWarning,
+    onFindMePulse,
     log
   ]);
 

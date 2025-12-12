@@ -52,20 +52,21 @@
 }
 
 .profile-player-name {
-  font-family: 'Exo 2', 'Orbitron', sans-serif;
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-family: var(--font-pixel, 'Press Start 2P'), monospace;
+  font-size: 11px;
+  font-weight: normal;
   color: #fff;
   margin: 0;
   text-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
-  letter-spacing: 0.5px;
+  letter-spacing: 0;
 }
 
 .profile-player-tag {
-  font-family: 'Fira Code', monospace;
-  font-size: 0.75rem;
+  font-family: var(--font-pixel, 'Press Start 2P'), monospace;
+  font-size: 8px;
   color: #00d9ff;
-  margin-top: 2px;
+  margin-top: 4px;
+  letter-spacing: 0;
 }
 
 /* Rank title */
@@ -129,12 +130,13 @@
 }
 
 .profile-stat-value {
-  font-family: 'Orbitron', 'Exo 2', sans-serif;
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-family: var(--font-pixel, 'Press Start 2P'), monospace;
+  font-size: 14px;
+  font-weight: normal;
   color: #fff;
   text-shadow: 0 0 10px var(--stat-color);
   line-height: 1.2;
+  letter-spacing: 0;
 }
 
 .profile-stat-label {
@@ -163,20 +165,20 @@
   box-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
 }
 
-/* Sign out button - Sci-fi style */
+/* Sign out button - Pixel style */
 .profile-signout-btn {
   width: 100%;
   margin-top: 12px;
-  padding: 10px;
+  padding: 12px;
   background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
   border: 1px solid rgba(239, 68, 68, 0.3);
   border-radius: 8px;
   color: #f87171;
-  font-family: 'Exo 2', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-family: var(--font-pixel, 'Press Start 2P'), monospace;
+  font-size: 8px;
+  font-weight: normal;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -231,12 +233,13 @@
 }
 
 .profile-welcome-title {
-  font-family: 'Exo 2', sans-serif;
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-family: var(--font-pixel, 'Press Start 2P'), monospace;
+  font-size: 12px;
+  font-weight: normal;
   color: #00d9ff;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   text-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+  letter-spacing: 0;
 }
 
 .profile-welcome-text {

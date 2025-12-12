@@ -1,10 +1,11 @@
 /* ========================================
-   GAME BUTTON - Sci-Fi Gaming Style
+   GAME BUTTON - Pixel Art Gaming Style
    ======================================== */
 
 .game-button {
   position: relative;
-  font-family: 'Exo 2', sans-serif;
+  font-family: var(--font-pixel, 'Press Start 2P'), monospace;
+  font-size: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   overflow: hidden;

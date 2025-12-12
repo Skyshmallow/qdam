@@ -10,6 +10,7 @@ export interface GameButtonProps {
   icon?: React.ReactNode;
   fullWidth?: boolean;
   className?: string;
+  'data-tutorial-id'?: string;
 }
 
 export const GameButton = ({
@@ -21,6 +22,7 @@ export const GameButton = ({
   icon,
   fullWidth = false,
   className = '',
+  'data-tutorial-id': tutorialId,
 }: GameButtonProps) => {
   const { createRipple } = useRipple();
 
@@ -41,11 +43,16 @@ export const GameButton = ({
   ]
     .filter(Boolean)
     .join(' ');
-
   return (
-    <button className={classes} onClick={handleClick} disabled={disabled}>
+    <button 
+      className={classes} 
+      onClick={handleClick} 
+      disabled={disabled}
+      data-tutorial-id={tutorialId}
+    >
       {icon && <span className="game-button__icon">{icon}</span>}
       <span className="game-button__text">{children}</span>
     </button>
   );
 };
+

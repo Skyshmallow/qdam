@@ -11,6 +11,7 @@ interface LeftSidebarProps {
   onSimulateClick: () => void;
   isDeveloper: boolean;
   mapStyleTheme?: 'light' | 'dark';
+  findMePulse?: boolean;
 }
 
 export const LeftSidebar = ({
@@ -22,6 +23,7 @@ export const LeftSidebar = ({
   onSimulateClick,
   isDeveloper,
   mapStyleTheme = 'dark',
+  findMePulse = false,
 }: LeftSidebarProps) => {
 
   // Helper to determine geolocation button class
@@ -44,6 +46,7 @@ export const LeftSidebar = ({
         className={`scifi-button scifi-button-profile ${themeClass}`}
         title="Профиль"
         aria-label="Profile"
+        data-tutorial-id="btn-profile"
       >
         <User size={18} strokeWidth={2} className="sm:w-5 sm:h-5" />
       </button>
@@ -61,10 +64,11 @@ export const LeftSidebar = ({
       {/* Find Me */}
       <button
         onClick={onMyLocationClick}
-        className={`scifi-button scifi-button-location ${getGeolocationClass()} ${themeClass}`}
+        className={`scifi-button scifi-button-location ${getGeolocationClass()} ${findMePulse ? 'pulse' : ''} ${themeClass}`}
         title="Моё местоположение"
         aria-label="My Location"
         disabled={isGeolocationBusy}
+        data-tutorial-id="btn-find-me"
       >
         {isGeolocationBusy ? (
           <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full spinner" />

@@ -44,6 +44,7 @@ export const RightSidebar = ({
         className={`scifi-button scifi-button-layers ${themeClass}`}
         title="Слои карты"
         aria-label="Map layers"
+        data-tutorial-id="btn-layers"
       >
         <Layers size={18} strokeWidth={2} className="sm:w-5 sm:h-5" />
       </button>

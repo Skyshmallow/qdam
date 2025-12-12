@@ -67,6 +67,7 @@ export function TrackingControls({
             size="lg"
             icon={<Play size={20} />}
             className={themeClass}
+            data-tutorial-id="btn-start-journey"
           >
             Start Journey
           </GameButton>
@@ -91,6 +92,7 @@ export function TrackingControls({
             variant="danger"
             icon={<Square size={20} />}
             className={themeClass}
+            data-tutorial-id="btn-finish-journey"
           >
             Finish Journey
           </GameButton>

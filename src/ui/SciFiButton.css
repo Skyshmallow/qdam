@@ -260,3 +260,26 @@
     0 0 30px var(--btn-glow, rgba(0, 217, 255, 0.35)),
     0 8px 35px rgba(0, 0, 0, 0.6);
 }
+
+/* === Find Me Pulse Effect === */
+/* Compact attention-grabbing pulse for location button */
+.scifi-button-location.pulse {
+  animation: findme-pulse 0.8s ease-in-out 3;
+}
+
+@keyframes findme-pulse {
+  0%, 100% { 
+    box-shadow: 
+      0 0 15px rgba(52, 211, 153, 0.3), 
+      0 4px 20px rgba(0, 0, 0, 0.5);
+    transform: scale(1);
+  }
+  50% { 
+    box-shadow: 
+      0 0 30px rgba(52, 211, 153, 0.8),
+      0 0 50px rgba(52, 211, 153, 0.4),
+      0 4px 20px rgba(0, 0, 0, 0.5);
+    transform: scale(1.08);
+    border-color: rgba(52, 211, 153, 0.8);
+  }
+}
