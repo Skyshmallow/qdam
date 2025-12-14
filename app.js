@@ -107,6 +107,8 @@ class TerritoryConquest {
         });
     }
 
+
+
     async startWalking() {
         if (this.todayDistance >= this.dailyLimit) {
             this.showError('Daily limit reached! Come back tomorrow.');
