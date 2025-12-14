@@ -1,0 +1,161 @@
+/* ========================================
+   NOTIFICATION - Sci-Fi Gaming Style
+   ======================================== */
+
+.notification-toast {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  min-width: 120px;
+  max-width: 200px;
+  
+  /* Dark gaming background */
+  background: linear-gradient(135deg, 
+    rgba(13, 17, 23, 0.95) 0%, 
+    rgba(22, 27, 34, 0.95) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  
+  /* Glowing border */
+  border: 1px solid var(--accent-color, rgba(0, 217, 255, 0.3));
+  
+  /* Multi-layer shadow with glow */
+  box-shadow: 
+    0 0 15px var(--accent-color, rgba(0, 217, 255, 0.15)),
+    0 4px 20px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  
+  /* Animation */
+  animation: notifSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+/* Top accent line */
+.notification-toast::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--accent-color, #00d9ff) 50%, 
+    transparent 100%);
+  opacity: 0.8;
+}
+
+.notification-toast:hover {
+  transform: translateX(-4px) scale(1.02);
+  border-color: var(--accent-color, rgba(0, 217, 255, 0.5));
+  box-shadow: 
+    0 0 25px var(--accent-color, rgba(0, 217, 255, 0.25)),
+    0 6px 25px rgba(0, 0, 0, 0.5);
+}
+
+.notification-toast:active {
+  transform: translateX(-4px) scale(0.98);
+}
+
+/* Color indicator */
+.notification-indicator {
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--accent-color, #00d9ff);
+  flex-shrink: 0;
+  box-shadow: 0 0 8px var(--accent-color, rgba(0, 217, 255, 0.5));
+}
+
+/* Message text - short and concise */
+.notification-text {
+  font-family: var(--font-pixel, 'Press Start 2P'), monospace;
+  font-size: 8px;
+  font-weight: normal;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.4;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+/* Animations */
+@keyframes notifSlideIn {
+  from {
+    transform: translateX(100%) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.notification-exit {
+  animation: notifSlideOut 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes notifSlideOut {
+  from {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%) scale(0.9);
+    opacity: 0;
+  }
+}
+
+/* Type-specific colors */
+.notification-success {
+  --accent-color: #10b981;
+}
+
+.notification-error {
+  --accent-color: #ef4444;
+}
+
+.notification-warning {
+  --accent-color: #f59e0b;
+}
+
+.notification-info {
+  --accent-color: #00d9ff;
+}
+
+/* Light theme */
+.notification-toast.theme-light {
+  background: linear-gradient(135deg, 
+    rgba(15, 23, 42, 0.95) 0%, 
+    rgba(30, 41, 59, 0.95) 100%);
+  border-width: 2px;
+  box-shadow: 
+    0 0 20px var(--accent-color, rgba(0, 217, 255, 0.2)),
+    0 4px 25px rgba(0, 0, 0, 0.6);
+}
+
+/* Mobile - компактный */
+@media (max-width: 640px) {
+  .notification-toast {
+    padding: 6px 10px;
+    gap: 6px;
+    min-width: 100px;
+    max-width: 160px;
+    border-radius: 6px;
+  }
+  
+  .notification-text {
+    font-size: 10px;
+    max-width: 120px;
+  }
+  
+  .notification-indicator {
+    width: 2px;
+    height: 10px;
+  }
+}

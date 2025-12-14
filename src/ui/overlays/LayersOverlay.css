@@ -1,0 +1,295 @@
+/* ========================================
+   LAYERS OVERLAY - Sci-Fi Gaming Style
+   ======================================== */
+
+.layers-overlay-mini {
+  position: fixed;
+  top: 120px;
+  right: 12px;
+  z-index: 50;
+  
+  /* Gaming gradient background */
+  background: 
+    linear-gradient(135deg, rgba(13, 17, 23, 0.98) 0%, rgba(22, 27, 34, 0.98) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  
+  /* Glowing border */
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  border-radius: 12px;
+  width: 180px;
+  
+  /* Multi-layer shadow */
+  box-shadow: 
+    0 0 30px rgba(124, 58, 237, 0.15),
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  
+  animation: layersFadeIn 0.25s ease-out;
+  overflow: hidden;
+}
+
+/* Top glow line */
+.layers-overlay-mini::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(124, 58, 237, 0.6) 30%, 
+    rgba(0, 217, 255, 0.6) 70%, 
+    transparent 100%);
+  animation: borderGlow 2s ease-in-out infinite;
+}
+
+@keyframes layersFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes borderGlow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Header */
+.layers-header {
+  padding: 10px 12px;
+  background: linear-gradient(180deg, 
+    rgba(124, 58, 237, 0.1) 0%, 
+    transparent 100%);
+  border-bottom: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+.layers-header h3 {
+  margin: 0;
+  font-family: var(--font-pixel, 'Press Start 2P'), monospace;
+  font-size: 10px;
+  font-weight: normal;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  text-shadow: 0 0 15px rgba(124, 58, 237, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.layers-header-icon {
+  width: 16px;
+  height: 16px;
+  color: #a78bfa;
+  filter: drop-shadow(0 0 5px rgba(124, 58, 237, 0.5));
+}
+
+/* Grid container */
+.layers-grid {
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.layers-grid::-webkit-scrollbar {
+  width: 4px;
+}
+
+.layers-grid::-webkit-scrollbar-track {
+  background: rgba(124, 58, 237, 0.1);
+  border-radius: 2px;
+}
+
+.layers-grid::-webkit-scrollbar-thumb {
+  background: rgba(124, 58, 237, 0.4);
+  border-radius: 2px;
+}
+
+.layers-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(124, 58, 237, 0.6);
+}
+
+/* Layer option button */
+.layer-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.layer-option::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 0;
+  background: var(--layer-color, #7c3aed);
+  border-radius: 1px;
+  transition: height 0.2s ease;
+}
+
+.layer-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.layer-option:hover::before {
+  height: 60%;
+}
+
+.layer-option.active {
+  background: linear-gradient(90deg, 
+    rgba(124, 58, 237, 0.15) 0%, 
+    rgba(124, 58, 237, 0.05) 100%);
+  border-color: rgba(124, 58, 237, 0.4);
+  color: white;
+}
+
+.layer-option.active::before {
+  height: 80%;
+  box-shadow: 0 0 10px var(--layer-color, #7c3aed);
+}
+
+/* Layer colors */
+.layer-option[data-style="standard"] { --layer-color: #f59e0b; }
+.layer-option[data-style="standard-dark"] { --layer-color: #7c3aed; }
+.layer-option[data-style="streets"] { --layer-color: #3b82f6; }
+.layer-option[data-style="dark"] { --layer-color: #6366f1; }
+.layer-option[data-style="navigation-night"] { --layer-color: #8b5cf6; }
+.layer-option[data-style="satellite"] { --layer-color: #10b981; }
+.layer-option[data-style="light"] { --layer-color: #fbbf24; }
+
+/* Layer icon */
+.layer-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--layer-color, #a78bfa);
+  filter: drop-shadow(0 0 4px var(--layer-color, rgba(124, 58, 237, 0.5)));
+  transition: transform 0.2s ease;
+}
+
+.layer-option:hover .layer-icon {
+  transform: scale(1.15);
+}
+
+.layer-option.active .layer-icon {
+  filter: drop-shadow(0 0 8px var(--layer-color, rgba(124, 58, 237, 0.8)));
+}
+
+/* Layer name */
+.layer-name {
+  flex: 1;
+  text-align: left;
+  font-weight: normal;
+  font-family: var(--font-pixel, 'Press Start 2P'), monospace;
+  font-size: 9px;
+  letter-spacing: 0;
+}
+
+/* Check mark */
+.layer-check {
+  font-size: 10px;
+  color: #10b981;
+  font-weight: bold;
+  flex-shrink: 0;
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+/* Loading state */
+.layer-option.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.layer-option:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.layer-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(124, 58, 237, 0.2);
+  border-top-color: #a78bfa;
+  border-radius: 50%;
+  animation: layer-spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes layer-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ========================================
+   MOBILE STYLES
+   ======================================== */
+@media (max-width: 640px) {
+  .layers-overlay-mini {
+    top: 170px; /* Под кнопками справа */
+    right: 8px;
+    width: 160px;
+    border-radius: 10px;
+  }
+  
+  .layers-header {
+    padding: 8px 10px;
+  }
+  
+  .layers-header h3 {
+    font-size: 10px;
+  }
+  
+  .layers-grid {
+    padding: 4px;
+    gap: 3px;
+    max-height: 160px;
+  }
+  
+  .layer-option {
+    padding: 6px 8px;
+    gap: 6px;
+    font-size: 10px;
+    border-radius: 5px;
+  }
+  
+  .layer-icon {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .layer-spinner {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .layer-check {
+    font-size: 9px;
+  }
+}

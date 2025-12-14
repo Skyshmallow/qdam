@@ -1,0 +1,28 @@
+/* Notification Container - Top Right */
+
+.notification-container {
+  position: fixed;
+  top: 0px;
+  right: 60px;
+  z-index: 9999;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+}
+
+.notification-container > * {
+  pointer-events: auto;
+}
+
+/* Mobile - smaller offset */
+@media (max-width: 640px) {
+  .notification-container {
+    top: 5px;
+    right: 60px;
+    left: auto;
+    padding-top: 12px;
+    gap: 6px;
+  }
+}

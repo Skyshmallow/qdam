@@ -1,0 +1,523 @@
+/* ========================================
+   TUTORIAL - Pixel Art Style Speech Bubbles
+   Font is imported in globals.css
+   ======================================== */
+
+/* Container for tooltip + arrow */
+.tutorial-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+/* Left sidebar - arrow on left, tooltip on right */
+.tutorial-container--left {
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+/* Center buttons - tooltip on top, arrow below */
+.tutorial-container--center {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Right sidebar - tooltip on left, arrow on right */
+.tutorial-container--right {
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+/* ========================================
+   PIXEL ART TOOLTIP BOX - DARK GAME STYLE
+   ======================================== */
+
+.tutorial-tooltip {
+  position: relative;
+  display: inline-block;
+  width: 280px;
+  
+  /* Dark game style with cyan accent */
+  background-color: #0d1117;
+  color: #fff;
+  padding: 16px;
+  
+  /* Thinner pixel border - 2px instead of 4px */
+  box-shadow: 
+    0 -2px #0d1117, 
+    0 -4px #00d9ff, 
+    2px 0 #0d1117, 
+    2px -2px #00d9ff, 
+    4px 0 #00d9ff, 
+    0 2px #0d1117, 
+    0 4px #00d9ff, 
+    -2px 0 #0d1117, 
+    -2px 2px #00d9ff, 
+    -4px 0 #00d9ff, 
+    -2px -2px #00d9ff, 
+    2px 2px #00d9ff,
+    /* Subtle glow */
+    0 0 15px rgba(0, 217, 255, 0.2);
+  
+  box-sizing: border-box;
+  animation: tutorialSlideIn 0.3s ease;
+}
+
+.tutorial-tooltip::before {
+  display: none; /* No glow line for pixel style */
+}
+
+/* ========================================
+   PIXEL ARROWS - THINNER CYAN COLOR
+   ======================================== */
+
+.tutorial-tooltip::after {
+  content: '';
+  display: block;
+  position: absolute;
+  box-sizing: border-box;
+  height: 2px;
+  width: 2px;
+}
+
+/* Arrow pointing LEFT (for left sidebar - tooltip is to the right of button) */
+.tutorial-container--left .tutorial-tooltip::after {
+  top: 20px;
+  left: -4px;
+  background: #0d1117;
+  box-shadow: 
+    -2px -2px #0d1117,
+    -2px 0 #0d1117,
+    -4px 0 #0d1117,
+    0 -4px #0d1117,
+    -2px 2px #00d9ff, 
+    -4px 2px #00d9ff, 
+    -6px 2px #00d9ff, 
+    -8px 2px #00d9ff,
+    -6px 0 #00d9ff, 
+    -4px -2px #00d9ff, 
+    -2px -4px #00d9ff,
+    0 -2px #0d1117;
+}
+
+/* Arrow pointing DOWN (for center - tooltip is above button) */
+.tutorial-container--center .tutorial-tooltip::after {
+  bottom: -4px;
+  left: 28px;
+  box-shadow: 
+    0 2px #00d9ff, 
+    0 4px #00d9ff, 
+    0 6px #00d9ff, 
+    0 8px #00d9ff, 
+    -2px 6px #00d9ff, 
+    -4px 4px #00d9ff, 
+    -6px 2px #00d9ff, 
+    -2px 2px #0d1117, 
+    -4px 2px #0d1117, 
+    -2px 4px #0d1117, 
+    -2px 0 #0d1117, 
+    -4px 0 #0d1117, 
+    -6px 0 #0d1117;
+}
+
+/* Arrow pointing RIGHT (for right sidebar - tooltip is to the left of button) */
+.tutorial-container--right .tutorial-tooltip::after {
+  top: 20px;
+  right: -4px;
+  background: #0d1117;
+  box-shadow: 
+    2px -2px #0d1117,
+    2px 0 #0d1117,
+    4px 0 #0d1117,
+    0 -4px #0d1117,
+    2px 2px #00d9ff, 
+    4px 2px #00d9ff, 
+    6px 2px #00d9ff, 
+    8px 2px #00d9ff,
+    6px 0 #00d9ff, 
+    4px -2px #00d9ff, 
+    2px -4px #00d9ff,
+    0 -2px #0d1117;
+}
+
+/* ========================================
+   CONTENT STYLES
+   ======================================== */
+
+/* Hide old accent line */
+.tutorial-tooltip__accent {
+  display: none;
+}
+
+/* Header */
+.tutorial-tooltip__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px dashed #00d9ff;
+}
+
+.tutorial-tooltip__step {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: #00d9ff;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.tutorial-tooltip__close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.tutorial-tooltip__close:hover {
+  transform: scale(1.2);
+  color: #ef4444;
+}
+
+/* Content */
+.tutorial-tooltip__content {
+  margin-bottom: 16px;
+}
+
+.tutorial-tooltip__title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  font-weight: normal;
+  color: #00d9ff;
+  margin: 0 0 14px 0;
+  line-height: 1.8;
+  text-transform: none;
+  text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+  letter-spacing: 0;
+}
+
+.tutorial-tooltip__description {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 2.4;
+  margin: 0;
+  letter-spacing: 0;
+}
+
+/* Footer */
+.tutorial-tooltip__footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 2px dashed rgba(0, 217, 255, 0.3);
+}
+
+/* Pixel buttons */
+.tutorial-tooltip__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  
+  padding: 10px 14px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  
+  cursor: pointer;
+  transition: all 0.1s;
+  white-space: nowrap;
+  border: none;
+  background: none;
+}
+
+.tutorial-tooltip__btn--primary {
+  background-color: #00d9ff;
+  color: #0d1117;
+  box-shadow: 
+    4px 0 #00d9ff,
+    -4px 0 #00d9ff,
+    0 4px #00d9ff,
+    0 -4px #00d9ff,
+    0 0 15px rgba(0, 217, 255, 0.4);
+}
+
+.tutorial-tooltip__btn--primary:hover {
+  background-color: #0ea5e9;
+  transform: translate(2px, 2px);
+  box-shadow: 
+    4px 0 #0ea5e9,
+    -4px 0 #0ea5e9,
+    0 4px #0ea5e9,
+    0 -4px #0ea5e9,
+    0 0 20px rgba(0, 217, 255, 0.6);
+}
+
+.tutorial-tooltip__btn--primary:active {
+  transform: translate(4px, 4px);
+}
+
+.tutorial-tooltip__btn--secondary {
+  background-color: transparent;
+  color: #fff;
+  box-shadow: 
+    4px 0 rgba(255, 255, 255, 0.3),
+    -4px 0 rgba(255, 255, 255, 0.3),
+    0 4px rgba(255, 255, 255, 0.3),
+    0 -4px rgba(255, 255, 255, 0.3);
+}
+
+.tutorial-tooltip__btn--secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.tutorial-tooltip__btn--ghost {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 8px;
+}
+
+.tutorial-tooltip__btn--ghost:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ========================================
+   HIGHLIGHT & BACKDROP
+   ======================================== */
+
+/* Highlight overlay for target element - glowing effect */
+.tutorial-highlight {
+  position: relative;
+  z-index: 9998 !important;
+}
+
+.tutorial-highlight::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 12px;
+  background: linear-gradient(45deg, 
+    rgba(0, 217, 255, 0.4), 
+    rgba(124, 58, 237, 0.4), 
+    rgba(0, 217, 255, 0.4));
+  background-size: 200% 200%;
+  animation: tutorialGlow 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.tutorial-highlight::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 10px;
+  border: 2px solid #00d9ff;
+  box-shadow: 
+    0 0 10px rgba(0, 217, 255, 0.6),
+    0 0 20px rgba(0, 217, 255, 0.4),
+    0 0 30px rgba(0, 217, 255, 0.2),
+    inset 0 0 10px rgba(0, 217, 255, 0.1);
+  animation: tutorialPulse 1.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Backdrop overlay - no blur to show highlight better */
+.tutorial-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+  background: rgba(0, 0, 0, 0.6);
+  animation: tutorialFadeIn 0.3s ease;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes tutorialSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes tutorialGlow {
+  0%, 100% {
+    background-position: 0% 50%;
+    opacity: 0.6;
+  }
+  50% {
+    background-position: 100% 50%;
+    opacity: 1;
+  }
+}
+
+@keyframes tutorialPulse {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes tutorialFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ========================================
+   MOBILE ADAPTATION
+   ======================================== */
+
+@media (max-width: 640px) {
+  /* Tooltip sizing for mobile */
+  .tutorial-tooltip {
+    width: calc(100vw - 100px);
+    max-width: 240px;
+    padding: 12px;
+    
+    /* Thinner border on mobile */
+    box-shadow: 
+      0 -1px #0d1117, 
+      0 -2px #00d9ff, 
+      1px 0 #0d1117, 
+      1px -1px #00d9ff, 
+      2px 0 #00d9ff, 
+      0 1px #0d1117, 
+      0 2px #00d9ff, 
+      -1px 0 #0d1117, 
+      -1px 1px #00d9ff, 
+      -2px 0 #00d9ff, 
+      -1px -1px #00d9ff, 
+      1px 1px #00d9ff,
+      0 0 10px rgba(0, 217, 255, 0.15);
+  }
+
+  /* Smaller font sizes on mobile */
+  .tutorial-tooltip__step {
+    font-size: 7px;
+  }
+
+  .tutorial-tooltip__title {
+    font-size: 9px;
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+
+  .tutorial-tooltip__description {
+    font-size: 7px;
+    line-height: 2;
+  }
+
+  .tutorial-tooltip__btn {
+    padding: 8px 10px;
+    font-size: 7px;
+  }
+
+  .tutorial-tooltip__header {
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+  }
+
+  .tutorial-tooltip__footer {
+    padding-top: 10px;
+    gap: 6px;
+  }
+  
+  .tutorial-tooltip__content {
+    margin-bottom: 12px;
+  }
+
+  /* Smaller arrows on mobile */
+  .tutorial-tooltip::after {
+    height: 1px;
+    width: 1px;
+  }
+
+  .tutorial-container--left .tutorial-tooltip::after {
+    top: 16px;
+    left: -2px;
+    box-shadow: 
+      -1px -1px #0d1117,
+      -1px 0 #0d1117,
+      -2px 0 #0d1117,
+      0 -2px #0d1117,
+      -1px 1px #00d9ff, 
+      -2px 1px #00d9ff, 
+      -3px 1px #00d9ff, 
+      -4px 1px #00d9ff,
+      -3px 0 #00d9ff, 
+      -2px -1px #00d9ff, 
+      -1px -2px #00d9ff,
+      0 -1px #0d1117;
+  }
+
+  .tutorial-container--center .tutorial-tooltip::after {
+    bottom: -2px;
+    left: 24px;
+    box-shadow: 
+      0 1px #00d9ff, 
+      0 2px #00d9ff, 
+      0 3px #00d9ff, 
+      0 4px #00d9ff, 
+      -1px 3px #00d9ff, 
+      -2px 2px #00d9ff, 
+      -3px 1px #00d9ff, 
+      -1px 1px #0d1117, 
+      -2px 1px #0d1117, 
+      -1px 2px #0d1117, 
+      -1px 0 #0d1117, 
+      -2px 0 #0d1117, 
+      -3px 0 #0d1117;
+  }
+
+  .tutorial-container--right .tutorial-tooltip::after {
+    top: 16px;
+    right: -2px;
+    box-shadow: 
+      1px -1px #0d1117,
+      1px 0 #0d1117,
+      2px 0 #0d1117,
+      0 -2px #0d1117,
+      1px 1px #00d9ff, 
+      2px 1px #00d9ff, 
+      3px 1px #00d9ff, 
+      4px 1px #00d9ff,
+      3px 0 #00d9ff, 
+      2px -1px #00d9ff, 
+      1px -2px #00d9ff,
+      0 -1px #0d1117;
+  }
+
+  /* Smaller highlight glow on mobile - no blur */
+  .tutorial-highlight::before {
+    inset: -4px;
+  }
+
+  .tutorial-highlight::after {
+    inset: -2px;
+    border-radius: 8px;
+    border-width: 1px;
+    box-shadow: 
+      0 0 8px rgba(0, 217, 255, 0.5),
+      0 0 15px rgba(0, 217, 255, 0.3);
+  }
+}
