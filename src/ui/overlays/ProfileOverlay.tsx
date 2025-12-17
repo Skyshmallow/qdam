@@ -101,7 +101,11 @@ export function ProfileOverlay({ isOpen, onClose }: ProfileOverlayProps) {
 
   if (isLoading) {
     return (
+<<<<<<< HEAD
       <OverlayBase title="Player Account" isOpen={isOpen} onClose={onClose}>
+=======
+      <OverlayBase title="Player Profile" isOpen={isOpen} onClose={onClose}>
+>>>>>>> c3e2608068f28777e16b80a5f4b83e81c8da5dd0
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-400"></div>
         </div>

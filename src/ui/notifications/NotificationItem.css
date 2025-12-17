@@ -27,12 +27,17 @@
 }
 
 .notification-item:hover {
+<<<<<<< HEAD
   background: rgba(255, 255, 255, 0.18);
   transform: translateX(-6px) scale(1.01);
   box-shadow: 
     0 12px 40px rgba(0, 0, 0, 0.3),
     0 4px 12px rgba(0, 0, 0, 0.15);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+=======
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(-4px);
+>>>>>>> c3e2608068f28777e16b80a5f4b83e81c8da5dd0
 }
 
 /* Slide-in animation */

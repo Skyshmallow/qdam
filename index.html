@@ -1,191 +1,30 @@
-<!DOCTYPE html>
+<!-- src/qdam/index.html -->
+ 
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Territory Conquest</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2196F3">
-    <link rel="apple-touch-icon" href="icon-192.svg">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/webp" href="/qdam.webp" />
+    <meta 
+      name="viewport" 
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" 
+    />
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#0a0f1e" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Google Fonts: Poppins & Exo 2 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Exo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            overflow: hidden;
-            background: #000;
-        }
-
-        #map {
-            height: 100vh;
-            width: 100vw;
-        }
-
-        .controls {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .start-stop-btn {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: none;
-            background: #2196F3;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 32px rgba(33, 150, 243, 0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
-
-        .start-stop-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .start-stop-btn:active {
-            transform: scale(0.95);
-        }
-
-        .start-stop-btn.stop {
-            background: #f44336;
-            box-shadow: 0 8px 32px rgba(244, 67, 54, 0.3);
-        }
-
-        .progress-ring {
-            position: absolute;
-            top: -10px;
-            left: -10px;
-            width: 140px;
-            height: 140px;
-            transform: rotate(-90deg);
-        }
-
-        .progress-ring__circle {
-            fill: transparent;
-            stroke: rgba(255, 255, 255, 0.3);
-            stroke-width: 6;
-        }
-
-        .progress-ring__progress {
-            fill: transparent;
-            stroke: #4CAF50;
-            stroke-width: 6;
-            stroke-linecap: round;
-            transition: stroke-dashoffset 0.3s ease;
-        }
-
-        .stats {
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 14px;
-            text-align: center;
-            min-width: 200px;
-        }
-
-        .stats-row {
-            display: flex;
-            justify-content: space-between;
-            margin: 5px 0;
-        }
-
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 18px;
-            z-index: 1001;
-        }
-
-        .error {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            background: #f44336;
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            z-index: 1001;
-            text-align: center;
-        }
-
-        @media (max-width: 480px) {
-            .start-stop-btn {
-                width: 100px;
-                height: 100px;
-                font-size: 14px;
-            }
-            
-            .progress-ring {
-                width: 120px;
-                height: 120px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div id="loading" class="loading">Loading map...</div>
-    <div id="error" class="error" style="display: none;"></div>
-    
-    <div id="map"></div>
-    
-    <div class="controls">
-        <div class="stats">
-            <div class="stats-row">
-                <span>Today:</span>
-                <span id="todayDistance">0.0 km</span>
-            </div>
-            <div class="stats-row">
-                <span>Limit:</span>
-                <span>5.0 km</span>
-            </div>
-            <div class="stats-row">
-                <span>Area:</span>
-                <span id="territoryCount">0 m²</span>
-            </div>
-        </div>
-        
-        <button id="startStopBtn" class="start-stop-btn">
-            <svg class="progress-ring" width="140" height="140">
-                <circle class="progress-ring__circle" cx="70" cy="70" r="60"></circle>
-                <circle class="progress-ring__progress" cx="70" cy="70" r="60" 
-                        stroke-dasharray="377" stroke-dashoffset="377"></circle>
-            </svg>
-            <span id="btnText">START</span>
-            <span id="btnDistance" style="font-size: 12px; opacity: 0.8;"></span>
-        </button>
-    </div>
-
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="app.js"></script>
-</body>
+    <title>Qadam Game</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

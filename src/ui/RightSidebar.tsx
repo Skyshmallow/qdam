@@ -23,7 +23,11 @@ export const RightSidebar = ({
         onClick={onZoomIn}
         className={`scifi-button scifi-button-zoom-in ${themeClass}`}
         title="Приблизить"
+<<<<<<< HEAD
         aria-label="Enlarge view"
+=======
+        aria-label="Zoom in"
+>>>>>>> c3e2608068f28777e16b80a5f4b83e81c8da5dd0
       >
         <ZoomIn size={20} strokeWidth={2} />
       </button>
@@ -33,7 +37,11 @@ export const RightSidebar = ({
         onClick={onZoomOut}
         className={`scifi-button scifi-button-zoom-out ${themeClass}`}
         title="Отдалить"
+<<<<<<< HEAD
         aria-label="Reduce view"
+=======
+        aria-label="Zoom out"
+>>>>>>> c3e2608068f28777e16b80a5f4b83e81c8da5dd0
       >
         <ZoomOut size={20} strokeWidth={2} />
       </button>
@@ -43,7 +51,11 @@ export const RightSidebar = ({
         onClick={onLayers}
         className={`scifi-button scifi-button-layers ${themeClass}`}
         title="Слои карты"
+<<<<<<< HEAD
         aria-label="Map overlays"
+=======
+        aria-label="Map layers"
+>>>>>>> c3e2608068f28777e16b80a5f4b83e81c8da5dd0
       >
         <Layers size={20} strokeWidth={2} />
       </button>
