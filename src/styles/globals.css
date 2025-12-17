@@ -107,11 +107,7 @@ body {
   color: rgba(255, 255, 255, 0.9);
   cursor: pointer;
   
-<<<<<<< HEAD
   transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-=======
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
->>>>>>> c3e2608068f28777e16b80a5f4b83e81c8da5dd0
   
   -webkit-user-select: none;
   user-select: none;
@@ -122,7 +118,6 @@ body {
 }
 
 .game-button:hover:not(.game-button--disabled) {
-<<<<<<< HEAD
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.25);
   transform: translateY(-2px) scale(1.02);
@@ -140,22 +135,6 @@ body {
   outline-offset: 3px;
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
   transition: all 0.2s ease;
-=======
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.game-button:active:not(.game-button--disabled) {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.game-button:focus-visible {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
->>>>>>> c3e2608068f28777e16b80a5f4b83e81c8da5dd0
 }
 
 .game-button--disabled {
@@ -176,16 +155,10 @@ body {
 }
 
 .game-button--primary:hover:not(.game-button--disabled) {
-<<<<<<< HEAD
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.35), rgba(99, 102, 241, 0.35));
   border-color: rgba(59, 130, 246, 0.8);
   box-shadow: 0 8px 24px rgba(59, 130, 246, 0.5);
   transform: translateY(-2px) scale(1.02);
-=======
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(99, 102, 241, 0.3));
-  border-color: rgba(59, 130, 246, 0.7);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
->>>>>>> c3e2608068f28777e16b80a5f4b83e81c8da5dd0
 }
 
 .game-button--secondary {
@@ -206,16 +179,10 @@ body {
 }
 
 .game-button--success:hover:not(.game-button--disabled) {
-<<<<<<< HEAD
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(5, 150, 105, 0.35));
   border-color: rgba(16, 185, 129, 0.8);
   box-shadow: 0 8px 24px rgba(16, 185, 129, 0.5);
   transform: translateY(-2px) scale(1.02);
-=======
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.3));
-  border-color: rgba(16, 185, 129, 0.7);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
->>>>>>> c3e2608068f28777e16b80a5f4b83e81c8da5dd0
 }
 
 .game-button--danger {
@@ -226,16 +193,10 @@ body {
 }
 
 .game-button--danger:hover:not(.game-button--disabled) {
-<<<<<<< HEAD
   background: linear-gradient(135deg, rgba(239, 68, 68, 0.35), rgba(220, 38, 38, 0.35));
   border-color: rgba(239, 68, 68, 0.8);
   box-shadow: 0 8px 24px rgba(239, 68, 68, 0.5);
   transform: translateY(-2px) scale(1.02);
-=======
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(220, 38, 38, 0.3));
-  border-color: rgba(239, 68, 68, 0.7);
-  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
->>>>>>> c3e2608068f28777e16b80a5f4b83e81c8da5dd0
 }
 
 .game-button--warning {
@@ -246,16 +207,10 @@ body {
 }
 
 .game-button--warning:hover:not(.game-button--disabled) {
-<<<<<<< HEAD
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.35), rgba(217, 119, 6, 0.35));
   border-color: rgba(245, 158, 11, 0.8);
   box-shadow: 0 8px 24px rgba(245, 158, 11, 0.5);
   transform: translateY(-2px) scale(1.02);
-=======
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.3));
-  border-color: rgba(245, 158, 11, 0.7);
-  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
->>>>>>> c3e2608068f28777e16b80a5f4b83e81c8da5dd0
 }
 
 .game-button--ghost {
@@ -589,17 +544,11 @@ body {
 }
 
 .layer-option:hover {
-<<<<<<< HEAD
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.25);
   transform: translateX(-3px) scale(1.02);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-=======
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateX(-2px);
->>>>>>> c3e2608068f28777e16b80a5f4b83e81c8da5dd0
 }
 
 .layer-option.active {
