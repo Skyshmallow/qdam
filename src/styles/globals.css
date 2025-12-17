@@ -279,6 +279,58 @@ body {
 }
 
 /* ========================================
+   ZOOM INDICATOR
+   ======================================== */
+
+.zoom-indicator {
+  position: fixed;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  
+  background: rgba(20, 23, 28, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 8px 16px;
+  
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Exo 2', sans-serif;
+  letter-spacing: 0.5px;
+  
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  
+  animation: zoomIndicatorFade 0.3s ease-out, zoomIndicatorFadeOut 0.3s ease-in 1.2s forwards;
+  pointer-events: none;
+}
+
+@keyframes zoomIndicatorFade {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+@keyframes zoomIndicatorFadeOut {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px) scale(0.9);
+  }
+}
+
+/* ========================================
    КОМПОНЕНТЫ КАРТЫ
    ======================================== */
 
