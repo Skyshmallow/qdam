@@ -755,16 +755,28 @@ body {
     transform: none;
     width: auto;
     max-width: calc(100vw - 2rem);
+    transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .tracking-toolbar {
     width: 100%;
     padding: 0.75rem;
+    border-radius: 20px;
+    backdrop-filter: blur(16px) saturate(180%);
   }
   
   .game-button {
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 48px;
+    min-width: 48px;
+    font-size: 0.95rem;
+    padding: 0.875rem 1.25rem;
+  }
+  
+  /* Улучшенная адаптивность для zoom indicator */
+  .zoom-indicator {
+    bottom: 100px;
+    font-size: 12px;
+    padding: 6px 12px;
   }
   
   /* Left Sidebar */
@@ -809,8 +821,20 @@ body {
   
   /* Touch targets */
   button, .game-button {
-    min-width: 44px !important;
-    min-height: 44px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+  }
+  
+  /* Улучшенная адаптивность для sidebar */
+  .sidebar {
+    font-size: 11px;
+    padding: 8px 10px;
+    border-radius: 8px;
+  }
+  
+  /* Плавные переходы для мобильных */
+  * {
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
   }
 }
 
