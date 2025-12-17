@@ -8,11 +8,7 @@ interface HistoryOverlayProps {
 export function HistoryOverlay({ isOpen, onClose }: HistoryOverlayProps) {
   return (
     <OverlayBase 
-<<<<<<< HEAD
-      title="Activity Log" 
-=======
       title="Journey History" 
->>>>>>> c3e2608068f28777e16b80a5f4b83e81c8da5dd0
       isOpen={isOpen} 
       onClose={onClose}
       maxWidth="lg"

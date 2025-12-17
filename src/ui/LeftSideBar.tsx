@@ -43,11 +43,7 @@ export const LeftSidebar = ({
         onClick={onProfileClick}
         className={`scifi-button scifi-button-profile ${themeClass}`}
         title="Профиль"
-<<<<<<< HEAD
-        aria-label="User Account"
-=======
         aria-label="Profile"
->>>>>>> c3e2608068f28777e16b80a5f4b83e81c8da5dd0
       >
         <User size={20} strokeWidth={2} />
       </button>
@@ -57,11 +53,7 @@ export const LeftSidebar = ({
         onClick={onHistoryClick}
         className={`scifi-button scifi-button-history ${themeClass}`}
         title="История"
-<<<<<<< HEAD
-        aria-label="Activity Log"
-=======
         aria-label="History"
->>>>>>> c3e2608068f28777e16b80a5f4b83e81c8da5dd0
       >
         <History size={20} strokeWidth={2} />
       </button>
@@ -71,11 +63,7 @@ export const LeftSidebar = ({
         onClick={onMyLocationClick}
         className={`scifi-button scifi-button-location ${getGeolocationClass()} ${themeClass}`}
         title="Моё местоположение"
-<<<<<<< HEAD
-        aria-label="Current Position"
-=======
         aria-label="My Location"
->>>>>>> c3e2608068f28777e16b80a5f4b83e81c8da5dd0
         disabled={isGeolocationBusy}
       >
         {isGeolocationBusy ? (
