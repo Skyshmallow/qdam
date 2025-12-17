@@ -11,6 +11,20 @@
   gap: 12px;
   
   pointer-events: none; /* Позволяет кликать сквозь контейнер */
+  
+  /* Плавное появление контейнера */
+  animation: containerFadeIn 0.3s ease-out;
+}
+
+@keyframes containerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .notification-container > * {
@@ -24,5 +38,6 @@
     right: 16px;
     left: 16px;
     align-items: stretch;
+    gap: 10px;
   }
 }
