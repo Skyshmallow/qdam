@@ -1,0 +1,60 @@
+/* Оставляем ТОЛЬКО специфичные стили */
+.game-button {
+  font-family: 'Exo 2', sans-serif;
+  text-transform: none;
+  letter-spacing: 0.2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 200ms cubic-bezier(0.4, 0, 0.2, 1), 
+              transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), 
+              box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-effect {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--ripple-color, rgba(255, 255, 255, 0.5));
+  transform: scale(0);
+  animation: ripple 0.6s ease-out;
+  pointer-events: none;
+}
+  /* modern rounded buttons */
+  border-radius: 10px;
+  padding: 10px 18px;
+.game-button:hover:not(.game-button--disabled),
+.game-button:focus:not(.game-button--disabled) {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.game-button--primary { --ripple-color: rgba(255,255,255,0.5); }
+.game-button--secondary { --ripple-color: rgba(0,0,0,0.06); }
+.game-button--success { --ripple-color: rgba(255,255,255,0.4); }
+.game-button--danger { --ripple-color: rgba(255,255,255,0.5); }
+.game-button--warning { --ripple-color: rgba(0,0,0,0.08); }
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* pressed state: quick scale for tactile response */
+.game-button:active:not(.game-button--disabled) {
+  transform: translateY(0) scale(0.97);
+  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 640px) {
+  .game-button--lg { padding: 14px 28px; font-size: 15px; }
+  .game-button--md { padding: 10px 20px; font-size: 13px; }
+  .game-button--sm { padding: 6px 14px; font-size: 11px; }
+}
