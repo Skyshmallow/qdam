@@ -297,10 +297,10 @@ VITE_DEBUG_THREE_LAYER=true       # 3D rendering logs
 ## 📑 Additional Documents
 
 Links to repository documents:
-- [Product Requirements Document (PRD)](./PRD.md)
-- [Architecture](./Architecture.md)
-- [API specification](./API.md)
-- [User Stories](./User_Stories.md)
+- [Product Requirements Document (PRD)](./documentation/PRD.md)
+- [Architecture](./documentation/Architecture.md)
+- [API specification](./documentation/API.md)
+- [User Stories](./documentation/User_Stories.md)
 
 ---
 
