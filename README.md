@@ -1,402 +1,360 @@
 # 🎮 QDAM - GPS Territory Conquest Game
 
-**QDAM** — многопользовательская GPS-игра в реальном мире. Гуляйте по городу, захватывайте территорию, соревнуйтесь с другими игроками!
+**QDAM** is a real-world multiplayer GPS game. Walk your city, capture territory, and compete with other players.
 
-> 🌍 **Превратите свой город в игровое поле** — каждая прогулка становится стратегической миссией по расширению территории.
+> 🌍 **Turn your city into a game board** — every walk becomes a strategic mission to expand your territory.
 
-## ✨ Особенности
+## Problem Statement
+Urban walks feel repetitive and lack engaging goals; location-based games often expose sensitive routes and are not built for offline use.
 
-- 🗺️ **Реальные GPS-координаты** — каждый шаг в реальном мире отражается в игре
-- 👥 **Мультиплеер в реальном времени** — видите территории других игроков, обновления за 2 секунды
-- 🏰 **3D-визуализация** — замки, сферы влияния, цветная трава на территориях
-- 💾 **Offline-first** — игра работает без интернета, синхронизируется при подключении
-- 🔐 **Google Auth** — безопасный вход через Google-аккаунт
-- 🎨 **Privacy-friendly** — другие игроки видят только контуры территорий, не точные маршруты
+## Proposed Solution
+Provide a privacy-first, offline-capable GPS conquest game where players capture territory through real-world movement, with real-time multiplayer and minimal shared data.
+
+## Target Users
+- Urban walkers and commuters who want gamified movement
+- Casual mobile gamers who enjoy location-based mechanics
+- Tech-savvy explorers who value privacy and offline capability
+- Competitive players who like territory control and real-time multiplayer
 
 ---
 
-## 🚀 Быстрый старт
+## ✨ Features
 
-### Требования
+- 🗺️ **Real GPS coordinates** — every step in the real world is reflected in the game
+- 👥 **Real-time multiplayer** — see other players' territories with ~2s updates
+- 🏰 **3D visualization** — castles, spheres of influence, animated grass on territories
+- 💾 **Offline-first** — works without internet, syncs when online
+- 🔐 **Google Auth** — secure login via Google account
+- 🎨 **Privacy-friendly** — other players see only territory outlines, not exact routes
+
+---
+
+## How to Run Locally
+
+Follow the Quick Start steps below. System requirements: Node.js 18+, npm 9+, Mapbox API token, and a Supabase project (PostgreSQL with PostGIS).
+
+## 🚀 Quick Start
+
+### Requirements
 - Node.js 18+
 - npm 9+
-- Mapbox API токен ([получить здесь](https://www.mapbox.com/))
-- Supabase проект ([создать здесь](https://supabase.com/))
+- Mapbox API token ([get it](https://www.mapbox.com/))
+- Supabase project ([create it](https://supabase.com/))
 
-### Установка
+### Installation
 
 ```bash
-# Клонирование
+# Clone
 git clone https://github.com/Skyshmallow/qdam.git
 cd qdam
 
-# Установка зависимостей
+# Install dependencies
 npm install
 
-# Настройка окружения
+# Environment configuration
 cp .env.example .env.local
-# Отредактируйте .env.local с вашими API ключами
+# Edit .env.local with your API keys
 
-# Применить схему базы данных
-# Supabase Dashboard > SQL Editor > Вставьте supabase/schema.sql > Execute
+# Apply database schema
+# Supabase Dashboard > SQL Editor > paste supabase/schema.sql > Execute
 
-# Запуск
+# Run dev server
 npm run dev
 ```
 
-Откройте http://localhost:5173 и начните играть!
+Open http://localhost:5173 to start playing.
 
-### Конфигурация (.env.local)
+### Configuration (.env.local)
 
 ```env
-# Mapbox (карты)
+# Mapbox (maps)
 VITE_MAPBOX_TOKEN=your_token
 
 # Supabase (backend)
 VITE_SUPABASE_URL=your_url
 VITE_SUPABASE_ANON_KEY=your_key
 
-# Игровые настройки
-VITE_SPHERE_RADIUS_KM=0.5        # Радиус сферы влияния
-VITE_MAX_CHAINS_PER_DAY=2        # Лимит маршрутов в день
+# Game settings
+VITE_SPHERE_RADIUS_KM=0.5        # Influence sphere radius (km)
+VITE_MAX_CHAINS_PER_DAY=2        # Route limit per day
 
-# Режим разработчика (для тестирования)
+# Developer mode (for testing)
 VITE_DEV_EMAIL=your-email@example.com
 ```
 
 ---
 
-## 🎮 Как играть
+## 🎮 How to Play
 
-### Первые шаги
+### First steps
 
-1. **Войдите** через Google-аккаунт
-2. **Разрешите GPS** — приложение покажет вашу позицию синим аватаром
-3. **Нажмите START** — начните свой первый маршрут
-4. **Идите пешком** 100-200 метров (можно больше!)
-5. **Нажмите STOP** — маршрут создан! Появятся 🏰 замки на карте
-6. **Создайте ещё маршруты** — после 2 маршрутов образуется территория
+1. **Sign in** with Google
+2. **Enable GPS** — the app shows your position with a blue avatar
+3. **Press START** — begin your first route
+4. **Walk** 100–200 meters (or more)
+5. **Press STOP** — route created, castles appear on the map
+6. **Create more routes** — after 2 routes a territory forms
 
-### Основные правила
+### Core rules
 
-- 🏁 **Первый маршрут** можно начать где угодно
-- 🔵 **Следующие маршруты** только внутри Сферы влияния (радиус 500м от узлов)
-- 🟢 **Территория появляется** при наличии минимум 4 узлов (2 маршрута)
-- 🎯 **Стратегия** — расширяйте территорию в разные стороны города
-- 👥 **Мультиплеер** — видите территории других игроков (цветные зоны на карте)
-
----
-
-## 🎯 Игровые элементы
-
-### Узлы (Nodes)
-**Точки на карте** — создаются автоматически в начале и конце каждого маршрута. Визуализируются как 🏰 3D-замки.
-
-### Маршруты (Chains)
-**Связь между двумя узлами** — ваш реальный путь от точки A до точки B. Сохраняются только координаты старта и финиша для приватности.
-
-### Сфера влияния
-**Радиус 500м вокруг каждого узла** — зона, где вы можете начать новый маршрут. После первого маршрута все следующие должны начинаться внутри существующей сферы.
-
-### Территория
-**Ваша игровая зона** — образуется из всех ваших узлов (минимум 4). Отображается зелёным полигоном с анимированной 3D-травой. Площадь считается автоматически.
-
-### Мультиплеер
-**Территории других игроков** — видны на карте разными цветами (красный, синий, жёлтый и т.д.). Можно увидеть зоны конкурентов, но их точные маршруты скрыты (privacy-friendly). Обновления в реальном времени через 2 секунды.
+- 🏁 **First route** can start anywhere
+- 🔵 **Next routes** must start within the Influence Sphere (500m radius from nodes)
+- 🟢 **Territory forms** with at least 4 nodes (2 routes)
+- 🎯 **Strategy** — expand territory in different directions
+- 👥 **Multiplayer** — see other players' territories (colored zones)
 
 ---
 
-## 🛠️ Технологический стек
+## 🎯 Game Elements
+
+### Nodes
+**Points on the map** — created automatically at the start and end of each route. Visualized as 🏰 3D castles.
+
+### Chains (Routes)
+**Connection between two nodes** — your real path from point A to point B. Only start and finish coordinates are stored for privacy.
+
+### Influence Sphere
+**500m radius around each node** — area where you can start a new route. After the first route, all subsequent routes must start inside an existing sphere.
+
+### Territory
+**Your game area** — formed from all your nodes (minimum 4). Displayed as a green polygon with animated 3D grass. Area is calculated automatically.
+
+### Multiplayer
+**Other players' territories** — visible on the map in different colors (red, blue, yellow, etc.). Opponents' exact routes remain hidden. Real-time updates every ~2 seconds.
+
+---
+
+## 🛠️ Tech Stack
 
 ### Frontend
-- **React 19** — UI framework
-- **TypeScript** — типизация
-- **Vite** — build tool
-- **TailwindCSS** — стилизация
+- **React 19**
+- **TypeScript**
+- **Vite**
+- **TailwindCSS**
 
-### Карты и визуализация
-- **Mapbox GL JS** — интерактивные карты
-- **Three.js** — 3D-графика (замки, сферы, трава)
-- **Turf.js** — геопространственные вычисления
+### Maps & Visualization
+- **Mapbox GL JS** — interactive maps
+- **Three.js** — 3D graphics (castles, spheres, grass)
+- **Turf.js** — geospatial calculations
 
-### Backend и база данных
-- **Supabase** — PostgreSQL + Auth + Real-time
-- **PostGIS** — геопространственные данные в PostgreSQL
-- **Row Level Security (RLS)** — защита данных
+### Backend & Database
+- **Supabase** — PostgreSQL + Auth + Realtime
+- **PostGIS** — geospatial data in PostgreSQL
+- **Row Level Security (RLS)** — data protection
 
-### Хранение данных
-- **IndexedDB** — локальное хранилище (offline-first)
-- **Supabase PostgreSQL** — облачная синхронизация
+### Data Storage
+- **IndexedDB** — local storage (offline-first)
+- **Supabase PostgreSQL** — cloud sync
 
-### Архитектура
-- **Offline-first** — работа без интернета
-- **Auto-sync** — синхронизация с задержкой 2 секунды
+### Architecture
+- **Offline-first** — works offline
+- **Auto-sync** — sync every ~2 seconds
 - **Real-time updates** — Supabase subscriptions
-- **Privacy by design** — минимальные данные для других игроков
+- **Privacy by design** — minimal data exposed to others
 
 ---
 
-## 📁 Структура проекта
+## 📁 Project Structure
 
 ```
 qdam/
 ├── src/
-│   ├── components/              # React компоненты
-│   │   ├── Map.tsx             # Основная карта Mapbox
-│   │   ├── TrackingControls.tsx # Кнопки управления (Start/Stop)
-│   │   └── handlers/
-│   │       ├── NodeCreationHandler.tsx      # Логика создания узлов
-│   │       ├── useTrackingHandler.ts        # GPS-трекинг
-│   │       └── useMapControlsHandler.ts     # Управление картой
+│   ├── components/              # React components
+│   │   ├── Map.tsx              # Main Mapbox map
+│   │   ├── TrackingControls.tsx # Start/Stop controls
+│   │   └── handlers/            # Map and tracking handlers
 │   │
-│   ├── contexts/                # React контексты
-│   │   └── AuthContext.tsx     # Google Auth + сессия
+│   ├── contexts/                # React contexts
+│   │   └── AuthContext.tsx      # Google Auth + session
 │   │
-│   ├── services/                # Бизнес-логика и API
-│   │   ├── NodesService.ts     # Синхронизация узлов
-│   │   ├── ChainsService.ts    # Синхронизация маршрутов
-│   │   ├── TerritoriesService.ts  # Мультиплеер
-│   │   └── ProfileService.ts   # Управление профилем
+│   ├── services/                # Business logic & API
+│   │   ├── NodesService.ts
+│   │   ├── ChainsService.ts
+│   │   ├── TerritoriesService.ts
+│   │   └── ProfileService.ts
 │   │
-│   ├── features/                # Feature-based модули
-│   │   ├── nodes/              # Работа с узлами
-│   │   │   ├── hooks/useNodes.ts
-│   │   │   └── services/NodeService.ts
-│   │   ├── chains/             # Работа с маршрутами
-│   │   │   ├── hooks/useChains.ts
-│   │   │   └── services/ChainService.ts
-│   │   └── territory/          # Территориальные полигоны
-│   │       └── hooks/useTerritory.ts
+│   ├── features/                # Feature modules
+│   │   ├── nodes/               # Node operations
+│   │   ├── chains/              # Route operations
+│   │   └── territory/           # Territory polygons
 │   │
-│   ├── hooks/                   # React hooks
-│   │   ├── useAuth.ts          # Хук аутентификации
-│   │   ├── useGeolocation.ts   # GPS-трекинг
-│   │   ├── useMapbox.ts        # Инициализация Mapbox
-│   │   ├── useChainAttempt.ts  # Создание маршрута
-│   │   ├── useSyncNodes.ts     # Авто-синхронизация узлов
-│   │   ├── useSyncChains.ts    # Авто-синхронизация маршрутов
-│   │   ├── useSyncTerritory.ts # Синхронизация территории
-│   │   ├── useMultiplayerTerritories.ts  # Загрузка других игроков
-│   │   ├── useSimulator.ts     # Режим симуляции
-│   │   └── ... (20+ hooks)
-│   │
-│   ├── effects/                 # 3D-эффекты (Three.js)
-│   │   ├── sphere/             # Сферы влияния
-│   │   │   ├── PlasmaEffect.ts      # Плазменный эффект
-│   │   │   ├── RadarEffect.ts       # Радарный эффект
-│   │   │   ├── SparksEffect.ts      # Искры
-│   │   │   ├── SphereEffectManager.ts
-│   │   │   └── shaders/        # GLSL шейдеры
-│   │   └── territory/          # Территориальные эффекты
-│   │       ├── TerritoryEffect.ts   # 3D-трава
-│   │       └── shaders/        # GLSL шейдеры
-│   │
-│   ├── ui/                      # UI компоненты
-│   │   ├── LeftSideBar.tsx     # Боковая панель (Profile, History)
-│   │   ├── RightSidebar.tsx    # Зум, слои
-│   │   ├── ZoomIndicator.tsx   # Индикатор зума
-│   │   ├── buttons/
-│   │   │   └── GameButton.tsx  # Игровые кнопки
-│   │   ├── notifications/      # Система уведомлений
-│   │   │   ├── NotificationContainer.tsx
-│   │   │   └── NotificationItem.tsx
-│   │   └── overlays/           # Оверлеи
-│   │       ├── ProfileOverlay.tsx   # Профиль игрока
-│   │       ├── HistoryOverlay.tsx   # История маршрутов
-│   │       └── LayersOverlay.tsx    # Настройки слоёв
-│   │
-│   ├── store/                   # Zustand state management
-│   │   ├── mapStore.ts         # Состояние карты
-│   │   ├── uiStore.ts          # UI состояние
-│   │   └── notificationStore.ts # Уведомления
-│   │
-│   ├── utils/                   # Утилиты
-│   │   ├── ThreeLayer.ts       # Three.js + Mapbox интеграция
-│   │   ├── gameRules.ts        # Правила игры (сфера влияния)
-│   │   ├── chainFactory.ts     # Создание маршрутов
-│   │   ├── mapUtils.ts         # Mapbox утилиты
-│   │   └── storage.ts          # IndexedDB обёртка
-│   │
-│   ├── shared/                  # Общие модули
-│   │   ├── storage/            # Хранилище данных
-│   │   │   ├── indexedDB.ts         # IndexedDB API
-│   │   │   └── migration.ts         # Миграции данных
-│   │   ├── spatial/            # Пространственные структуры
-│   │   │   └── spatialIndex.ts      # R-tree индексация
-│   │   └── utils/              # Общие утилиты
-│   │       ├── geometryCache.ts     # Кеш геометрии
-│   │       ├── gpuDetector.ts       # Определение GPU
-│   │       ├── abortableRequest.ts  # HTTP запросы
-│   │       └── debounce.ts          # Debounce утилита
-│   │
-│   ├── types/                   # TypeScript типы
-│   │   ├── index.ts            # Основные типы (Node, Chain, Territory)
-│   │   ├── supabase.ts         # Типы БД
-│   │   └── ui.types.ts         # UI типы
-│   │
-│   ├── simulation/              # Режим симуляции
-│   │   └── useSimulationMode.ts
-│   │
-│   ├── api/                     # Внешние API
-│   │   └── mapboxAPI.ts        # Mapbox Directions API
-│   │
-│   └── lib/                     # Внешние библиотеки
-│       └── supabase.ts         # Supabase client
+│   ├── hooks/                   # React hooks (auth, GPS, sync)
+│   ├── effects/                 # 3D effects (Three.js)
+│   ├── ui/                      # UI components
+│   ├── store/                   # Zustand stores
+│   ├── utils/                   # Utilities
+│   ├── shared/                  # Shared modules
+│   ├── types/                   # Type definitions
+│   ├── simulation/              # Simulation mode
+│   ├── api/                     # External API clients
+│   └── lib/                     # External libraries
 │
-├── supabase/                    # База данных
-│   ├── schema.sql              # Полная схема БД
-│   └── REFACTOR_CHAINS.sql     # Миграция оптимизации
-│
-├── public/                      # Статические файлы
-│   └── castle.glb              # 3D модель замка
-│
-└── Конфиг файлы
-    ├── vite.config.ts          # Vite конфигурация
-    ├── tsconfig.json           # TypeScript настройки
-    ├── tailwind.config.ts      # TailwindCSS
-    └── .env.local              # Переменные окружения
+├── supabase/                    # Database schema & migrations
+├── public/                      # Static assets
+└── Config files                 # Vite, TS, Tailwind, env
 ```
 
 ---
 
-## 🔒 Безопасность и приватность
+## 🔒 Security & Privacy
 
-### Что видят другие игроки
-- ✅ Ваш никнейм и аватар
-- ✅ Контур вашей территории (полигон)
-- ✅ Площадь территории (км²)
-- ❌ Точные координаты узлов
-- ❌ Детальные маршруты (сохраняются только старт и финиш)
+### What other players see
+- ✅ Your nickname and avatar
+- ✅ Territory outline (polygon) and area
+- ❌ Exact node coordinates
+- ❌ Detailed routes (only start/finish stored)
 
-### Механизм приватности
-Когда вы создаёте маршрут:
-1. **Локально** сохраняется полный GPS-трек (только на вашем устройстве)
-2. **В облако** отправляются только 2 точки: старт и финиш
-3. Другие игроки видят только границы вашей территории
+### Privacy mechanism
+1. **Locally** the full GPS track is stored only on your device
+2. **Cloud** receives only 2 points: start and finish
+3. Other players see only your territory boundaries
 
 ### Row Level Security (RLS)
-- Читать профили могут все
-- Изменять свой профиль может только владелец
-- Узлы и маршруты привязаны к пользователю через `auth.uid()`
+- Everyone can read profiles
+- Only the owner can modify their profile
+- Nodes and routes are bound to the user via `auth.uid()`
 
 ---
 
-## 🎮 Режимы игры
+## 🎮 Game Modes
 
-### Обычный режим
-Реальная игра с GPS-трекингом. Все данные сохраняются в облако и видны другим игроками.
+### Regular mode
+Real gameplay with GPS tracking. Data syncs to the cloud and is visible to others.
 
-### Режим симуляции (Developer Mode)
-- Доступен только для разработчиков (настройка через `VITE_DEV_EMAIL`)
-- Можно планировать маршрут кликами на карте
-- Тестовые данные не синхронизируются с сервером
-- Автоматическая очистка после выхода из режима
-
----
-
-## 📊 База данных
-
-### Основные таблицы
-
-**user_profiles** — профили игроков
-- username, display_name, avatar_url
-- territory_area_km2 (площадь территории)
-- is_developer (флаг разработчика)
-
-**nodes** — узлы (точки на карте)
-- coordinates (PostGIS geometry)
-- user_id, created_at
-
-**chains** — маршруты между узлами
-- path (массив из 2 точек: [start, end])
-- node_a_id, node_b_id
-- distance_km (расстояние)
-
-**player_stats** — статистика игроков
-- total_chains, total_distance
-- territory_km2, score
+### Simulation mode (Developer Mode)
+- Only for developers (configured via `VITE_DEV_EMAIL`)
+- Plan routes by clicking on the map
+- Test data is not synced to the server
+- Auto cleanup after exit
 
 ---
 
-## 🚧 Разработка
+## 📊 Database
 
-### Полезные команды
+### Main tables
+
+**user_profiles** — player profiles  
+- username, display_name, avatar_url  
+- territory_area_km2  
+- is_developer  
+
+**nodes** — map nodes  
+- coordinates (PostGIS geometry)  
+- user_id, created_at  
+
+**chains** — routes between nodes  
+- path (array of 2 points: [start, end])  
+- node_a_id, node_b_id  
+- distance_km  
+
+**player_stats** — player statistics  
+- total_chains, total_distance  
+- territory_km2, score  
+
+---
+
+## 🚧 Development
+
+### Useful commands
 
 ```bash
-npm run dev          # Запуск dev-сервера
-npm run build        # Production сборка
-npm run preview      # Превью production сборки
-npm run lint         # Проверка кода (ESLint)
+npm run dev          # Start dev server
+npm run build        # Production build
+npm run preview      # Preview production build
+npm run lint         # ESLint check
 ```
 
-### Отладка
+## 🧪 Tests
 
-Логирование отключено по умолчанию. Для включения добавьте в `.env.local`:
+Run the automated test suite:
+
+```bash
+npm run test
+# or
+npm run vitest -- run
+```
+
+Ensure required environment variables are present in `.env.local` before running integration tests.
+
+### Debugging
+
+Logging is off by default. To enable, add to `.env.local`:
 
 ```env
-VITE_DEBUG_SPHERES=true           # Логи сфер влияния
-VITE_DEBUG_THREE_LAYER=true       # Логи 3D рендеринга
+VITE_DEBUG_SPHERES=true           # Influence sphere logs
+VITE_DEBUG_THREE_LAYER=true       # 3D rendering logs
 ```
 
-### Тестирование мультиплеера
+### Multiplayer testing
 
-1. Откройте приложение в 2 браузерах (обычный + инкогнито)
-2. Войдите с разными Google-аккаунтами
-3. Создайте территории в обоих
-4. Увидите территории друг друга на карте!
+1. Open the app in 2 browsers (normal + incognito)
+2. Sign in with different Google accounts
+3. Create territories in both
+4. See each other's territories on the map
+
+---
+
+## 📑 Additional Documents
+
+Links to repository documents:
+- [Product Requirements Document (PRD)](./PRD.md)
+- [Architecture](./Architecture.md)
+- [API specification](./API.md)
+- [User Stories](./User_Stories.md)
 
 ---
 
 ## 📝 Changelog
 
 ### v2.0 (Week 2) - Multiplayer Release
-- ✅ Мультиплеер в реальном времени
-- ✅ Синхронизация узлов и маршрутов с облаком
-- ✅ Территории других игроков на карте
-- ✅ Privacy: только контуры территорий для других
-- ✅ Оптимизация: chains хранят 2 точки вместо всего трека
-- ✅ Debounce 2 секунды для быстрых обновлений
-- ✅ Цветная 3D-трава для территорий игроков
+- ✅ Real-time multiplayer
+- ✅ Node and route sync to cloud
+- ✅ Other players' territories on the map
+- ✅ Privacy: only territory outlines exposed
+- ✅ Optimization: chains store 2 points instead of full track
+- ✅ 2s debounce for fast updates
+- ✅ Colored 3D grass for territories
 
 ### v1.0 (Week 1) - Auth & Profile
-- ✅ Google OAuth интеграция
-- ✅ Профили игроков с редактированием
-- ✅ Auto-sync территории в облако
-- ✅ Offline-first архитектура
+- ✅ Google OAuth integration
+- ✅ Editable player profiles
+- ✅ Auto-sync territory to cloud
+- ✅ Offline-first architecture
 
 ### v0.1 - Core Mechanics
-- ✅ GPS-трекинг маршрутов
-- ✅ Сферы влияния (500м радиус)
-- ✅ Территориальные полигоны
-- ✅ 3D-визуализация (замки, сферы)
-- ✅ Анимированная трава на территории
+- ✅ GPS route tracking
+- ✅ Influence spheres (500m radius)
+- ✅ Territory polygons
+- ✅ 3D visualization (castles, spheres)
+- ✅ Animated grass on territory
 
 ---
 
-## 🤝 Вклад в проект
+## 🤝 Contributing
 
-Приветствуются Pull Requests! Пожалуйста:
-1. Создайте fork репозитория
-2. Создайте feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit изменений (`git commit -m 'Add AmazingFeature'`)
-4. Push в branch (`git push origin feature/AmazingFeature`)
-5. Откройте Pull Request
-
----
-
-## 📄 Лицензия
-
-Этот проект распространяется под лицензией MIT. См. файл `LICENSE` для деталей.
+Contributions are welcome:
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
-## 🌟 Авторы
+## 📄 License
 
-Создано с ❤️ командой QDAM
-
-**GitHub**: [@Nurdaulet-no](https://github.com/Nurdaulet-no)
-**GitHub**: [@Skyshmallow](https://github.com/Skyshmallow/qdam)
+This project is licensed under MIT. See `LICENSE` for details.
 
 ---
 
-**Удачной игры! 🎮🌍**
+## 🌟 Authors
+
+Built with ❤️ by the QDAM team  
+**GitHub**: [@Nurdaulet-no](https://github.com/Nurdaulet-no)  
+**GitHub**: [@Skyshmallow](https://github.com/Skyshmallow)  
+**GitHub**: [@alanauezkhanov](https://github.com/alanauezkhanov)
+**GitHub**: [@Nagyzback](https://github.com/Nagyzback)
+---
+
+**Enjoy the game! 🎮🌍**
+
