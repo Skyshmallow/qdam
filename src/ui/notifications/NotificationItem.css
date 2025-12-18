@@ -9,21 +9,27 @@
   max-width: 360px;
   border-radius: 28px;
   
-  /* Frosted glass effect */
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  /* Enhanced frosted glass effect */
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   
-  /* Shadow */
+  /* Enhanced shadow with depth */
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.2),
-    0 2px 8px rgba(0, 0, 0, 0.1);
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   
-  /* Slide-in animation */
-  animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Slide-in animation with bounce */
+  animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   
-  /* Transition для hover */
-  transition: all 0.2s ease;
+  /* Smooth transitions */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Performance optimization */
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .notification-item:hover {
@@ -35,15 +41,21 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Slide-in animation */
+/* Enhanced slide-in animation with bounce */
 @keyframes slideIn {
-  from {
-    transform: translateX(100%);
+  0% {
+    transform: translateX(120%) scale(0.8);
     opacity: 0;
+    filter: blur(4px);
   }
-  to {
-    transform: translateX(0);
+  60% {
+    transform: translateX(-5%) scale(1.02);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(0) scale(1);
     opacity: 1;
+    filter: blur(0);
   }
 }
 
@@ -69,8 +81,31 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: iconPulse 0.6s ease-out;
+}
+
+@keyframes iconPulse {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.notification-item:hover .notification-icon-wrapper {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.1) rotate(5deg);
 }
 
 .notification-icon {
@@ -128,8 +163,15 @@
 }
 
 .notification-action:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.35);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.notification-action:active {
+  transform: translateY(0) scale(0.98);
+  transition: transform 0.1s ease;
 }
 
 /* Close button */
@@ -151,7 +193,15 @@
 
 .notification-close:hover {
   color: rgba(255, 255, 255, 1);
-  transform: scale(1.1);
+  transform: scale(1.15) rotate(90deg);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.notification-close:active {
+  transform: scale(0.9) rotate(90deg);
+  transition: transform 0.1s ease;
 }
 
 .notification-close svg {
