@@ -17,13 +17,11 @@ export const IconButton: React.FC<IconButtonProps> = ({ icon, tooltip, active = 
     <div className="relative group">
       <button
         onClick={onClick}
-        className={`p-3 rounded-md transition-colors duration-200 ${
-          active ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-        } ${className}`}
+        className={`icon-button ${active ? 'icon-button--active' : ''} ${className}`}
       >
         {icon}
       </button>
-      <div className={`absolute px-2 py-1 bg-black bg-opacity-80 text-white text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none -translate-y-1/2 top-1/2 ${tooltipPositionClasses}`}>
+      <div className={`tooltip ${tooltipPositionClasses}`}>
         {tooltip}
       </div>
     </div>
