@@ -116,7 +116,7 @@ export function TrackingControls({
     if (activityState === 'planning_start') {
       return (
         <div className="flex flex-col gap-2">
-          <div className="bg-blue-100 text-blue-900 px-4 py-2 rounded-lg font-medium">
+          <div className="planning-message">
             📍 Select start point on map
           </div>
           <GameButton
@@ -134,7 +134,7 @@ export function TrackingControls({
     if (activityState === 'planning_end') {
       return (
         <div className="flex flex-col gap-2">
-          <div className="bg-blue-100 text-blue-900 px-4 py-2 rounded-lg font-medium">
+          <div className="planning-message">
             📍 Select end point on map
           </div>
           <GameButton
@@ -185,7 +185,7 @@ export function TrackingControls({
           </GameButton>
           
           {isSimulationMode && (
-            <div className="text-center text-xs text-yellow-300 bg-black/30 px-2 py-1 rounded">
+            <div className="simulation-warning">
               ⚠️ Castles will be temporary (won't be saved)
             </div>
           )}

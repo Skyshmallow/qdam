@@ -744,6 +744,61 @@ body {
 }
 
 /* ========================================
+   TRACKING CONTROLS MESSAGES
+   ======================================== */
+
+.planning-message {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(99, 102, 241, 0.2));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: rgba(255, 255, 255, 0.95);
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+  animation: planningMessagePulse 2s ease-in-out infinite;
+}
+
+@keyframes planningMessagePulse {
+  0%, 100% {
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+    border-color: rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+    border-color: rgba(59, 130, 246, 0.6);
+  }
+}
+
+.simulation-warning {
+  text-align: center;
+  font-size: 12px;
+  color: rgba(251, 191, 36, 0.95);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  font-weight: 500;
+  animation: warningFade 3s ease-in-out infinite;
+}
+
+@keyframes warningFade {
+  0%, 100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+/* ========================================
    MOBILE АДАПТАЦИЯ
    ======================================== */
 
